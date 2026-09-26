@@ -628,66 +628,92 @@
       }));
     }
 
-    function loadData() {
-      const status = document.getElementById("statusBar");
-      status.className = "status-bar show";
-      status.textContent = "Loading creators…";
-      status.style.background = "rgba(99,102,241,0.15)";
-      status.style.borderColor = "rgba(99,102,241,0.3)";
-      status.style.color = "var(--primary-light)";
+// ============================================================
+// LIVE DATA LOADING + AUTO REFRESH (every 30 seconds)
+// ============================================================
 
-      // Show fallback immediately so UI is never blank
-      allInfluencers = prepare(FALLBACK_DATA);
-      finishLoad();
-      dataReady = true;
+function loadLiveData(isSilent = false) {
+  const status = document.getElementById("statusBar");
+  if (!isSilent) {
+    status.className = "status-bar show";
+    status.textContent = "Loading latest data...";
+    status.style.background = "rgba(99,102,241,0.15)";
+    status.style.borderColor = "rgba(99,102,241,0.3)";
+    status.style.color = "var(--primary-light)";
+  }
 
-      const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
-      if (!url) {
-        status.textContent = `Using offline data (${allInfluencers.length} creators). Add Apps Script URL for live form updates.`;
+  // Show fallback immediately so UI is never blank
+  if (!isSilent) {
+    allInfluencers = prepare(FALLBACK_DATA);
+    finishLoad();
+  }
+
+  const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+  if (!url) {
+    if (!isSilent) {
+      status.textContent = `Using offline data (${allInfluencers.length} creators). Add Apps Script URL for live updates.`;
+      status.style.background = "rgba(234,179,8,0.12)";
+      status.style.borderColor = "rgba(234,179,8,0.3)";
+      status.style.color = "#fbbf24";
+      setTimeout(() => status.classList.remove("show"), 5000);
+    }
+    return;
+  }
+
+  if (typeof Papa === "undefined") return;
+
+  Papa.parse(url, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: (results) => {
+      if (results.data && results.data.length > 0) {
+        const live = results.data.map(normalizeRow).filter(i => i.name && i.name.length > 1);
+        if (live.length > 0) {
+          allInfluencers = prepare(live);
+
+          // Keep current search & filters applied
+          applyFilters();
+          renderFeatured();
+
+          if (!isSilent) {
+            status.textContent = `Live: ${allInfluencers.length} creators (auto-updates every 30s)`;
+            status.style.background = "rgba(34,197,94,0.15)";
+            status.style.borderColor = "rgba(34,197,94,0.3)";
+            status.style.color = "#4ade80";
+            setTimeout(() => status.classList.remove("show"), 4000);
+          }
+          return;
+        }
+      }
+      if (!isSilent) {
+        status.textContent = `Live URL returned no rows — showing offline data (${allInfluencers.length})`;
         status.style.background = "rgba(234,179,8,0.12)";
         status.style.borderColor = "rgba(234,179,8,0.3)";
         status.style.color = "#fbbf24";
         setTimeout(() => status.classList.remove("show"), 5000);
-        return;
       }
-
-      // Live fetch from Apps Script (CORS-enabled) — reads current Google Sheet
-      if (typeof Papa !== "undefined") {
-        Papa.parse(url, {
-          download: true,
-          header: true,
-          skipEmptyLines: true,
-          complete: (results) => {
-            if (results.data && results.data.length > 2) {
-              const live = results.data.map(normalizeRow).filter(i => i.name && i.name.length > 1);
-              if (live.length > 0) {
-                allInfluencers = prepare(live);
-                status.textContent = `Live: ${allInfluencers.length} creators from Google Sheet (auto-updates with form)`;
-                status.style.background = "rgba(34,197,94,0.15)";
-                status.style.borderColor = "rgba(34,197,94,0.3)";
-                status.style.color = "#4ade80";
-                finishLoad();
-                setTimeout(() => status.classList.remove("show"), 4000);
-                return;
-              }
-            }
-            status.textContent = `Live URL returned no rows — showing offline data (${allInfluencers.length})`;
-            status.style.background = "rgba(234,179,8,0.12)";
-            status.style.borderColor = "rgba(234,179,8,0.3)";
-            status.style.color = "#fbbf24";
-            setTimeout(() => status.classList.remove("show"), 5000);
-          },
-          error: (err) => {
-            console.warn("Live data fetch failed:", err);
-            status.textContent = `Live fetch failed — offline data (${allInfluencers.length}). Check Apps Script URL.`;
-            status.style.background = "rgba(239,68,68,0.12)";
-            status.style.borderColor = "rgba(239,68,68,0.3)";
-            status.style.color = "#f87171";
-            setTimeout(() => status.classList.remove("show"), 6000);
-          }
-        });
+    },
+    error: (err) => {
+      console.warn("Live data fetch failed:", err);
+      if (!isSilent) {
+        status.textContent = `Live fetch failed — offline data (${allInfluencers.length}). Check Apps Script URL.`;
+        status.style.background = "rgba(239,68,68,0.12)";
+        status.style.borderColor = "rgba(239,68,68,0.3)";
+        status.style.color = "#f87171";
+        setTimeout(() => status.classList.remove("show"), 6000);
       }
     }
+  });
+}
+
+// Load once when page opens
+loadLiveData(false);
+
+// Auto-refresh every 30 seconds (silent)
+setInterval(() => {
+  loadLiveData(true);
+}, 30000);
 
     function normalizeRow(row) {
       const get = (...keys) => {
@@ -1010,8 +1036,6 @@
     document.getElementById("clearFiltersBtn").addEventListener("click", clearFilters);
 
     // Init
-    allInfluencers = prepare(FALLBACK_DATA);
-    renderFeatured();
     setTimeout(animateStats, 200);
   </script>
 </body>
