@@ -1279,53 +1279,87 @@
     });
 
     // ============================================================
-    // CAMPAIGNS (localStorage)
+    // CAMPAIGNS (LIVE from Google Sheet — no localStorage)
     // ============================================================
-    const CAMPAIGNS_KEY = "connectly_campaigns";
-    const APPLICATIONS_KEY = "connectly_applications";
+    const APPLICATIONS_KEY = "connectly_applications"; // applications still local for now
+    let allCampaigns = [];
 
     function uid() {
       return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
     }
 
-    function getCampaigns() {
-      try {
-        const stored = localStorage.getItem(CAMPAIGNS_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          return Array.isArray(parsed) ? parsed : [];
+    function normalizeCampaignRow(row) {
+      const get = (...keys) => {
+        for (const k of keys) {
+          const found = Object.keys(row).find(h => h && h.toLowerCase().includes(k.toLowerCase()));
+          if (found && row[found] !== undefined && row[found] !== null && String(row[found]).trim() !== "") {
+            return String(row[found]).trim();
+          }
         }
-        // First visit: seed one demo campaign so the page isn't empty
-        const demo = [{
-          id: "demo-" + uid(),
-          brandName: "Demo Brand Co.",
-          title: "Summer Skincare Launch",
-          brief: "Looking for lifestyle & beauty creators to showcase our new vitamin-C serum. Honest reviews preferred. We provide product + fee.",
-          deliverables: "1 Reel + 2 Stories",
-          budget: "₹10,000 - ₹50,000",
-          niche: "Beauty",
-          platform: "Instagram",
-          deadline: "Content live within 3 weeks",
-          location: "Pan-India / Remote",
-          email: "",
-          status: "open",
-          createdAt: new Date().toISOString()
-        }];
-        try { localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(demo)); } catch (_) {}
-        return demo;
-      } catch (e) {
-        console.warn("getCampaigns fallback:", e);
-        return [];
-      }
+        return "";
+      };
+      // Exact headers from your Google Sheet:
+      // Campaign ID | Brand Name | Campaign Title | Campaign Description | Campaign Category |
+      // Platform | Target Audience | Location | Follower Range | Campaign Budget | Deliverables |
+      // Application Deadline | Contact/Brand Email | Brand Website | Campaign Status | Created Date | Created Time
+      const title = get("Campaign Title", "title", "campaign title");
+      const brandName = get("Brand Name", "brandName", "brand name", "brand");
+      if (!title && !brandName) return null;
+
+      const statusRaw = get("Campaign Status", "status", "Status") || "open";
+      return {
+        id: get("Campaign ID", "id", "Id") || ("camp_" + uid()),
+        brandName: brandName || "Brand",
+        title: title || "Untitled Campaign",
+        brief: get("Campaign Description", "brief", "description", "Campaign Brief"),
+        deliverables: get("Deliverables", "deliverables"),
+        budget: get("Campaign Budget", "budget", "Budget", "Budget Range"),
+        niche: get("Campaign Category", "niche", "Niche", "Preferred Niche", "Category"),
+        platform: get("Platform", "platform"),
+        deadline: get("Application Deadline", "deadline", "Deadline", "Timeline"),
+        location: get("Location", "location"),
+        email: get("Contact/Brand Email", "email", "Email", "Contact"),
+        website: get("Brand Website", "website"),
+        targetAudience: get("Target Audience", "target audience", "audience"),
+        followerRange: get("Follower Range", "follower range", "followers"),
+        status: statusRaw.toLowerCase().replace(/\s+/g, ""),
+        createdAt: get("Created Date", "Created Time", "createdAt", "timestamp", "created") || new Date().toISOString()
+      };
     }
-    function saveCampaigns(list) {
-      try {
-        localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(list));
-      } catch (e) {
-        console.error("saveCampaigns failed:", e);
-        throw e; // let the form handler show the error
-      }
+
+    function getCampaigns() {
+      return Array.isArray(allCampaigns) ? allCampaigns : [];
     }
+
+    function loadLiveCampaigns(isSilent = false) {
+      const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+      if (!url || typeof Papa === "undefined") {
+        if (!isSilent) renderCampaigns();
+        return;
+      }
+      // Matches Apps Script: ?action=campaigns
+      const fetchUrl = url + (url.includes("?") ? "&" : "?") + "action=campaigns&t=" + Date.now();
+      Papa.parse(fetchUrl, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          if (results.data && results.data.length > 0) {
+            const live = results.data
+              .map(normalizeCampaignRow)
+              .filter(c => c && c.title);
+            if (live.length > 0) {
+              allCampaigns = live;
+            }
+          }
+          renderCampaigns();
+        },
+        error: () => {
+          renderCampaigns();
+        }
+      });
+    }
+
     function getApplications() {
       try {
         const stored = localStorage.getItem(APPLICATIONS_KEY);
@@ -1343,8 +1377,8 @@
       }
     }
 
-    // Brand form → create campaign
-    document.getElementById("brandForm").addEventListener("submit", (e) => {
+    // Brand form → post campaign to Google Sheet via Apps Script
+    document.getElementById("brandForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       e.stopPropagation();
 
@@ -1352,20 +1386,31 @@
       const btn = document.getElementById("brandSubmitBtn");
       const fd = new FormData(form);
 
+      const now = new Date();
+      const newId = uid();
+      // Keys match Apps Script appendCampaign_() exactly
       const campaign = {
-        id: uid(),
+        action: "campaign",
+        campaignId: newId,
         brandName: (fd.get("brandName") || "").toString().trim(),
         title: (fd.get("title") || "").toString().trim(),
         brief: (fd.get("brief") || "").toString().trim(),
-        deliverables: (fd.get("deliverables") || "").toString().trim(),
-        budget: (fd.get("budget") || "").toString().trim(),
         niche: (fd.get("niche") || "").toString().trim(),
         platform: (fd.get("platform") || "").toString().trim(),
-        deadline: (fd.get("deadline") || "").toString().trim(),
+        targetAudience: "",
         location: (fd.get("location") || "").toString().trim(),
+        followerRange: "",
+        budget: (fd.get("budget") || "").toString().trim(),
+        deliverables: (fd.get("deliverables") || "").toString().trim(),
+        deadline: (fd.get("deadline") || "").toString().trim(),
         email: (fd.get("email") || "").toString().trim(),
-        status: "open",
-        createdAt: new Date().toISOString()
+        website: "",
+        status: "Active",
+        createdDate: now.toLocaleDateString("en-IN"),
+        createdTime: now.toLocaleTimeString("en-IN"),
+        // UI helpers
+        id: newId,
+        createdAt: now.toISOString()
       };
 
       // Clear any previous error
@@ -1381,25 +1426,59 @@
         return;
       }
 
+      const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+      if (!url) {
+        errEl = document.createElement("div");
+        errEl.id = "brandFormError";
+        errEl.style.cssText = "background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;padding:0.7rem 1rem;border-radius:10px;font-size:0.88rem;margin-bottom:1rem;";
+        errEl.textContent = "Live data URL not configured.";
+        form.insertBefore(errEl, form.firstChild);
+        return;
+      }
+
       try {
         if (btn) {
           btn.disabled = true;
           btn.textContent = "Posting…";
         }
 
-        const list = getCampaigns();
-        list.unshift(campaign);
-        saveCampaigns(list);
+        // Send to Google Apps Script (same pattern as join form)
+        await fetch(url, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(campaign)
+        });
+
+        // Optimistically show it immediately, then refresh from sheet
+        allCampaigns.unshift({
+          id: campaign.id,
+          brandName: campaign.brandName,
+          title: campaign.title,
+          brief: campaign.brief,
+          deliverables: campaign.deliverables,
+          budget: campaign.budget,
+          niche: campaign.niche,
+          platform: campaign.platform,
+          deadline: campaign.deadline,
+          location: campaign.location,
+          email: campaign.email,
+          status: "active",
+          createdAt: campaign.createdAt
+        });
+        renderCampaigns();
 
         form.style.display = "none";
         document.getElementById("formSuccess").style.display = "block";
-        renderCampaigns();
+
+        // Refresh from sheet after a short delay so new row appears for everyone
+        setTimeout(() => loadLiveCampaigns(true), 3000);
       } catch (err) {
         console.error("Campaign save error:", err);
         errEl = document.createElement("div");
         errEl.id = "brandFormError";
         errEl.style.cssText = "background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;padding:0.7rem 1rem;border-radius:10px;font-size:0.88rem;margin-bottom:1rem;";
-        errEl.textContent = "Could not save campaign (storage blocked?). Try a normal browser tab, not private/incognito.";
+        errEl.textContent = "Could not post campaign. Please try again.";
         form.insertBefore(errEl, form.firstChild);
         if (btn) {
           btn.disabled = false;
@@ -1430,7 +1509,11 @@
       const countEl = document.getElementById("campaignCount");
       if (!grid) return;
 
-      let list = getCampaigns().filter(c => c.status === "open");
+      // Show campaigns whose status is open / active / live (or empty)
+      let list = getCampaigns().filter(c => {
+        const s = (c.status || "open").toLowerCase().replace(/\s+/g, "");
+        return s === "open" || s === "active" || s === "live" || s === "";
+      });
 
       const q = campaignFilters.search.toLowerCase();
       if (q) {
@@ -1692,9 +1775,12 @@
     // INIT + Meta Ads deep link (?page=join or #join)
     // ============================================================
     loadLiveData(false);
-    setInterval(() => loadLiveData(true), 30000);
+    loadLiveCampaigns(false);
+    setInterval(() => {
+      loadLiveData(true);
+      loadLiveCampaigns(true);
+    }, 30000);
     setTimeout(animateStats, 200);
-    renderCampaigns(); // initial load of campaigns from localStorage
 
     // Open Join form when landing from Meta ads
     (function openJoinFromAds() {
