@@ -500,7 +500,37 @@
           </div>
           <div class="form-group">
             <label>City *</label>
-            <input type="text" name="city" required placeholder="Hyderabad, Delhi, Mumbai…">
+            <select name="city" id="joinCity" required>
+              <option value="">Select your city</option>
+              <option>Hyderabad</option>
+              <option>Bangalore</option>
+              <option>Mumbai</option>
+              <option>Delhi</option>
+              <option>New Delhi</option>
+              <option>Noida</option>
+              <option>Gurugram</option>
+              <option>Pune</option>
+              <option>Chennai</option>
+              <option>Kolkata</option>
+              <option>Ahmedabad</option>
+              <option>Jaipur</option>
+              <option>Lucknow</option>
+              <option>Chandigarh</option>
+              <option>Indore</option>
+              <option>Bhopal</option>
+              <option>Nagpur</option>
+              <option>Surat</option>
+              <option>Kochi</option>
+              <option>Coimbatore</option>
+              <option>Mysore</option>
+              <option>Visakhapatnam</option>
+              <option>Vijayawada</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group" id="joinCityOtherWrap" style="display:none;">
+            <label>Type your city</label>
+            <input type="text" name="cityOther" id="joinCityOther" placeholder="Enter city name">
           </div>
           <div class="form-group">
             <label>Instagram profile link *</label>
@@ -705,14 +735,67 @@
 
     function cleanCity(s) {
       if (!s) return "India";
-      let c = s.split(",")[0].trim().replace(/\s+/g, " ");
-      const map = {
+      let raw = String(s).replace(/\s+/g, " ").trim();
+      // Drop pure noise (charges, numbers-only, symbols)
+      if (!raw || /^(none|no|nil|na|yes|\*|-+)$/i.test(raw)) return "India";
+      if (/^\d/.test(raw) && /(?:post|story|reel|shoutout|rs|₹)/i.test(raw)) return "India";
+      if (raw.length > 60) raw = raw.slice(0, 60);
+
+      const aliases = {
         "banglore": "Bangalore", "bengaluru": "Bangalore", "bangalore": "Bangalore",
-        "new delhi": "New Delhi", "delhi": "Delhi", "hyderabad": "Hyderabad",
-        "mumbai": "Mumbai", "pune": "Pune", "noida": "Noida"
+        "new delhi": "New Delhi", "delhi": "Delhi", "delhi1": "Delhi", "delh": "Delhi",
+        "hyderabad": "Hyderabad", "hyd": "Hyderabad", "hi tech city": "Hyderabad",
+        "hitech city": "Hyderabad", "madhapur": "Hyderabad", "secunderabad": "Hyderabad",
+        "mumbai": "Mumbai", "bombay": "Mumbai",
+        "pune": "Pune", "noida": "Noida", "gurgaon": "Gurugram", "gurugram": "Gurugram",
+        "kolkata": "Kolkata", "calcutta": "Kolkata", "chennai": "Chennai", "madras": "Chennai",
+        "ahmedabad": "Ahmedabad", "lucknow": "Lucknow", "jaipur": "Jaipur",
+        "chandigarh": "Chandigarh", "mohali": "Mohali", "indore": "Indore",
+        "bhopal": "Bhopal", "patna": "Patna", "surat": "Surat", "nagpur": "Nagpur",
+        "mysore": "Mysore", "mysuru": "Mysore", "mangalore": "Mangalore",
+        "vijayawada": "Vijayawada", "visakhapatnam": "Visakhapatnam", "vizag": "Visakhapatnam",
+        "coimbatore": "Coimbatore", "kochi": "Kochi", "trivandrum": "Thiruvananthapuram",
+        "jalandhar": "Jalandhar", "ludhiana": "Ludhiana", "amritsar": "Amritsar",
+        "varanasi": "Varanasi", "kanpur": "Kanpur", "agra": "Agra", "meerut": "Meerut",
+        "moradabad": "Moradabad", "mathura": "Mathura", "bareilly": "Bareilly",
+        "rajkot": "Rajkot", "baroda": "Vadodara", "vadodara": "Vadodara",
+        "guwahati": "Guwahati", "agartala": "Agartala", "hamirpur": "Hamirpur",
+        "amaravti": "Amravati", "amravati": "Amravati", "anand": "Anand",
+        "armoor": "Armoor", "nandyal": "Nandyal", "nabadwip": "Nabadwip"
       };
-      const low = c.toLowerCase();
-      return map[low] || c;
+
+      // Known city names to search inside free-text answers
+      const known = Object.keys(aliases).sort((a, b) => b.length - a.length);
+      const low = raw.toLowerCase();
+
+      // Exact match first
+      if (aliases[low]) return aliases[low];
+
+      // "I am from X" / "mostly X" / "live in X" patterns
+      const fromMatch = low.match(/(?:from|mostly|live(?:\s+in)?|based\s+in|staying\s+in)\s+([a-z\s]{3,25})/i);
+      if (fromMatch) {
+        const part = fromMatch[1].replace(/[^\w\s]/g, " ").trim();
+        for (const k of known) {
+          if (part.includes(k) || k.includes(part.split(/\s+/)[0])) {
+            return aliases[k];
+          }
+        }
+      }
+
+      // Any known city name appears anywhere in the string
+      for (const k of known) {
+        if (new RegExp("\\b" + k.replace(/\s+/g, "\\s+") + "\\b", "i").test(low)) {
+          return aliases[k];
+        }
+      }
+
+      // First comma-separated segment, title-case if it looks like a place name
+      let c = raw.split(",")[0].trim();
+      c = c.replace(/^(i am from|from|i live in|live in|based in)\s+/i, "").trim();
+      if (c.length < 2 || c.length > 28) return "India";
+      if (/\d{3,}/.test(c) || /(?:post|story|reel|charge|₹|rs\.?)/i.test(c)) return "India";
+      // Title case
+      return c.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
     }
 
     function esc(str) {
@@ -751,13 +834,19 @@
 
       if (typeof Papa === "undefined") return;
 
-      Papa.parse(url, {
+      // Cache-bust so new sheet rows appear immediately (Apps Script / browser cache)
+      const fetchUrl = url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
+
+      Papa.parse(fetchUrl, {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: (results) => {
           if (results.data && results.data.length > 0) {
-            const live = results.data.map(normalizeRow).filter(i => i.name && i.name.length > 1);
+            // Keep every row with a non-empty name (even 1 letter like "E")
+            const live = results.data
+              .map(normalizeRow)
+              .filter(i => i && i.name && String(i.name).trim().length > 0);
             if (live.length > 0) {
               allInfluencers = prepare(live);
               finishLoad();
@@ -1041,10 +1130,29 @@
     const joinError = document.getElementById("joinError");
     const joinSubmitBtn = document.getElementById("joinSubmitBtn");
 
+    // Show "Other city" text field when needed
+    document.getElementById("joinCity")?.addEventListener("change", (e) => {
+      const wrap = document.getElementById("joinCityOtherWrap");
+      const other = document.getElementById("joinCityOther");
+      if (e.target.value === "Other") {
+        wrap.style.display = "block";
+        other.required = true;
+      } else {
+        wrap.style.display = "none";
+        other.required = false;
+        other.value = "";
+      }
+    });
+
     if (joinForm) {
       joinForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const fd = new FormData(joinForm);
+        let cityVal = (fd.get("city") || "").toString().trim();
+        if (cityVal === "Other") {
+          cityVal = (fd.get("cityOther") || "").toString().trim();
+        }
+        cityVal = cleanCity(cityVal); // normalize before save
         const payload = {
           action: "join",
           name: (fd.get("name") || "").toString().trim(),
@@ -1052,7 +1160,7 @@
           gender: (fd.get("gender") || "").toString().trim(),
           email: (fd.get("email") || "").toString().trim(),
           phone: (fd.get("phone") || "").toString().trim(),
-          city: (fd.get("city") || "").toString().trim(),
+          city: cityVal,
           instagram: (fd.get("instagram") || "").toString().trim(),
           followers: (fd.get("followers") || "").toString().trim(),
           skill: (fd.get("skill") || "").toString().trim(),
