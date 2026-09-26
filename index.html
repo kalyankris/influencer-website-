@@ -823,41 +823,60 @@ setInterval(() => {
       });
     }
 
-    function applyFilters() {
-      let list = [...allInfluencers];
+function applyFilters() {
+  let list = [...allInfluencers];
 
-      if (activeFilters.search) {
-        const q = activeFilters.search.toLowerCase();
-        list = list.filter(i =>
-          i.name.toLowerCase().includes(q) ||
-          i.niche.toLowerCase().includes(q) ||
-          i.location.toLowerCase().includes(q)
-        );
-      }
-      if (activeFilters.niche) list = list.filter(i => i.niche === activeFilters.niche);
-      if (activeFilters.location) list = list.filter(i => i.location === activeFilters.location);
-      if (activeFilters.platform) list = list.filter(i => i.platform === activeFilters.platform);
-      if (activeFilters.followers) {
-        if (activeFilters.followers === "100000+") {
-          list = list.filter(i => i.followers >= 100000);
-        } else {
-          const [min, max] = activeFilters.followers.split("-").map(Number);
-          list = list.filter(i => i.followers >= min && i.followers <= max);
-        }
-      }
+  // If search is empty → show nothing
+  if (!activeFilters.search || activeFilters.search.trim() === "") {
+    filtered = [];
+    renderGrid();
+    renderChips();
+    document.getElementById("resultsCount").textContent = "Type to search creators…";
+    return;
+  }
 
-      const sort = document.getElementById("sortSelect").value;
-      if (sort === "followers-desc") list.sort((a, b) => b.followers - a.followers);
-      else if (sort === "followers-asc") list.sort((a, b) => a.followers - b.followers);
-      else if (sort === "engagement-desc") list.sort((a, b) => b.engagement - a.engagement);
-      else if (sort === "name-asc") list.sort((a, b) => a.name.localeCompare(b.name));
+  // Normal filtering only when user has typed something
+  const q = activeFilters.search.toLowerCase();
+  list = list.filter(i =>
+    i.name.toLowerCase().includes(q) ||
+    i.niche.toLowerCase().includes(q) ||
+    i.location.toLowerCase().includes(q)
+  );
 
-      filtered = list;
-      renderGrid();
-      renderChips();
-      document.getElementById("resultsCount").textContent =
-        `${filtered.length} creator${filtered.length !== 1 ? "s" : ""} found`;
+  if (activeFilters.niche) list = list.filter(i => i.niche === activeFilters.niche);
+  if (activeFilters.location) list = list.filter(i => i.location === activeFilters.location);
+  if (activeFilters.platform) list = list.filter(i => i.platform === activeFilters.platform);
+  if (activeFilters.followers) {
+    if (activeFilters.followers === "100000+") {
+      list = list.filter(i => i.followers >= 100000);
+    } else {
+      const [min, max] = activeFilters.followers.split("-").map(Number);
+      list = list.filter(i => i.followers >= min && i.followers <= max);
     }
+  }
+
+  const sort = document.getElementById("sortSelect").value;
+  if (sort === "followers-desc") list.sort((a, b) => b.followers - a.followers);
+  else if (sort === "followers-asc") list.sort((a, b) => a.followers - b.followers);
+  else if (sort === "engagement-desc") list.sort((a, b) => b.engagement - a.engagement);
+  else if (sort === "name-asc") list.sort((a, b) => a.name.localeCompare(b.name));
+
+  filtered = list;
+function renderGrid() {
+  const grid = document.getElementById("influencerGrid");
+  if (filtered.length === 0) {
+    const msg = (!activeFilters.search || activeFilters.search.trim() === "")
+      ? "Type a name, niche or location to search creators"
+      : "No creators match your search. Try different keywords.";
+    grid.innerHTML = `<div class="empty-state"><p>${msg}</p></div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(cardHTML).join("");
+}
+  renderChips();
+  document.getElementById("resultsCount").textContent =
+    `${filtered.length} creator${filtered.length !== 1 ? "s" : ""} found`;
+}
 
     function renderChips() {
       const container = document.getElementById("activeChips");
