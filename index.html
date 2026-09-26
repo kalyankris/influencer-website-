@@ -35,7 +35,6 @@
     }
     h1,h2,h3,h4 { font-family: 'Outfit', sans-serif; font-weight: 600; }
 
-    /* NAV */
     .nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
       background: rgba(15,15,19,0.92);
@@ -75,12 +74,10 @@
     .btn-sm { padding: 0.45rem 1rem; font-size: 0.8rem; }
     .menu-toggle { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
 
-    /* PAGES */
     .page { display: none; min-height: calc(100vh - 70px); padding-top: 70px; }
     .page.active { display: block; animation: fadeIn 0.35s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-    /* HERO */
     .hero {
       position: relative; padding: 5rem 1.5rem 4rem; text-align: center; overflow: hidden;
     }
@@ -119,7 +116,6 @@
     .section-title { font-size: 1.85rem; margin-bottom: 0.4rem; letter-spacing: -0.02em; }
     .section-sub { color: var(--text-muted); margin-bottom: 1.8rem; }
 
-    /* FILTERS */
     .filters-bar {
       background: var(--bg-card); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 1.15rem; margin-bottom: 1.3rem;
@@ -162,7 +158,6 @@
     }
     .results-count { color: var(--text-muted); font-size: 0.9rem; }
 
-    /* GRID */
     .influencer-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -205,16 +200,6 @@
     }
     .engagement { font-size: 0.82rem; color: var(--success); font-weight: 600; }
 
-    .skeleton {
-      background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite;
-      border-radius: 8px;
-    }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .skel-card { height: 300px; }
-
-    /* MODAL */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.72);
       backdrop-filter: blur(8px); z-index: 2000;
@@ -252,7 +237,6 @@
     }
     .detail-row span:first-child { color: var(--text-muted); }
 
-    /* STEPS */
     .steps {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 1.25rem; margin-top: 1.6rem;
@@ -270,7 +254,6 @@
       font-weight: 700; margin: 0 auto 1rem; font-size: 1.1rem;
     }
 
-    /* FORM */
     .form-card {
       max-width: 500px; margin: 0 auto;
       background: var(--bg-card); border: 1px solid var(--border);
@@ -373,88 +356,104 @@
       <div class="filters-bar">
         <div class="search-row">
           <div class="search-box">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" id="searchInput" placeholder="Search by name, niche or city..." autocomplete="off" />
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="searchInput" placeholder="Search by name, niche or location..." autocomplete="off">
           </div>
-          <select id="sortSelect">
-            <option value="followers-desc">Followers: High → Low</option>
-            <option value="followers-asc">Followers: Low → High</option>
-            <option value="engagement-desc">Engagement: High → Low</option>
-            <option value="name-asc">Name A–Z</option>
-          </select>
         </div>
         <div class="filter-selects">
           <select id="filterNiche"><option value="">All Niches</option></select>
           <select id="filterLocation"><option value="">All Locations</option></select>
           <select id="filterFollowers">
-            <option value="">Any Followers</option>
-            <option value="0-1000">Under 1K</option>
-            <option value="1000-10000">1K – 10K</option>
-            <option value="10000-50000">10K – 50K</option>
-            <option value="50000-100000">50K – 100K</option>
+            <option value="">All Followers</option>
+            <option value="0-1000">0 - 1K</option>
+            <option value="1000-10000">1K - 10K</option>
+            <option value="10000-50000">10K - 50K</option>
+            <option value="50000-100000">50K - 100K</option>
             <option value="100000+">100K+</option>
           </select>
           <select id="filterPlatform">
             <option value="">All Platforms</option>
             <option value="Instagram">Instagram</option>
           </select>
+          <select id="sortSelect">
+            <option value="followers-desc">Followers: High to Low</option>
+            <option value="followers-asc">Followers: Low to High</option>
+            <option value="engagement-desc">Engagement: High to Low</option>
+            <option value="name-asc">Name: A-Z</option>
+          </select>
+          <button type="button" class="btn btn-outline btn-sm" id="clearFiltersBtn">Clear</button>
         </div>
         <div class="chips" id="activeChips"></div>
       </div>
 
       <div class="results-meta">
-        <div class="results-count" id="resultsCount">Loading…</div>
-        <button type="button" class="btn btn-outline btn-sm" id="clearFiltersBtn">Clear filters</button>
+        <div class="results-count" id="resultsCount">Type to search creators…</div>
       </div>
 
       <div class="influencer-grid" id="influencerGrid">
-        <div class="card skel-card skeleton"></div>
-        <div class="card skel-card skeleton"></div>
-        <div class="card skel-card skeleton"></div>
-        <div class="card skel-card skeleton"></div>
-        <div class="card skel-card skeleton"></div>
-        <div class="card skel-card skeleton"></div>
+        <div class="empty-state"><p>Type a name, niche or location to search creators</p></div>
       </div>
     </section>
   </div>
 
-  <!-- HOW -->
+  <!-- HOW IT WORKS -->
   <div class="page" id="page-how">
-    <section class="section" style="padding-top: 2.6rem;">
+    <section class="section">
       <h2 class="section-title">How Connectly Works</h2>
-      <p class="section-sub">Simple, transparent, and built for results</p>
+      <p class="section-sub">Simple steps to find the perfect collaboration</p>
       <div class="steps">
-        <div class="step"><div class="step-num">1</div><h3>Discover</h3><p style="color:var(--text-muted);margin-top:0.65rem;font-size:0.92rem;">Browse verified influencers. Filter by niche, location, followers and more.</p></div>
-        <div class="step"><div class="step-num">2</div><h3>Connect</h3><p style="color:var(--text-muted);margin-top:0.65rem;font-size:0.92rem;">Send collaboration requests. View rates and engagement before you reach out.</p></div>
-        <div class="step"><div class="step-num">3</div><h3>Collaborate</h3><p style="color:var(--text-muted);margin-top:0.65rem;font-size:0.92rem;">Launch campaigns and build long-term relationships in one place.</p></div>
-        <div class="step"><div class="step-num">4</div><h3>Grow</h3><p style="color:var(--text-muted);margin-top:0.65rem;font-size:0.92rem;">Measure ROI and scale with data-backed decisions.</p></div>
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>Search Creators</h3>
+          <p>Browse thousands of verified influencers by niche, location and followers.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>Review Profiles</h3>
+          <p>Check engagement, past work and pricing before reaching out.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>Connect & Collaborate</h3>
+          <p>Send collaboration requests and manage campaigns in one place.</p>
+        </div>
       </div>
     </section>
   </div>
 
-  <!-- BRANDS -->
+  <!-- FOR BRANDS -->
   <div class="page" id="page-brands">
-    <section class="section" style="padding-top: 2.6rem;">
-      <h2 class="section-title" style="text-align:center;">Post a Campaign</h2>
-      <p class="section-sub" style="text-align:center;">Tell us what you’re looking for and we’ll match you with the right creators</p>
+    <section class="section">
+      <h2 class="section-title">For Brands</h2>
+      <p class="section-sub">Post your campaign and find the right creators</p>
       <div class="form-card">
         <form id="brandForm">
-          <div class="form-group"><label>Brand / Company Name *</label><input type="text" required placeholder="Acme Co." /></div>
-          <div class="form-group"><label>Your Email *</label><input type="email" required placeholder="you@brand.com" /></div>
-          <div class="form-group"><label>Campaign Title *</label><input type="text" required placeholder="Summer Product Launch" /></div>
-          <div class="form-group"><label>Target Niche</label>
-            <select><option>Fashion & Lifestyle</option><option>Beauty</option><option>Fitness & Health</option><option>Food & Travel</option><option>Dance & Entertainment</option><option>Other</option></select>
+          <div class="form-group">
+            <label>Brand Name</label>
+            <input type="text" required placeholder="Your brand name">
           </div>
-          <div class="form-group"><label>Budget Range (INR)</label>
-            <select><option>Under ₹10,000</option><option>₹10,000 – ₹50,000</option><option>₹50,000 – ₹2 Lakh</option><option>₹2 Lakh+</option></select>
+          <div class="form-group">
+            <label>Campaign Title</label>
+            <input type="text" required placeholder="Campaign name">
           </div>
-          <div class="form-group"><label>Campaign Brief</label><textarea placeholder="Describe your goals, deliverables, timeline..."></textarea></div>
-          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Submit Campaign →</button>
+          <div class="form-group">
+            <label>Campaign Brief</label>
+            <textarea placeholder="Describe your goals, deliverables, timeline..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Budget Range</label>
+            <select>
+              <option>Under ₹10,000</option>
+              <option>₹10,000 - ₹50,000</option>
+              <option>₹50,000 - ₹1,00,000</option>
+              <option>Above ₹1,00,000</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Post Campaign</button>
         </form>
-        <div id="formSuccess" style="display:none;text-align:center;padding:2rem;">
-          <div style="font-size:2.6rem;margin-bottom:0.7rem;">🎉</div>
-          <h3>Campaign submitted!</h3>
-          <p style="color:var(--text-muted);margin-top:0.35rem;">We’ll match you with relevant creators shortly.</p>
+        <div id="formSuccess" style="display:none; text-align:center; padding:2rem 0;">
+          <h3 style="color:var(--success); margin-bottom:0.5rem;">✓ Campaign Posted!</h3>
+          <p>We'll notify matching creators shortly.</p>
         </div>
       </div>
     </section>
@@ -462,25 +461,36 @@
 
   <!-- CONTACT -->
   <div class="page" id="page-contact">
-    <section class="section" style="padding-top: 2.6rem; text-align:center;">
-      <h2 class="section-title">Get in Touch</h2>
-      <p class="section-sub">Questions or partnerships — we’d love to hear from you</p>
-      <div style="max-width:420px;margin:0 auto;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:2.1rem;">
-        <p style="margin-bottom:1.1rem;color:var(--text-muted);">Email: <strong style="color:var(--primary-light);">hello@connectly.app</strong></p>
-        <p style="color:var(--text-muted);">Instagram: <strong style="color:var(--primary-light);">@connectly</strong></p>
+    <section class="section">
+      <h2 class="section-title">Contact Us</h2>
+      <p class="section-sub">Have questions? Reach out anytime.</p>
+      <div class="form-card">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea placeholder="How can we help?"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary" style="width:100%;" onclick="alert('Message sent! (demo)')">Send Message</button>
       </div>
     </section>
   </div>
 
   <footer>
     <div class="footer-links">
-      <button type="button" data-page="home">Home</button>
-      <button type="button" data-page="discover">Discover</button>
-      <button type="button" data-page="how">How it Works</button>
-      <button type="button" data-page="brands">For Brands</button>
-      <button type="button" data-page="contact">Contact</button>
+      <a data-page="home">Home</a>
+      <a data-page="discover">Discover</a>
+      <a data-page="how">How it Works</a>
+      <a data-page="brands">For Brands</a>
+      <a data-page="contact">Contact</a>
     </div>
-    <p>© 2025 Connectly · Built for authentic collaborations</p>
+    <p>© 2026 Connectly. All rights reserved.</p>
   </footer>
 
   <!-- MODAL -->
@@ -490,286 +500,33 @@
 
   <script>
     // ============================================================
-    // LIVE DATA URL (real-time from Google Sheet via Apps Script)
+    // LIVE DATA URL - PASTE YOUR APPS SCRIPT WEB APP URL HERE
     // ============================================================
-    // 1. Deploy the Apps Script (steps in the guide below)
-    // 2. Paste your Web App URL here (ends with /exec)
-    // 3. Leave FALLBACK_DATA as backup if the live URL fails
-    //
-    // Example after deploy:
-    // const LIVE_DATA_URL = "https://script.google.com/macros/s/AKfycbx.../exec";
-    //
-    // Until you deploy Apps Script, this falls back to embedded data.
-    // Direct Google Sheet export URL is blocked by CORS — do NOT use it.
-    // ============================================================
-    const LIVE_DATA_URL = "https://script.google.com/macros/s/AKfycbzUa3NYqjnzb3VfA9RLA2nm44sVuSgVuj0nktu1hu74eRZNLpCtEoPwcqQky_B515Iw/exec"; // ← PASTE YOUR APPS SCRIPT WEB APP URL HERE
-
-    // Backup only (used if LIVE_DATA_URL is empty or request fails)
-    const GOOGLE_SHEET_CSV_URL = LIVE_DATA_URL || "";
+    const LIVE_DATA_URL = "https://script.google.com/macros/s/AKfycbzUa3NYqjnzb3VfA9RLA2nm44sVuSgVuj0nktu1hu74eRZNLpCtEoPwcqQky_B515lw/exec";
 
     // ============================================================
-    // FALLBACK DATA — offline backup only (not for live form updates)
+    // FALLBACK DATA (used only if live fetch fails)
     // ============================================================
     const FALLBACK_DATA = [
-  { name: "Poonam Nirankari", niche: "Fashion designer", location: "Delhi1", followers: 75000, followersLabel: "50,000 - 1lakh", platform: "Instagram", igLink: "https://www.instagram.com/poonirankaree?stkn=dXg4bTNmejZmbXo0&utm_source=qr", engagement: 2.7, age: "25", gender: "Female", charges: "I charge 1500 post, 800story, 2500reel 1500shoutout" },
-  { name: "Hymavathi", niche: "Dance", location: "Hyderabad", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://instagram.com/Mom_of_my_king_", engagement: 3.9, age: "26", gender: "Female", charges: "500 for everything" },
-  { name: "Suma", niche: "Cooking", location: "Hyderabad", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/vibin_withfood?igsh=MW5rZ3Q2anRzenR1Zw%3D%3D&utm_source=qr", engagement: 2.9, age: "25", gender: "Female", charges: "I charge 2500 for reel, 500 for story, 1000 for post" },
-  { name: "Saraswati", niche: "Modeling", location: "Hyderabad", followers: 25000, followersLabel: "10,000 - 50,000", platform: "Instagram", igLink: "https://slaylikesaras.my.canva.site/modeling-portfolio-website-in-black-white-dark-modern-minimal-style", engagement: 3.7, age: "28", gender: "Female", charges: "I charge 3-4k for a reel, 1.5k fir story and 2.5k for post" },
-  { name: "Priya Degala", niche: "Handicrafts", location: "Hyderabad", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/naa_kadhalu_?igsh=MTExNDZrNHU1bDhsag==", engagement: 1.8, age: "25", gender: "Female", charges: "I haven't received any collaboration" },
-  { name: "Simran", niche: "Cooking", location: "Hyderabad", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/yourstruly_simran?igsh=eW4xajZraGJ2MWM5&utm_source=qr", engagement: 4.8, age: "26", gender: "Female", charges: "I charge ₹3000 for post . ₹5500 for a reel , ₹₹1500 for shoutout" },
-  { name: "Shivani", niche: "Lifestyle", location: "Hyderabad", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/shivani8_m?igsh=MWVsYmNkNzhxYmw4Ng%3D%3D&utm_source=qr", engagement: 1.8, age: "25", gender: "Female", charges: "I was paid 1500 paid for 2 shoots and also I do barter based collabs" },
-  { name: "Deepthi Reddy", niche: "Dancing", location: "Hyderabad", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/vayyari_bhamaaa?igsh=MTl3bjZuY21teDNnaQ%3D%3D&utm_source=qr", engagement: 3.5, age: "22", gender: "Female", charges: "I charge 1500 for a post, 1000 for a story, 2500 for a reel, and 1500 for a shoutout." },
-  { name: "Zaara", niche: "Lifestyle", location: "Hyderabad", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://instagram.com/foodbloggercreator", engagement: 4.5, age: "23", gender: "Female", charges: "2k for reels" },
-  { name: "Aishwarya Soma", niche: "Dancing", location: "Hyderabad", followers: 150000, followersLabel: "1 - 3 lakh", platform: "Instagram", igLink: "https://instagram.com/Sai_aishu_", engagement: 2.6, age: "25", gender: "Female", charges: "I charge 2500 for a post, 1500 for a story. 3000 for a reel and 1500 for shoutout" },
-  { name: "Chanchal", niche: "Dancing and modelling", location: "Hyderabad", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/_.chanchal_yadav?igsh=NGFna2NxaDdoOXl0&utm_source=qr", engagement: 2.4, age: "23", gender: "Female", charges: "I charge 2500 for a reel, 700 for story" },
-  { name: "Firdous khatoon", niche: "Painting", location: "Hyderabad", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/_mightsavethis_?igsh=bGx6Nm9jamZkODds", engagement: 3.0, age: "22", gender: "Female", charges: "I charge 3000 for a post and 1.5 for a story and 3500 for a reel" },
-  { name: "Camera crumbs", niche: "Lifestyle", location: "Hyderabad", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/_camera_crumbs._?igsh=MWpzZGJtNGhzMGphbg%3D%3D&utm_source=qr", engagement: 2.2, age: "25", gender: "Female", charges: "I charge ₹2500 for post , ₹1500 for story, ₹3000 for reel , ₹ 2000 for shoutout" },
-  { name: "Tanya", niche: "Dancing", location: "Hyderabad", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/ayura_wellness_?igsh=MXZ0aDJwMXhvODZpcA%3D%3D&utm_source=qr", engagement: 4.1, age: "21", gender: "Female", charges: "3000 for a reel\n\n1000 for story \n1500 for post" },
-  { name: "Monika netha", niche: "Modelling", location: "Hyderabad", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/monika_netha_8?igsh=cWN0cnVjYjJhem9q&utm_source=qr", engagement: 3.6, age: "27", gender: "Female", charges: "I charge 2000 for a post and 1k for story" },
-  { name: "Akshayakannan", niche: "Lifestyle", location: "Hyderabad", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/aestheticdocc?igsh=ejR3YmQwNW1rZnE5", engagement: 2.6, age: "24", gender: "Female", charges: "3000 for post\n6000 for reel\n1000 for story" },
-  { name: "Jaya Lakshmi", niche: "Lifestyle", location: "Hyderabad", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/jayalifevlogs_?igsh=MWR0cnB6M29tZ2s3eg==", engagement: 3.5, age: "22", gender: "Female", charges: "Charge - 1k for reel, 500 for story" },
-  { name: "Ramya Krishna Kurumaddali", niche: "Lifestyle", location: "Hyderabad", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/murty_gari_ammayi?igsh=cGg3bHF2anhnbjho&utm_source=qr", engagement: 3.8, age: "28", gender: "Female", charges: "₹2500 for a post, ₹1500 for a story, ₹3000 for a reel, ₹2000 for a shoutout" },
-  { name: "Lipsa", niche: "Storytelling", location: "Hyderabad", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/_apocketfulloftwinkle_?igsh=MTV0cWF4aTFlaTFyZg%3D%3D&utm_source=qr", engagement: 1.9, age: "27", gender: "Female", charges: "1500 for a post, 500 for a story and 2000 for a reel and 1000 for a shoutout" },
-  { name: "Adiitii", niche: "Dancing", location: "Bangalore", followers: 25000, followersLabel: "10,000 - 50,000", platform: "Instagram", igLink: "https://www.instagram.com/___.adiitii._?igsh=MTJjODU1M3piMW03cw%3D%3D&utm_source=qr", engagement: 4.7, age: "22", gender: "", charges: "" },
-  { name: "Itsnehahere_12", niche: "Dancing", location: "Bangalore", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://instagram.com/Itsnehahere_12", engagement: 3.2, age: "27", gender: "", charges: "" },
-  { name: "Diya Aiyappa K", niche: "Dancing sports weightlifting", location: "Bangalore", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/_diya_dechamma?igsh=MWozMGV1YXJrOHRyOQ==", engagement: 3.8, age: "19", gender: "Female", charges: "" },
-  { name: "Sutanyi Chakravorty", niche: "Lifestyle", location: "Bangalore", followers: 25000, followersLabel: "10,000 - 50,000", platform: "Instagram", igLink: "https://www.instagram.com/sutanyi.chakravorty?igsh=Y3c5c3Y2cDJlYjgy&utm_source=qr", engagement: 2.0, age: "27", gender: "Female", charges: "• Instagram Story: ₹1,000\n\n• Instagram Post (Static or Carousel): ₹2,000\n\n• Instagram Reel (up to 60" },
-  { name: "Madformamta", niche: "Making concept videos also", location: "Lucknow", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/_madformamta_?igsh=MXYza3lwbzhkN2J2cg==", engagement: 4.3, age: "24", gender: "", charges: "" },
-  { name: "Bhumi", niche: "Model", location: "Lucknow", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/bhumirajput2128?igsh=M200NG14OHNsemRz&utm_source=qr", engagement: 4.3, age: "20", gender: "Female", charges: "2000 per reel" },
-  { name: "Shurbi", niche: "Creating aesthetic and engaging content for s", location: "Lucknow", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/iamshurbi6?igsh=M3poY3Y3aHEwd3B1", engagement: 4.2, age: "21", gender: "Female", charges: "1000for a post,1500 for a reel ,500 for story" },
-  { name: "arya garg", niche: "Content creator", location: "Lucknow", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/aryaagarg?igsh=djd6cTV1eXk5Mnk5&utm_source=qr", engagement: 2.2, age: "28", gender: "Female", charges: "i charge 4000 for post 2000 for story 8000 for reel" },
-  { name: "Prachibankoti12", niche: "I love reviewing new cafes and there foods", location: "Noida", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/prachibankoti12?igsh=d2J6NTl2NjVrZXY5&utm_source=qr", engagement: 3.4, age: "18", gender: "", charges: "" },
-  { name: "Arpita Jain", niche: "Content creation", location: "Noida", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/brownbeautystyling?igsh=b3lvb3ljd3hnNWJh&utm_source=qr", engagement: 2.0, age: "35", gender: "Female", charges: "I charge Rs.1500 for a Reel, Rs. 1000 for a Post and Rs. 600 for a story" },
-  { name: "Nidhi verma", niche: "All mentioned", location: "Noida", followers: 25000, followersLabel: "10,000 - 50,000", platform: "Instagram", igLink: "https://www.instagram.com/nidssworld?igsh=MWU3cHIxanhjOXR4bA%3D%3D&utm_source=qr", engagement: 2.8, age: "33", gender: "Female", charges: "1 charge ₹4000 for a reel" },
-  { name: "Ananya Saroha", niche: "Editing", location: "Noida", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/ananyasaroha?igsh=cjVmZWFrdTR3M2I%3D&utm_source=qr", engagement: 4.3, age: "23", gender: "Female", charges: "I charge ₹3000 for a post, ₹2000 for story, ₹4000 for a reel and ₹2000 for shoutout" },
-  { name: "Sharma Shweta27G", niche: "Lifestyle", location: "Delhi", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/sharma_shweta27g?igsh=Ym5ycXRlb2Jla2g5", engagement: 4.1, age: "28", gender: "", charges: "" },
-  { name: "Kriti Kamakhya", niche: "Dancing", location: "Delhi", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/kriti_kamakhya_/profilecard/?igsh=bGp6ODAzY3RrdTBq", engagement: 1.5, age: "23", gender: "", charges: "" },
-  { name: "Imriyallll", niche: "I’m content creator", location: "Delhi", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/imriyallll?igsh=MTNzNmNjMThxOG9icw==", engagement: 2.1, age: "20", gender: "", charges: "" },
-  { name: "Yashvi  Unfilterted", niche: "Lifestyle", location: "Delhi", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/yashvi__unfilterted?igsh=MTkxdW5lbzNkbnMxeg%3D%3D&utm_source=qr", engagement: 3.5, age: "20", gender: "", charges: "" },
-  { name: "Vaunshikaa  3009", niche: "Dancing", location: "Pune", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/vaunshikaa__3009?igsh=ZW14djk3aHF3ajc3", engagement: 4.1, age: "19", gender: "", charges: "" },
-  { name: "Shravani_bharekar_https://www.instagram.com/s", niche: "Student", location: "Pune", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/shravani_bharekar_?igsh=MXd4b2Mzb2RlMWFlNw==", engagement: 4.0, age: "25", gender: "Female", charges: "..." },
-  { name: "Sejal ranka", niche: "Speaking", location: "Pune", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/sejalranka26?igsh=MWFxZzdub3RtdWFlNA%3D%3D&utm_source=qr", engagement: 2.5, age: "21", gender: "Female", charges: "I charge 1500 for post \n500 for story \n2k for reel \n1k for shoutout" },
-  { name: "Vaishnavi kumari", niche: "Video editing", location: "Pune", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/kuchhvpostkardeti?igsh=MXF6aWVjMmNjdDZt&utm_source=qr", engagement: 4.0, age: "25", gender: "Female", charges: "I charge 500 post, 200 for a story, 600 for reel, 200 for shoutout" },
-  { name: "Iam Priyaupadhyay", niche: "Lifestyle", location: "Mumbai", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/iam_priyaupadhyay?igsh=cWUxN2pjM2Ezc2F2&utm_source=qr", engagement: 4.3, age: "27", gender: "", charges: "" },
-  { name: "Honey    0807", niche: "Lifestyle", location: "Mumbai", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/honey____0807?igsh=MTVtOHZqOHZpNmk2bg%3D%3D&utm_source=qr", engagement: 2.5, age: "23", gender: "", charges: "" },
-  { name: "Akankshas14", niche: "Dancing", location: "Mumbai", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/akankshas14?igsh=MTVtOWM4Z2t0ZWQ3Ng==", engagement: 3.2, age: "28", gender: "", charges: "" },
-  { name: "Simykhera", niche: "Lifestyle", location: "Mumbai", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/simykhera?igsh=MWFtN3Jva25jYm90aA%3D%3D&utm_source=qr", engagement: 4.7, age: "18", gender: "", charges: "" },
-  { name: "Desihindustanii", niche: "Lifestyle", location: "New Delhi", followers: 25000, followersLabel: "10,000 - 50,000", platform: "Instagram", igLink: "https://www.instagram.com/desihindustanii?igsh=eTJqb21qbGRtcGx1", engagement: 2.6, age: "35", gender: "", charges: "" },
-  { name: "Sudikshashrm", niche: "Writing and oration (storytelling)", location: "New Delhi", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/sudikshashrm?igsh=MW1oamNxZzZzc3ZtMA==", engagement: 3.8, age: "20", gender: "", charges: "" },
-  { name: "Beautyzonedelhi", niche: "Makeup artistry", location: "New Delhi", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/beautyzonedelhi?igsh=MWZuMzF5cTlsd3hqOA==", engagement: 4.1, age: "23", gender: "", charges: "" },
-  { name: "Khushdeep kaur", niche: "Lifestyle", location: "New Delhi", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/__khushi1612_?igsh=bWRvd244bHpvbXc5", engagement: 3.2, age: "18", gender: "Female", charges: "" },
-  { name: "Shradha", niche: "Dancing", location: "Dehradun", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://instagram.com/Shradha_thapa18", engagement: 3.1, age: "27", gender: "Female", charges: "Post-1500 rs\nStory- 800 rs\nReel - 1800 rs\nShoutout- 1200 rs" },
-  { name: "Anisha Bhatt", niche: "As a Content Creator", location: "Dehradun", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/anisha._.bhatt?igsh=eDZ0aG1qbmdncnIw&utm_source=qr", engagement: 3.6, age: "21", gender: "Female", charges: "I charge 1000 for a post, 1500 for story and reel both and 1200 for shoutout. I am open to discussin" },
-  { name: "Simran Paswan", niche: "Beauty", location: "Dehradun", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/simpheree?igsh=MXdiZHc4NDl4Nzk1cA==", engagement: 3.0, age: "22", gender: "Female", charges: "Post: 2000\nStory: 1000\nReel : 3000\nShoutout to:1500" },
-  { name: "Anushka Dhanik", niche: "Fluent english and hindi", location: "Dehradun", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/anushkka.05_?igsh=bmF5YnZ3MmhlejY2&utm_source=qr", engagement: 1.7, age: "19", gender: "Female", charges: "3500 for  post  and stories" },
-  { name: "Btwitssb", niche: "Dance", location: "Guwahati", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/btwitssb?igsh=N2J3cng4ZWd1ZDkz", engagement: 3.7, age: "19", gender: "", charges: "" },
-  { name: "Bonny Dhawan", niche: "Modeling acting", location: "Guwahati", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://instagram.com/bonid1", engagement: 2.9, age: "27", gender: "Female", charges: "I charge 2000 for a post 1000 for a story 3000 for a reel and 1500 for a shoutout" },
-  { name: "Shneha das", niche: "I’m a student with skills in content creation", location: "Guwahati", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/__shneha70__?igsh=MTFjZDNsbTZ4ZGd2Yw%3D%3D&utm_source=qr", engagement: 3.7, age: "21", gender: "Female", charges: "I charger 2500 for a post, 1500 for a story , 3000 for a reel and 2000 for a shoutout" },
-  { name: "Shyma khan", niche: "Baking", location: "Guwahati", followers: 75000, followersLabel: "50,000 - 1lakh", platform: "Instagram", igLink: "https://www.instagram.com/livinshyma.1?igsh=cWdma3J0NWIzcGky", engagement: 3.5, age: "21", gender: "Female", charges: "Post 3500 story 3000 reel 5000 shoutout 2000" },
-  { name: "khushi jangid", niche: "Painting dancing cooking", location: "Jaipur", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/glam.glowwww?igsh=dG1yOXliaWdjY3Z4", engagement: 3.7, age: "21", gender: "Female", charges: "" },
-  { name: "Chhavi Gautam", niche: "Lifestyle", location: "Jaipur", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/chhaviiiiiiiii_", engagement: 3.6, age: "18", gender: "Female", charges: "I charge ₹2000 for a post, ₹1000 for a story, ₹3000 for a reel, and ₹1500 for a shoutout." },
-  { name: "Sakshi Gupta", niche: "Lifestyle", location: "Jaipur", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/ugcby_sakshi6?igsh=cnBmdXhmcWk1YjJ6&utm_source=qr", engagement: 3.3, age: "23", gender: "Female", charges: "I charge 200 for stories and 500 for shoutouts and 1000 for a reel or post .." },
-  { name: "Pranjal Jajn", niche: "Social media manager", location: "Jaipur", followers: 500, followersLabel: "100 - 1000", platform: "Instagram", igLink: "https://www.instagram.com/pranjal_09_jain?igsh=MWZ1bm03ZDZldGl4Nw==", engagement: 3.8, age: "20", gender: "Female", charges: "I charge 1500 for post, 2500 for reel, 1000 for story, 1500 for shoutout" },
-  { name: "Dizoogi", niche: "Lifestyle", location: "Mohali", followers: 5000, followersLabel: "1000 - 10,000", platform: "Instagram", igLink: "https://www.instagram.com/_dizoogi?igsh=cmpmdGs4bXN2dGlu", engagement: 3.0, age: "19", gender: "", charges: "" },
-  { name: "Arushi Sharma", niche: "Lifestyle", location: "Mohali", followers: 25000, followersLabel: "10,000 - 50,000", platform: "Instagram", igLink: "https://www.instagram.com/arushi.zone?igsh=cTJ3NHBybzRiNmhi&utm_source=qr", engagement: 2.4, age: "26", gender: "Female", charges: "" }
-];
+      { name: "Poonam Nirankari", niche: "Fashion", location: "Delhi", followers: 75000, followersLabel: "50K-1L", platform: "Instagram", igLink: "https://instagram.com/poonirankaree", engagement: 2.7, age: "25", gender: "Female", charges: "1500 post, 800 story" },
+      { name: "Hymavathi", niche: "Dance", location: "Hyderabad", followers: 500, followersLabel: "100-1K", platform: "Instagram", igLink: "https://instagram.com/Mom_of_my_king_", engagement: 3.9, age: "26", gender: "Female", charges: "500 for everything" },
+      { name: "Suma", niche: "Cooking", location: "Hyderabad", followers: 5000, followersLabel: "1K-10K", platform: "Instagram", igLink: "https://instagram.com/vibin_withfood", engagement: 3.2, age: "28", gender: "Female", charges: "1000 reel" }
+    ];
 
-    // ============================================================
-    // STATE
-    // ============================================================
     let allInfluencers = [];
     let filtered = [];
     let activeFilters = { niche: "", location: "", followers: "", platform: "", search: "" };
-    let dataReady = false;
 
     // ============================================================
-    // NAVIGATION (robust event delegation)
+    // HELPERS
     // ============================================================
-    function showPage(id) {
-      if (!id) return;
-      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-      const target = document.getElementById("page-" + id);
-      if (target) target.classList.add("active");
-
-      document.querySelectorAll(".nav-btn").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.page === id);
-      });
-
-      document.getElementById("navLinks").classList.remove("open");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-
-      // Load data the first time user visits Discover
-      if (id === "discover" && !dataReady) {
-        loadData();
-      }
-    }
-
-    // Single click handler for all data-page buttons
-    document.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-page]");
-      if (btn) {
-        e.preventDefault();
-        showPage(btn.dataset.page);
-      }
-    });
-
-    document.getElementById("menuToggle").addEventListener("click", () => {
-      document.getElementById("navLinks").classList.toggle("open");
-    });
-
-    // ============================================================
-    // DATA
-    // ============================================================
-    function prepare(list) {
-      return list.map(i => ({
-        ...i,
-        id: i.id || Math.random().toString(36).slice(2, 10),
-        initials: (i.name || "C").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
+    function prepare(data) {
+      return data.map((item, idx) => ({
+        ...item,
+        id: "inf_" + idx,
+        initials: (item.name || "C").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
       }));
     }
-
-// ============================================================
-// LIVE DATA LOADING + AUTO REFRESH (every 30 seconds)
-// ============================================================
-
-function loadLiveData(isSilent = false) {
-  const status = document.getElementById("statusBar");
-  if (!isSilent) {
-    status.className = "status-bar show";
-    status.textContent = "Loading latest data...";
-    status.style.background = "rgba(99,102,241,0.15)";
-    status.style.borderColor = "rgba(99,102,241,0.3)";
-    status.style.color = "var(--primary-light)";
-  }
-
-  // Show fallback immediately so UI is never blank
-  if (!isSilent) {
-    allInfluencers = prepare(FALLBACK_DATA);
-    finishLoad();
-  }
-
-  const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
-  if (!url) {
-    if (!isSilent) {
-      status.textContent = `Using offline data (${allInfluencers.length} creators). Add Apps Script URL for live updates.`;
-      status.style.background = "rgba(234,179,8,0.12)";
-      status.style.borderColor = "rgba(234,179,8,0.3)";
-      status.style.color = "#fbbf24";
-      setTimeout(() => status.classList.remove("show"), 5000);
-    }
-    return;
-  }
-
-  if (typeof Papa === "undefined") return;
-
-  Papa.parse(url, {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
-    complete: (results) => {
-      if (results.data && results.data.length > 0) {
-        const live = results.data.map(normalizeRow).filter(i => i.name && i.name.length > 1);
-        if (live.length > 0) {
-          allInfluencers = prepare(live);
-
-          // Keep current search & filters applied
-function applyFilters() {
-  // If search box is empty → show nothing
-  if (!activeFilters.search || activeFilters.search.trim() === "") {
-    filtered = [];
-    renderGrid();
-    renderChips();
-    document.getElementById("resultsCount").textContent = "Type to search creators…";
-    return;
-  }
-
-  let list = [...allInfluencers];
-
-  const q = activeFilters.search.toLowerCase();
-  list = list.filter(i =>
-    (i.name && i.name.toLowerCase().includes(q)) ||
-    (i.niche && i.niche.toLowerCase().includes(q)) ||
-    (i.location && i.location.toLowerCase().includes(q))
-  );
-
-  if (activeFilters.niche) list = list.filter(i => i.niche === activeFilters.niche);
-  if (activeFilters.location) list = list.filter(i => i.location === activeFilters.location);
-  if (activeFilters.platform) list = list.filter(i => i.platform === activeFilters.platform);
-  if (activeFilters.followers) {
-    if (activeFilters.followers === "100000+") {
-      list = list.filter(i => i.followers >= 100000);
-    } else {
-      const [min, max] = activeFilters.followers.split("-").map(Number);
-      list = list.filter(i => i.followers >= min && i.followers <= max);
-    }
-  }
-
-  const sort = document.getElementById("sortSelect")?.value || "";
-  if (sort === "followers-desc") list.sort((a, b) => b.followers - a.followers);
-  else if (sort === "followers-asc") list.sort((a, b) => a.followers - b.followers);
-  else if (sort === "engagement-desc") list.sort((a, b) => b.engagement - a.engagement);
-  else if (sort === "name-asc") list.sort((a, b) => a.name.localeCompare(b.name));
-
-  filtered = list;
-  renderGrid();
-  renderChips();
-  document.getElementById("resultsCount").textContent =
-    `${filtered.length} creator${filtered.length !== 1 ? "s" : ""} found`;
-}
-          
-function renderGrid() {
-  const grid = document.getElementById("influencerGrid");
-  if (!grid) return;
-
-  if (filtered.length === 0) {
-    const msg = (!activeFilters.search || activeFilters.search.trim() === "")
-      ? "Type a name, niche or location to search creators"
-      : "No creators match your search. Try different keywords.";
-    grid.innerHTML = `<div class="empty-state"><p>${msg}</p></div>`;
-    return;
-  }
-
-  grid.innerHTML = filtered.map(cardHTML).join("");
-}
-
-          if (!isSilent) {
-            status.textContent = `Live: ${allInfluencers.length} creators (auto-updates every 30s)`;
-            status.style.background = "rgba(34,197,94,0.15)";
-            status.style.borderColor = "rgba(34,197,94,0.3)";
-            status.style.color = "#4ade80";
-            setTimeout(() => status.classList.remove("show"), 4000);
-          }
-          return;
-        }
-      }
-      if (!isSilent) {
-        status.textContent = `Live URL returned no rows — showing offline data (${allInfluencers.length})`;
-        status.style.background = "rgba(234,179,8,0.12)";
-        status.style.borderColor = "rgba(234,179,8,0.3)";
-        status.style.color = "#fbbf24";
-        setTimeout(() => status.classList.remove("show"), 5000);
-      }
-    },
-    error: (err) => {
-      console.warn("Live data fetch failed:", err);
-      if (!isSilent) {
-        status.textContent = `Live fetch failed — offline data (${allInfluencers.length}). Check Apps Script URL.`;
-        status.style.background = "rgba(239,68,68,0.12)";
-        status.style.borderColor = "rgba(239,68,68,0.3)";
-        status.style.color = "#f87171";
-        setTimeout(() => status.classList.remove("show"), 6000);
-      }
-    }
-  });
-}
-
-// Load once when page opens
-loadLiveData(false);
-
-// Auto-refresh every 30 seconds (silent)
-setInterval(() => {
-  loadLiveData(true);
-}, 30000);
 
     function normalizeRow(row) {
       const get = (...keys) => {
@@ -838,15 +595,90 @@ setInterval(() => {
     function cleanCity(s) {
       if (!s) return "India";
       let c = s.split(",")[0].trim().replace(/\s+/g, " ");
-      if (/^delhi\s*1$/i.test(c) || c.toLowerCase() === "delhi1") return "Delhi1";
       const map = {
         "banglore": "Bangalore", "bengaluru": "Bangalore", "bangalore": "Bangalore",
         "new delhi": "New Delhi", "delhi": "Delhi", "hyderabad": "Hyderabad",
         "mumbai": "Mumbai", "pune": "Pune", "noida": "Noida"
       };
       const low = c.toLowerCase();
-      if (map[low]) return map[low];
-      return c;
+      return map[low] || c;
+    }
+
+    function esc(str) {
+      return String(str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    // ============================================================
+    // LIVE DATA + AUTO REFRESH
+    // ============================================================
+    function loadLiveData(isSilent = false) {
+      const status = document.getElementById("statusBar");
+      if (!isSilent && status) {
+        status.className = "status-bar show";
+        status.textContent = "Loading latest data...";
+        status.style.background = "rgba(99,102,241,0.15)";
+        status.style.borderColor = "rgba(99,102,241,0.3)";
+        status.style.color = "var(--primary-light)";
+      }
+
+      if (!isSilent) {
+        allInfluencers = prepare(FALLBACK_DATA);
+        finishLoad();
+      }
+
+      const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+      if (!url) {
+        if (!isSilent && status) {
+          status.textContent = `Using offline data (${allInfluencers.length} creators)`;
+          status.style.background = "rgba(234,179,8,0.12)";
+          status.style.borderColor = "rgba(234,179,8,0.3)";
+          status.style.color = "#fbbf24";
+          setTimeout(() => status.classList.remove("show"), 4000);
+        }
+        return;
+      }
+
+      if (typeof Papa === "undefined") return;
+
+      Papa.parse(url, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          if (results.data && results.data.length > 0) {
+            const live = results.data.map(normalizeRow).filter(i => i.name && i.name.length > 1);
+            if (live.length > 0) {
+              allInfluencers = prepare(live);
+              finishLoad();
+              if (!isSilent && status) {
+                status.textContent = `Live: ${allInfluencers.length} creators (auto-updates every 30s)`;
+                status.style.background = "rgba(34,197,94,0.15)";
+                status.style.borderColor = "rgba(34,197,94,0.3)";
+                status.style.color = "#4ade80";
+                setTimeout(() => status.classList.remove("show"), 4000);
+              }
+              return;
+            }
+          }
+          if (!isSilent && status) {
+            status.textContent = `No new data — showing ${allInfluencers.length} creators`;
+            status.style.background = "rgba(234,179,8,0.12)";
+            status.style.borderColor = "rgba(234,179,8,0.3)";
+            status.style.color = "#fbbf24";
+            setTimeout(() => status.classList.remove("show"), 4000);
+          }
+        },
+        error: (err) => {
+          console.warn("Live fetch failed:", err);
+          if (!isSilent && status) {
+            status.textContent = `Fetch failed — offline data (${allInfluencers.length})`;
+            status.style.background = "rgba(239,68,68,0.12)";
+            status.style.borderColor = "rgba(239,68,68,0.3)";
+            status.style.color = "#f87171";
+            setTimeout(() => status.classList.remove("show"), 5000);
+          }
+        }
+      });
     }
 
     function finishLoad() {
@@ -863,79 +695,76 @@ setInterval(() => {
       const locations = [...new Set(allInfluencers.map(i => i.location))].sort();
 
       const nicheSelect = document.getElementById("filterNiche");
-      nicheSelect.innerHTML = '<option value="">All Niches</option>';
-      niches.forEach(n => {
-        const o = document.createElement("option");
-        o.value = n; o.textContent = n;
-        nicheSelect.appendChild(o);
-      });
+      if (nicheSelect) {
+        nicheSelect.innerHTML = '<option value="">All Niches</option>';
+        niches.forEach(n => {
+          const o = document.createElement("option");
+          o.value = n; o.textContent = n;
+          nicheSelect.appendChild(o);
+        });
+      }
 
       const locSelect = document.getElementById("filterLocation");
-      locSelect.innerHTML = '<option value="">All Locations</option>';
-      locations.forEach(l => {
-        const o = document.createElement("option");
-        o.value = l; o.textContent = l;
-        locSelect.appendChild(o);
-      });
+      if (locSelect) {
+        locSelect.innerHTML = '<option value="">All Locations</option>';
+        locations.forEach(l => {
+          const o = document.createElement("option");
+          o.value = l; o.textContent = l;
+          locSelect.appendChild(o);
+        });
+      }
     }
 
-function applyFilters() {
-  let list = [...allInfluencers];
+    function applyFilters() {
+      if (!activeFilters.search || activeFilters.search.trim() === "") {
+        filtered = [];
+        renderGrid();
+        renderChips();
+        const countEl = document.getElementById("resultsCount");
+        if (countEl) countEl.textContent = "Type to search creators…";
+        return;
+      }
 
-  // If search is empty → show nothing
-  if (!activeFilters.search || activeFilters.search.trim() === "") {
-    filtered = [];
-    renderGrid();
-    renderChips();
-    document.getElementById("resultsCount").textContent = "Type to search creators…";
-    return;
-  }
+      let list = [...allInfluencers];
+      const q = activeFilters.search.toLowerCase();
 
-  // Normal filtering only when user has typed something
-  const q = activeFilters.search.toLowerCase();
-  list = list.filter(i =>
-    i.name.toLowerCase().includes(q) ||
-    i.niche.toLowerCase().includes(q) ||
-    i.location.toLowerCase().includes(q)
-  );
+      list = list.filter(i =>
+        (i.name && i.name.toLowerCase().includes(q)) ||
+        (i.niche && i.niche.toLowerCase().includes(q)) ||
+        (i.location && i.location.toLowerCase().includes(q))
+      );
 
-  if (activeFilters.niche) list = list.filter(i => i.niche === activeFilters.niche);
-  if (activeFilters.location) list = list.filter(i => i.location === activeFilters.location);
-  if (activeFilters.platform) list = list.filter(i => i.platform === activeFilters.platform);
-  if (activeFilters.followers) {
-    if (activeFilters.followers === "100000+") {
-      list = list.filter(i => i.followers >= 100000);
-    } else {
-      const [min, max] = activeFilters.followers.split("-").map(Number);
-      list = list.filter(i => i.followers >= min && i.followers <= max);
+      if (activeFilters.niche) list = list.filter(i => i.niche === activeFilters.niche);
+      if (activeFilters.location) list = list.filter(i => i.location === activeFilters.location);
+      if (activeFilters.platform) list = list.filter(i => i.platform === activeFilters.platform);
+      if (activeFilters.followers) {
+        if (activeFilters.followers === "100000+") {
+          list = list.filter(i => i.followers >= 100000);
+        } else {
+          const [min, max] = activeFilters.followers.split("-").map(Number);
+          list = list.filter(i => i.followers >= min && i.followers <= max);
+        }
+      }
+
+      const sortEl = document.getElementById("sortSelect");
+      const sort = sortEl ? sortEl.value : "";
+      if (sort === "followers-desc") list.sort((a, b) => b.followers - a.followers);
+      else if (sort === "followers-asc") list.sort((a, b) => a.followers - b.followers);
+      else if (sort === "engagement-desc") list.sort((a, b) => b.engagement - a.engagement);
+      else if (sort === "name-asc") list.sort((a, b) => a.name.localeCompare(b.name));
+
+      filtered = list;
+      renderGrid();
+      renderChips();
+      const countEl = document.getElementById("resultsCount");
+      if (countEl) {
+        countEl.textContent = `${filtered.length} creator${filtered.length !== 1 ? "s" : ""} found`;
+      }
     }
-  }
-
-  const sort = document.getElementById("sortSelect").value;
-  if (sort === "followers-desc") list.sort((a, b) => b.followers - a.followers);
-  else if (sort === "followers-asc") list.sort((a, b) => a.followers - b.followers);
-  else if (sort === "engagement-desc") list.sort((a, b) => b.engagement - a.engagement);
-  else if (sort === "name-asc") list.sort((a, b) => a.name.localeCompare(b.name));
-
-  filtered = list;
-function renderGrid() {
-  const grid = document.getElementById("influencerGrid");
-  if (filtered.length === 0) {
-    const msg = (!activeFilters.search || activeFilters.search.trim() === "")
-      ? "Type a name, niche or location to search creators"
-      : "No creators match your search. Try different keywords.";
-    grid.innerHTML = `<div class="empty-state"><p>${msg}</p></div>`;
-    return;
-  }
-  grid.innerHTML = filtered.map(cardHTML).join("");
-}
-  renderChips();
-  document.getElementById("resultsCount").textContent =
-    `${filtered.length} creator${filtered.length !== 1 ? "s" : ""} found`;
-}
 
     function renderChips() {
       const container = document.getElementById("activeChips");
+      if (!container) return;
       container.innerHTML = "";
       const labels = { niche: "Niche", location: "Location", followers: "Followers", platform: "Platform", search: "Search" };
       Object.entries(activeFilters).forEach(([key, val]) => {
@@ -970,10 +799,6 @@ function renderGrid() {
     // ============================================================
     // RENDER
     // ============================================================
-    function esc(str) {
-      return String(str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-    }
-
     function cardHTML(i) {
       return `
         <div class="card" data-id="${i.id}">
@@ -995,8 +820,13 @@ function renderGrid() {
 
     function renderGrid() {
       const grid = document.getElementById("influencerGrid");
+      if (!grid) return;
+
       if (filtered.length === 0) {
-        grid.innerHTML = `<div class="empty-state"><p>No creators match your filters. Try adjusting them.</p></div>`;
+        const msg = (!activeFilters.search || activeFilters.search.trim() === "")
+          ? "Type a name, niche or location to search creators"
+          : "No creators match your search. Try different keywords.";
+        grid.innerHTML = `<div class="empty-state"><p>${msg}</p></div>`;
         return;
       }
       grid.innerHTML = filtered.map(cardHTML).join("");
@@ -1004,7 +834,8 @@ function renderGrid() {
 
     function renderFeatured() {
       const featured = [...allInfluencers].sort((a, b) => b.followers - a.followers).slice(0, 4);
-      document.getElementById("featuredGrid").innerHTML = featured.map(cardHTML).join("");
+      const el = document.getElementById("featuredGrid");
+      if (el) el.innerHTML = featured.map(cardHTML).join("");
     }
 
     // ============================================================
@@ -1043,6 +874,31 @@ function renderGrid() {
       document.getElementById("modalOverlay").classList.remove("open");
     }
 
+    // ============================================================
+    // PAGE NAVIGATION
+    // ============================================================
+    function showPage(pageId) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+      const page = document.getElementById("page-" + pageId);
+      if (page) page.classList.add("active");
+      document.querySelectorAll(`[data-page="${pageId}"]`).forEach(b => {
+        if (b.classList.contains("nav-btn")) b.classList.add("active");
+      });
+      document.getElementById("navLinks").classList.remove("open");
+    }
+
+    // ============================================================
+    // EVENT LISTENERS
+    // ============================================================
+    document.querySelectorAll("[data-page]").forEach(btn => {
+      btn.addEventListener("click", () => showPage(btn.dataset.page));
+    });
+
+    document.getElementById("menuToggle").addEventListener("click", () => {
+      document.getElementById("navLinks").classList.toggle("open");
+    });
+
     document.getElementById("modalOverlay").addEventListener("click", (e) => {
       if (e.target === document.getElementById("modalOverlay")) closeModal();
     });
@@ -1050,7 +906,6 @@ function renderGrid() {
       if (e.key === "Escape") closeModal();
     });
 
-    // Card / View button clicks (event delegation)
     document.addEventListener("click", (e) => {
       const card = e.target.closest(".card[data-id], .view-btn[data-id]");
       if (card) {
@@ -1058,39 +913,15 @@ function renderGrid() {
         openModal(card.dataset.id);
       }
       const removeBtn = e.target.closest("[data-remove]");
-      if (removeBtn) {
-        removeFilter(removeBtn.dataset.remove);
-      }
+      if (removeBtn) removeFilter(removeBtn.dataset.remove);
     });
 
-    // ============================================================
-    // FORM + STATS
-    // ============================================================
     document.getElementById("brandForm").addEventListener("submit", (e) => {
       e.preventDefault();
       e.target.style.display = "none";
       document.getElementById("formSuccess").style.display = "block";
     });
 
-    function animateStats() {
-      document.querySelectorAll(".stat-num").forEach(el => {
-        const target = parseInt(el.dataset.target);
-        const duration = 1500;
-        const start = performance.now();
-        const step = (now) => {
-          const progress = Math.min((now - start) / duration, 1);
-          const ease = 1 - Math.pow(1 - progress, 3);
-          const val = Math.floor(ease * target);
-          el.textContent = target >= 1000
-            ? (val >= 1000 ? (val / 1000).toFixed(val >= 10000 ? 0 : 1) + "K+" : val)
-            : val + (target === 98 ? "%" : "+");
-          if (progress < 1) requestAnimationFrame(step);
-        };
-        requestAnimationFrame(step);
-      });
-    }
-
-    // Filter event listeners
     document.getElementById("searchInput").addEventListener("input", (e) => {
       activeFilters.search = e.target.value.trim();
       applyFilters();
@@ -1110,7 +941,29 @@ function renderGrid() {
     document.getElementById("sortSelect").addEventListener("change", applyFilters);
     document.getElementById("clearFiltersBtn").addEventListener("click", clearFilters);
 
-    // Init
+    function animateStats() {
+      document.querySelectorAll(".stat-num").forEach(el => {
+        const target = parseInt(el.dataset.target);
+        const duration = 1500;
+        const start = performance.now();
+        const step = (now) => {
+          const progress = Math.min((now - start) / duration, 1);
+          const ease = 1 - Math.pow(1 - progress, 3);
+          const val = Math.floor(ease * target);
+          el.textContent = target >= 1000
+            ? (val >= 1000 ? (val / 1000).toFixed(val >= 10000 ? 0 : 1) + "K+" : val)
+            : val + (target === 98 ? "%" : "+");
+          if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      });
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    loadLiveData(false);
+    setInterval(() => loadLiveData(true), 30000);
     setTimeout(animateStats, 200);
   </script>
 </body>
