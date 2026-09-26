@@ -292,6 +292,25 @@
     }
     .status-bar.show { display: block; }
 
+    /* Campaign cards */
+    .campaign-card .card-body { padding: 1.25rem; }
+    .campaign-card .card-name { font-size: 1.12rem; margin-bottom: 0.2rem; }
+    .campaign-card .card-brand { color: var(--accent); font-size: 0.85rem; font-weight: 500; margin-bottom: 0.55rem; }
+    .campaign-card .card-brief {
+      color: var(--text-muted); font-size: 0.88rem; line-height: 1.45;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+      margin-bottom: 0.85rem;
+    }
+    .campaign-meta {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.9rem;
+    }
+    .campaign-tag {
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+      padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.75rem; color: var(--text-muted);
+    }
+    .campaign-tag.budget { color: var(--success); border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.1); }
+    .campaign-card .card-footer { justify-content: space-between; align-items: center; }
+
     @media (max-width: 768px) {
       .nav-links {
         display: none; position: absolute; top: 70px; left: 0; right: 0;
@@ -314,6 +333,7 @@
     <div class="nav-links" id="navLinks">
       <button type="button" class="nav-btn active" data-page="home">Home</button>
       <button type="button" class="nav-btn" data-page="discover">Discover</button>
+      <button type="button" class="nav-btn" data-page="campaigns">Open Campaigns</button>
       <button type="button" class="nav-btn" data-page="how">How it Works</button>
       <button type="button" class="nav-btn" data-page="brands">For Brands</button>
       <button type="button" class="nav-btn" data-page="join">Join as Creator</button>
@@ -398,6 +418,56 @@
     </section>
   </div>
 
+  <!-- OPEN CAMPAIGNS -->
+  <div class="page" id="page-campaigns">
+    <section class="section" style="padding-top:2rem;">
+      <h2 class="section-title">Open Campaigns</h2>
+      <p class="section-sub">Browse live brand campaigns and apply with one click</p>
+
+      <div class="filters-bar">
+        <div class="search-row">
+          <div class="search-box">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="campaignSearch" placeholder="Search campaigns by title, brand or niche..." autocomplete="off">
+          </div>
+        </div>
+        <div class="filter-selects">
+          <select id="campaignFilterNiche">
+            <option value="">All Niches</option>
+            <option>Fashion</option>
+            <option>Beauty</option>
+            <option>Lifestyle</option>
+            <option>Food</option>
+            <option>Fitness</option>
+            <option>Tech</option>
+            <option>Travel</option>
+            <option>Parenting</option>
+            <option>Finance</option>
+            <option>Education</option>
+            <option>Other</option>
+          </select>
+          <select id="campaignFilterBudget">
+            <option value="">All Budgets</option>
+            <option>Under ₹10,000</option>
+            <option>₹10,000 - ₹50,000</option>
+            <option>₹50,000 - ₹1,00,000</option>
+            <option>Above ₹1,00,000</option>
+            <option>Product only / Barter</option>
+          </select>
+          <button type="button" class="btn btn-outline btn-sm" id="clearCampaignFilters">Clear</button>
+        </div>
+      </div>
+
+      <div class="results-meta">
+        <div class="results-count" id="campaignCount">Loading campaigns…</div>
+      </div>
+
+      <div class="influencer-grid" id="campaignGrid">
+        <div class="empty-state"><p>No open campaigns yet. Brands can post from the For Brands page.</p></div>
+      </div>
+    </section>
+  </div>
+
   <!-- HOW IT WORKS -->
   <div class="page" id="page-how">
     <section class="section">
@@ -427,35 +497,82 @@
   <div class="page" id="page-brands">
     <section class="section">
       <h2 class="section-title">For Brands</h2>
-      <p class="section-sub">Post your campaign and find the right creators</p>
-      <div class="form-card">
+      <p class="section-sub">Post your campaign — it will appear in Open Campaigns for creators to apply</p>
+      <div class="form-card" style="max-width:560px;">
         <form id="brandForm">
           <div class="form-group">
-            <label>Brand Name</label>
-            <input type="text" required placeholder="Your brand name">
+            <label>Brand Name *</label>
+            <input type="text" name="brandName" required placeholder="Your brand name">
           </div>
           <div class="form-group">
-            <label>Campaign Title</label>
-            <input type="text" required placeholder="Campaign name">
+            <label>Campaign Title *</label>
+            <input type="text" name="title" required placeholder="e.g. Summer Collection Launch">
           </div>
           <div class="form-group">
-            <label>Campaign Brief</label>
-            <textarea placeholder="Describe your goals, deliverables, timeline..."></textarea>
+            <label>Campaign Brief *</label>
+            <textarea name="brief" required placeholder="Describe goals, key messages, target audience, any must-haves..."></textarea>
           </div>
           <div class="form-group">
-            <label>Budget Range</label>
-            <select>
-              <option>Under ₹10,000</option>
-              <option>₹10,000 - ₹50,000</option>
-              <option>₹50,000 - ₹1,00,000</option>
-              <option>Above ₹1,00,000</option>
+            <label>Deliverables</label>
+            <input type="text" name="deliverables" placeholder="e.g. 1 Reel + 2 Stories + 1 Post">
+          </div>
+          <div class="form-group">
+            <label>Budget Range *</label>
+            <select name="budget" required>
+              <option value="">Select budget</option>
+              <option value="Under ₹10,000">Under ₹10,000</option>
+              <option value="₹10,000 - ₹50,000">₹10,000 - ₹50,000</option>
+              <option value="₹50,000 - ₹1,00,000">₹50,000 - ₹1,00,000</option>
+              <option value="Above ₹1,00,000">Above ₹1,00,000</option>
+              <option value="Product only / Barter">Product only / Barter</option>
             </select>
           </div>
-          <button type="submit" class="btn btn-primary" style="width:100%;">Post Campaign</button>
+          <div class="form-group">
+            <label>Preferred Niche</label>
+            <select name="niche">
+              <option value="">Any niche</option>
+              <option>Fashion</option>
+              <option>Beauty</option>
+              <option>Lifestyle</option>
+              <option>Food</option>
+              <option>Fitness</option>
+              <option>Tech</option>
+              <option>Travel</option>
+              <option>Parenting</option>
+              <option>Finance</option>
+              <option>Education</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Platform</label>
+            <select name="platform">
+              <option value="">Any platform</option>
+              <option>Instagram</option>
+              <option>YouTube</option>
+              <option>TikTok / Reels</option>
+              <option>Multiple</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Deadline / Timeline</label>
+            <input type="text" name="deadline" placeholder="e.g. Content live by 15 Oct, or 2 weeks">
+          </div>
+          <div class="form-group">
+            <label>Location Preference</label>
+            <input type="text" name="location" placeholder="e.g. Pan-India / Hyderabad / Remote">
+          </div>
+          <div class="form-group">
+            <label>Your Email (for applications)</label>
+            <input type="email" name="email" placeholder="brand@email.com">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;" id="brandSubmitBtn">Post Campaign →</button>
         </form>
         <div id="formSuccess" style="display:none; text-align:center; padding:2rem 0;">
           <h3 style="color:var(--success); margin-bottom:0.5rem;">✓ Campaign Posted!</h3>
-          <p>We'll notify matching creators shortly.</p>
+          <p style="margin-bottom:1.2rem;">Your campaign is now live in Open Campaigns. Creators can start applying.</p>
+          <button type="button" class="btn btn-primary" data-page="campaigns">View Open Campaigns →</button>
+          <button type="button" class="btn btn-outline" style="margin-top:0.6rem;" id="postAnotherBtn">Post Another</button>
         </div>
       </div>
     </section>
@@ -626,6 +743,7 @@
     <div class="footer-links">
       <a data-page="home">Home</a>
       <a data-page="discover">Discover</a>
+      <a data-page="campaigns">Open Campaigns</a>
       <a data-page="how">How it Works</a>
       <a data-page="brands">For Brands</a>
       <a data-page="join">Join as Creator</a>
@@ -634,9 +752,49 @@
     <p>© 2026 Connectly. All rights reserved.</p>
   </footer>
 
-  <!-- MODAL -->
+  <!-- MODAL (influencer profile) -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal" id="modalContent"></div>
+  </div>
+
+  <!-- APPLY MODAL -->
+  <div class="modal-overlay" id="applyModalOverlay">
+    <div class="modal" style="max-width:480px;">
+      <button type="button" class="modal-close" id="applyModalClose">×</button>
+      <div class="modal-header" style="border-bottom:none; padding-bottom:0;">
+        <div>
+          <h3 style="margin:0 0 0.25rem; font-size:1.25rem;" id="applyCampaignTitle">Apply to Campaign</h3>
+          <p style="color:var(--text-muted); font-size:0.9rem; margin:0;" id="applyBrandName"></p>
+        </div>
+      </div>
+      <div class="modal-body">
+        <form id="applyForm">
+          <input type="hidden" id="applyCampaignId" name="campaignId">
+          <div class="form-group">
+            <label>Your Name *</label>
+            <input type="text" name="name" required placeholder="Full name">
+          </div>
+          <div class="form-group">
+            <label>Email / WhatsApp *</label>
+            <input type="text" name="contact" required placeholder="you@email.com or +91…">
+          </div>
+          <div class="form-group">
+            <label>Instagram / Portfolio link</label>
+            <input type="url" name="portfolio" placeholder="https://instagram.com/yourhandle">
+          </div>
+          <div class="form-group">
+            <label>Your proposed rate / notes</label>
+            <textarea name="message" placeholder="e.g. ₹8,000 for 1 Reel + 2 Stories. I have 25K fashion audience in Hyderabad…"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;" id="applySubmitBtn">Submit Application →</button>
+        </form>
+        <div id="applySuccess" style="display:none; text-align:center; padding:1.5rem 0;">
+          <h3 style="color:var(--success); margin-bottom:0.5rem;">✓ Application Sent!</h3>
+          <p style="color:var(--text-muted);">The brand will review and get back to you.</p>
+          <button type="button" class="btn btn-outline" style="margin-top:1rem;" id="applyDoneBtn">Done</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -1086,6 +1244,7 @@
         if (b.classList.contains("nav-btn")) b.classList.add("active");
       });
       document.getElementById("navLinks").classList.remove("open");
+      if (pageId === "campaigns") renderCampaigns();
     }
 
     // ============================================================
@@ -1103,7 +1262,10 @@
       if (e.target === document.getElementById("modalOverlay")) closeModal();
     });
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeModal();
+      if (e.key === "Escape") {
+        closeModal();
+        closeApplyModal();
+      }
     });
 
     document.addEventListener("click", (e) => {
@@ -1116,10 +1278,287 @@
       if (removeBtn) removeFilter(removeBtn.dataset.remove);
     });
 
+    // ============================================================
+    // CAMPAIGNS (localStorage)
+    // ============================================================
+    const CAMPAIGNS_KEY = "connectly_campaigns";
+    const APPLICATIONS_KEY = "connectly_applications";
+
+    function uid() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
+
+    function getCampaigns() {
+      try {
+        const stored = localStorage.getItem(CAMPAIGNS_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return Array.isArray(parsed) ? parsed : [];
+        }
+        // First visit: seed one demo campaign so the page isn't empty
+        const demo = [{
+          id: "demo-" + uid(),
+          brandName: "Demo Brand Co.",
+          title: "Summer Skincare Launch",
+          brief: "Looking for lifestyle & beauty creators to showcase our new vitamin-C serum. Honest reviews preferred. We provide product + fee.",
+          deliverables: "1 Reel + 2 Stories",
+          budget: "₹10,000 - ₹50,000",
+          niche: "Beauty",
+          platform: "Instagram",
+          deadline: "Content live within 3 weeks",
+          location: "Pan-India / Remote",
+          email: "",
+          status: "open",
+          createdAt: new Date().toISOString()
+        }];
+        try { localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(demo)); } catch (_) {}
+        return demo;
+      } catch (e) {
+        console.warn("getCampaigns fallback:", e);
+        return [];
+      }
+    }
+    function saveCampaigns(list) {
+      try {
+        localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(list));
+      } catch (e) {
+        console.error("saveCampaigns failed:", e);
+        throw e; // let the form handler show the error
+      }
+    }
+    function getApplications() {
+      try {
+        const stored = localStorage.getItem(APPLICATIONS_KEY);
+        if (!stored) return [];
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch { return []; }
+    }
+    function saveApplications(list) {
+      try {
+        localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(list));
+      } catch (e) {
+        console.error("saveApplications failed:", e);
+        throw e;
+      }
+    }
+
+    // Brand form → create campaign
     document.getElementById("brandForm").addEventListener("submit", (e) => {
       e.preventDefault();
+      e.stopPropagation();
+
+      const form = e.target;
+      const btn = document.getElementById("brandSubmitBtn");
+      const fd = new FormData(form);
+
+      const campaign = {
+        id: uid(),
+        brandName: (fd.get("brandName") || "").toString().trim(),
+        title: (fd.get("title") || "").toString().trim(),
+        brief: (fd.get("brief") || "").toString().trim(),
+        deliverables: (fd.get("deliverables") || "").toString().trim(),
+        budget: (fd.get("budget") || "").toString().trim(),
+        niche: (fd.get("niche") || "").toString().trim(),
+        platform: (fd.get("platform") || "").toString().trim(),
+        deadline: (fd.get("deadline") || "").toString().trim(),
+        location: (fd.get("location") || "").toString().trim(),
+        email: (fd.get("email") || "").toString().trim(),
+        status: "open",
+        createdAt: new Date().toISOString()
+      };
+
+      // Clear any previous error
+      let errEl = document.getElementById("brandFormError");
+      if (errEl) errEl.remove();
+
+      if (!campaign.brandName || !campaign.title || !campaign.brief || !campaign.budget) {
+        errEl = document.createElement("div");
+        errEl.id = "brandFormError";
+        errEl.style.cssText = "background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;padding:0.7rem 1rem;border-radius:10px;font-size:0.88rem;margin-bottom:1rem;";
+        errEl.textContent = "Please fill Brand Name, Campaign Title, Brief and Budget.";
+        form.insertBefore(errEl, form.firstChild);
+        return;
+      }
+
+      try {
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Posting…";
+        }
+
+        const list = getCampaigns();
+        list.unshift(campaign);
+        saveCampaigns(list);
+
+        form.style.display = "none";
+        document.getElementById("formSuccess").style.display = "block";
+        renderCampaigns();
+      } catch (err) {
+        console.error("Campaign save error:", err);
+        errEl = document.createElement("div");
+        errEl.id = "brandFormError";
+        errEl.style.cssText = "background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;padding:0.7rem 1rem;border-radius:10px;font-size:0.88rem;margin-bottom:1rem;";
+        errEl.textContent = "Could not save campaign (storage blocked?). Try a normal browser tab, not private/incognito.";
+        form.insertBefore(errEl, form.firstChild);
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Post Campaign →";
+        }
+      }
+    });
+
+    document.getElementById("postAnotherBtn")?.addEventListener("click", () => {
+      const form = document.getElementById("brandForm");
+      form.reset();
+      form.style.display = "block";
+      document.getElementById("formSuccess").style.display = "none";
+      const errEl = document.getElementById("brandFormError");
+      if (errEl) errEl.remove();
+      const btn = document.getElementById("brandSubmitBtn");
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Post Campaign →";
+      }
+    });
+
+    // Campaign filters
+    let campaignFilters = { search: "", niche: "", budget: "" };
+
+    function renderCampaigns() {
+      const grid = document.getElementById("campaignGrid");
+      const countEl = document.getElementById("campaignCount");
+      if (!grid) return;
+
+      let list = getCampaigns().filter(c => c.status === "open");
+
+      const q = campaignFilters.search.toLowerCase();
+      if (q) {
+        list = list.filter(c =>
+          (c.title && c.title.toLowerCase().includes(q)) ||
+          (c.brandName && c.brandName.toLowerCase().includes(q)) ||
+          (c.niche && c.niche.toLowerCase().includes(q)) ||
+          (c.brief && c.brief.toLowerCase().includes(q))
+        );
+      }
+      if (campaignFilters.niche) {
+        list = list.filter(c => c.niche === campaignFilters.niche);
+      }
+      if (campaignFilters.budget) {
+        list = list.filter(c => c.budget === campaignFilters.budget);
+      }
+
+      if (countEl) {
+        countEl.textContent = list.length
+          ? `${list.length} open campaign${list.length !== 1 ? "s" : ""}`
+          : "No matching campaigns";
+      }
+
+      if (!list.length) {
+        grid.innerHTML = `<div class="empty-state"><p>No open campaigns yet. Brands can post from the <button type="button" class="nav-btn" data-page="brands" style="color:var(--primary-light);background:none;border:none;cursor:pointer;font:inherit;text-decoration:underline;">For Brands</button> page.</p></div>`;
+        return;
+      }
+
+      grid.innerHTML = list.map(c => {
+        const tags = [];
+        if (c.budget) tags.push(`<span class="campaign-tag budget">${esc(c.budget)}</span>`);
+        if (c.niche) tags.push(`<span class="campaign-tag">${esc(c.niche)}</span>`);
+        if (c.platform) tags.push(`<span class="campaign-tag">${esc(c.platform)}</span>`);
+        if (c.deadline) tags.push(`<span class="campaign-tag">⏰ ${esc(c.deadline)}</span>`);
+        if (c.location) tags.push(`<span class="campaign-tag">📍 ${esc(c.location)}</span>`);
+
+        return `
+          <div class="card campaign-card" data-campaign-id="${esc(c.id)}">
+            <div class="card-body">
+              <div class="card-name">${esc(c.title)}</div>
+              <div class="card-brand">${esc(c.brandName)}</div>
+              <div class="card-brief">${esc(c.brief)}</div>
+              <div class="campaign-meta">${tags.join("")}</div>
+              <div class="card-footer">
+                <span style="font-size:0.78rem;color:var(--text-muted);">${c.deliverables ? esc(c.deliverables) : "See brief"}</span>
+                <button type="button" class="btn btn-primary btn-sm apply-btn" data-apply-id="${esc(c.id)}">Apply</button>
+              </div>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    document.getElementById("campaignSearch")?.addEventListener("input", (e) => {
+      campaignFilters.search = e.target.value.trim();
+      renderCampaigns();
+    });
+    document.getElementById("campaignFilterNiche")?.addEventListener("change", (e) => {
+      campaignFilters.niche = e.target.value;
+      renderCampaigns();
+    });
+    document.getElementById("campaignFilterBudget")?.addEventListener("change", (e) => {
+      campaignFilters.budget = e.target.value;
+      renderCampaigns();
+    });
+    document.getElementById("clearCampaignFilters")?.addEventListener("click", () => {
+      campaignFilters = { search: "", niche: "", budget: "" };
+      const s = document.getElementById("campaignSearch");
+      if (s) s.value = "";
+      const n = document.getElementById("campaignFilterNiche");
+      if (n) n.value = "";
+      const b = document.getElementById("campaignFilterBudget");
+      if (b) b.value = "";
+      renderCampaigns();
+    });
+
+    // Apply modal
+    function openApplyModal(campaignId) {
+      const campaigns = getCampaigns();
+      const c = campaigns.find(x => x.id === campaignId);
+      if (!c) return;
+      document.getElementById("applyCampaignId").value = c.id;
+      document.getElementById("applyCampaignTitle").textContent = c.title;
+      document.getElementById("applyBrandName").textContent = "by " + c.brandName;
+      document.getElementById("applyForm").style.display = "block";
+      document.getElementById("applySuccess").style.display = "none";
+      document.getElementById("applyForm").reset();
+      document.getElementById("applyCampaignId").value = c.id;
+      document.getElementById("applyModalOverlay").classList.add("open");
+    }
+    function closeApplyModal() {
+      document.getElementById("applyModalOverlay").classList.remove("open");
+    }
+
+    document.getElementById("applyModalClose")?.addEventListener("click", closeApplyModal);
+    document.getElementById("applyDoneBtn")?.addEventListener("click", closeApplyModal);
+    document.getElementById("applyModalOverlay")?.addEventListener("click", (e) => {
+      if (e.target === document.getElementById("applyModalOverlay")) closeApplyModal();
+    });
+
+    document.addEventListener("click", (e) => {
+      const applyBtn = e.target.closest(".apply-btn");
+      if (applyBtn) {
+        e.stopPropagation();
+        openApplyModal(applyBtn.dataset.applyId);
+      }
+    });
+
+    document.getElementById("applyForm")?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const app = {
+        id: uid(),
+        campaignId: (fd.get("campaignId") || "").toString(),
+        name: (fd.get("name") || "").toString().trim(),
+        contact: (fd.get("contact") || "").toString().trim(),
+        portfolio: (fd.get("portfolio") || "").toString().trim(),
+        message: (fd.get("message") || "").toString().trim(),
+        createdAt: new Date().toISOString(),
+        status: "pending"
+      };
+      if (!app.name || !app.contact || !app.campaignId) return;
+
+      const apps = getApplications();
+      apps.unshift(app);
+      saveApplications(apps);
+
       e.target.style.display = "none";
-      document.getElementById("formSuccess").style.display = "block";
+      document.getElementById("applySuccess").style.display = "block";
     });
 
     // ============================================================
@@ -1255,6 +1694,7 @@
     loadLiveData(false);
     setInterval(() => loadLiveData(true), 30000);
     setTimeout(animateStats, 200);
+    renderCampaigns(); // initial load of campaigns from localStorage
 
     // Open Join form when landing from Meta ads
     (function openJoinFromAds() {
@@ -1263,6 +1703,8 @@
       const hash = (window.location.hash || "").replace("#", "").toLowerCase();
       if (page === "join" || page === "register" || page === "signup" || hash === "join" || hash === "register") {
         showPage("join");
+      } else if (page === "campaigns" || hash === "campaigns") {
+        showPage("campaigns");
       }
     })();
   </script>
