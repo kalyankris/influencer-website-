@@ -1244,7 +1244,7 @@
         if (b.classList.contains("nav-btn")) b.classList.add("active");
       });
       document.getElementById("navLinks").classList.remove("open");
-      if (pageId === "campaigns") renderCampaigns();
+      if (pageId === "campaigns") loadLiveCampaigns(false);
     }
 
     // ============================================================
