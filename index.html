@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -451,6 +452,45 @@
       box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
     }
     .form-group textarea { min-height: 88px; resize: vertical; }
+    .charge-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;
+    }
+    .charge-cell {
+      background: rgba(0,0,0,0.28); border: 1px solid var(--border);
+      border-radius: 12px; padding: 0.65rem 0.7rem 0.75rem;
+    }
+    .charge-cell label {
+      display: block; font-size: 0.72rem; font-weight: 600;
+      color: var(--text-muted); margin-bottom: 0.35rem; letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .charge-cell .inr {
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .charge-cell .inr span {
+      color: var(--text-dim); font-weight: 600; font-size: 0.9rem;
+    }
+    .charge-cell input {
+      width: 100%; padding: 0.5rem 0.65rem;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: 8px; color: white; font-size: 0.92rem; outline: none;
+    }
+    .charge-cell input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+    }
+    .charge-hint { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.45rem; }
+    .charge-error { font-size: 0.78rem; color: var(--danger); margin-top: 0.4rem; display: none; }
+    .charge-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: flex-end; }
+    .charge-pill {
+      font-size: 0.72rem; font-weight: 600;
+      background: rgba(99,102,241,0.16); border: 1px solid rgba(99,102,241,0.3);
+      color: var(--primary-light); padding: 0.22rem 0.55rem; border-radius: 999px;
+    }
+    .card-rate {
+      font-size: 0.75rem; color: var(--accent); font-weight: 600;
+      margin: 0 0 0.65rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
 
     /* ========== FOOTER ========== */
     footer {
@@ -997,9 +1037,32 @@
               <option>Student</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Charges (post / story / reel / shoutout)</label>
-            <textarea name="charges" placeholder='Example: "₹2000 post, ₹1000 story, ₹2500 reel, ₹1500 shoutout"'></textarea>
+          <div class="form-group" id="chargesGroup">
+            <label>Your charges (INR) *</label>
+            <p class="charge-hint" style="margin:0 0 0.55rem;">Enter at least one rate. Brands see this on your profile.</p>
+            <div class="charge-grid">
+              <div class="charge-cell">
+                <label for="chargePost">Post</label>
+                <div class="inr"><span>₹</span><input type="number" id="chargePost" name="chargePost" min="0" step="50" inputmode="numeric" placeholder="2000"></div>
+              </div>
+              <div class="charge-cell">
+                <label for="chargeStory">Story</label>
+                <div class="inr"><span>₹</span><input type="number" id="chargeStory" name="chargeStory" min="0" step="50" inputmode="numeric" placeholder="1000"></div>
+              </div>
+              <div class="charge-cell">
+                <label for="chargeReel">Reel</label>
+                <div class="inr"><span>₹</span><input type="number" id="chargeReel" name="chargeReel" min="0" step="50" inputmode="numeric" placeholder="2500"></div>
+              </div>
+              <div class="charge-cell">
+                <label for="chargeShoutout">Shoutout</label>
+                <div class="inr"><span>₹</span><input type="number" id="chargeShoutout" name="chargeShoutout" min="0" step="50" inputmode="numeric" placeholder="1500"></div>
+              </div>
+            </div>
+            <div class="form-group" style="margin:0.7rem 0 0;">
+              <label>Extra note (optional)</label>
+              <input type="text" name="chargeNote" maxlength="120" placeholder="e.g. Combo Reel + 2 Stories ₹4000">
+            </div>
+            <p class="charge-error" id="chargesError">Add at least one charge (post, story, reel or shoutout).</p>
           </div>
           <button type="submit" class="btn btn-primary" id="joinSubmitBtn" style="width:100%; justify-content:center;">
             Submit &amp; Get Listed →
@@ -1519,6 +1582,18 @@
     // ============================================================
     // RENDER
     // ============================================================
+    function shortCharges(s) {
+      if (!s) return "";
+      const t = String(s).replace(/\s+/g, " ").trim();
+      return t.length > 42 ? t.slice(0, 40) + "…" : t;
+    }
+    function chargePillsHTML(s) {
+      if (!s) return "";
+      const parts = String(s).split(/[·|,;/]+/).map(p => p.trim()).filter(Boolean);
+      if (!parts.length) return esc(String(s).slice(0, 140));
+      return `<span class="charge-pills">${parts.slice(0, 6).map(p => `<span class="charge-pill">${esc(p.slice(0, 40))}</span>`).join("")}</span>`;
+    }
+
     function cardHTML(i) {
       return `
         <div class="card" data-id="${i.id}">
@@ -1530,6 +1605,7 @@
               <span>📍 ${esc(i.location)}</span>
               <span>👥 ${i.followersLabel}</span>
             </div>
+            ${i.charges ? `<div class="card-rate">${esc(shortCharges(i.charges))}</div>` : ""}
             <div class="card-footer">
               <span class="engagement">${i.engagement}% eng.</span>
               <button type="button" class="btn btn-primary btn-sm view-btn" data-id="${i.id}">View</button>
@@ -1580,7 +1656,10 @@
           <div class="detail-row"><span>Platform</span><span>Instagram</span></div>
           ${i.age ? `<div class="detail-row"><span>Age</span><span>${i.age}</span></div>` : ""}
           ${i.gender ? `<div class="detail-row"><span>Gender</span><span>${i.gender}</span></div>` : ""}
-          ${i.charges ? `<div class="detail-row"><span>Charges</span><span style="text-align:right;max-width:60%;">${esc(i.charges.slice(0,130))}${i.charges.length>130?"…":""}</span></div>` : ""}
+          <div class="detail-row" style="align-items:flex-start;">
+            <span>Charges</span>
+            <span style="text-align:right;max-width:68%;">${i.charges ? chargePillsHTML(i.charges) : "<span style='color:var(--text-dim)'>Not listed</span>"}</span>
+          </div>
           <div style="margin-top:1.25rem;display:flex;gap:0.65rem;flex-wrap:wrap;">
             ${i.igLink ? `<a href="${i.igLink}" target="_blank" rel="noopener" class="btn btn-primary" style="text-decoration:none;">View Instagram</a>` : ""}
             <button type="button" class="btn btn-outline invite-creator-btn" data-creator-id="${i.id}">Request Collaboration</button>
@@ -2212,6 +2291,26 @@
       joinForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const fd = new FormData(joinForm);
+        const postAmt = (fd.get("chargePost") || "").toString().trim();
+        const storyAmt = (fd.get("chargeStory") || "").toString().trim();
+        const reelAmt = (fd.get("chargeReel") || "").toString().trim();
+        const shoutAmt = (fd.get("chargeShoutout") || "").toString().trim();
+        const chargeNote = (fd.get("chargeNote") || "").toString().trim();
+        const chargeBits = [];
+        if (postAmt) chargeBits.push("Post ₹" + postAmt);
+        if (storyAmt) chargeBits.push("Story ₹" + storyAmt);
+        if (reelAmt) chargeBits.push("Reel ₹" + reelAmt);
+        if (shoutAmt) chargeBits.push("Shoutout ₹" + shoutAmt);
+        if (chargeNote) chargeBits.push(chargeNote);
+        const chargesText = chargeBits.join(" · ");
+        const chargesErr = document.getElementById("chargesError");
+        if (!postAmt && !storyAmt && !reelAmt && !shoutAmt) {
+          if (chargesErr) chargesErr.style.display = "block";
+          document.getElementById("chargesGroup")?.scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
+        if (chargesErr) chargesErr.style.display = "none";
+
         let cityVal = (fd.get("city") || "").toString().trim();
         if (cityVal === "Other") {
           cityVal = (fd.get("cityOther") || "").toString().trim();
@@ -2231,7 +2330,7 @@
           skill: (fd.get("skill") || "").toString().trim(),
           income: (fd.get("income") || "").toString().trim(),
           working: (fd.get("working") || "").toString().trim(),
-          charges: (fd.get("charges") || "").toString().trim()
+          charges: chargesText
         };
 
         joinSubmitBtn.disabled = true;
