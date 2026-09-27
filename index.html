@@ -1650,35 +1650,21 @@
       }
 
       const appId = "app_" + uid();
-      // IMPORTANT: Live Apps Script only accepts action "join" and "campaign" (not "apply").
-      // We store applications using the working "campaign" write path, marked clearly.
-      // Filter in renderCampaigns() hides these from the public Open Campaigns list.
+      // Sends to Campaign + Application sheet → Applications tab
       const sheetPayload = {
-        action: "campaign",
-        campaignId: appId,
+        action: "apply",
         id: appId,
-        brandName: "[APPLICATION] " + brandName,
-        title: "Apply: " + campaignTitle,
-        brief:
-          "Creator: " + creatorName +
-          "\nContact: " + contact +
-          "\nPortfolio: " + portfolio +
-          "\nNotes: " + message +
-          "\nCampaign ID: " + campaignId +
-          "\nCampaign Title: " + campaignTitle,
-        niche: "Application",
-        platform: "",
-        targetAudience: "",
-        location: "",
-        followerRange: "",
-        budget: message || "",
-        deliverables: portfolio || "",
-        deadline: "",
-        email: contact,
-        website: portfolio,
-        status: "Application",
+        campaignId: campaignId,
+        campaignTitle: campaignTitle,
+        brandName: brandName,
+        name: creatorName,
+        contact: contact,
+        portfolio: portfolio,
+        message: message,
+        status: "Pending",
         createdDate: now.toLocaleDateString("en-IN"),
-        createdTime: now.toLocaleTimeString("en-IN")
+        createdTime: now.toLocaleTimeString("en-IN"),
+        createdAt: now.toISOString()
       };
 
       // Local backup
