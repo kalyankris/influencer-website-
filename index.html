@@ -124,12 +124,33 @@
     .btn-sm { padding: 0.42rem 0.95rem; font-size: 0.8rem; }
     .menu-toggle {
       display: none; background: none; border: none; color: white;
-      width: 42px; height: 42px; border-radius: 12px;
-      font-size: 1.35rem; cursor: pointer;
-      align-items: center; justify-content: center;
+      width: 44px; height: 44px; border-radius: 12px;
+      cursor: pointer; align-items: center; justify-content: center;
+      position: relative; z-index: 1100;
       transition: background 0.2s;
+      -webkit-tap-highlight-color: transparent;
     }
     .menu-toggle:hover { background: rgba(255,255,255,0.06); }
+    .menu-toggle .bar {
+      display: block; width: 22px; height: 2px;
+      background: white; border-radius: 2px;
+      transition: transform 0.3s var(--ease), opacity 0.25s, background 0.2s;
+      position: absolute; left: 50%; margin-left: -11px;
+    }
+    .menu-toggle .bar:nth-child(1) { top: 15px; }
+    .menu-toggle .bar:nth-child(2) { top: 21px; }
+    .menu-toggle .bar:nth-child(3) { top: 27px; }
+    /* Cross (X) when open */
+    body.menu-open .menu-toggle .bar:nth-child(1) {
+      top: 21px; transform: rotate(45deg);
+    }
+    body.menu-open .menu-toggle .bar:nth-child(2) {
+      opacity: 0; transform: scaleX(0);
+    }
+    body.menu-open .menu-toggle .bar:nth-child(3) {
+      top: 21px; transform: rotate(-45deg);
+    }
+    body.menu-open { overflow: hidden; }
 
     /* Pages */
     .page {
@@ -486,29 +507,78 @@
     /* ========== MOBILE ========== */
     @media (max-width: 860px) {
       .nav-links {
-        display: none;
-        position: fixed; top: var(--nav-h); left: 0; right: 0; bottom: 0;
-        background: rgba(9, 9, 11, 0.97);
-        backdrop-filter: blur(20px);
-        flex-direction: column; padding: 1.25rem 1.25rem 2rem;
-        gap: 0.25rem; overflow-y: auto;
-        border-bottom: none;
-        z-index: 999;
-        animation: drawerIn 0.3s var(--ease-out);
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        inset: 0;
+        top: 0; left: 0; right: 0; bottom: 0;
+        width: 100%; height: 100%;
+        height: 100dvh;
+        background: rgba(9, 9, 11, 0.98);
+        backdrop-filter: blur(28px) saturate(1.3);
+        -webkit-backdrop-filter: blur(28px) saturate(1.3);
+        padding: calc(var(--nav-h) + 1.5rem) 1.5rem 2.5rem;
+        gap: 0.15rem;
+        overflow-y: auto;
+        z-index: 1050;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(-12px);
+        transition: opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out), visibility 0.35s;
       }
-      @keyframes drawerIn {
-        from { opacity: 0; transform: translateY(-8px); }
-        to { opacity: 1; transform: none; }
+      .nav-links.open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+        transform: translateY(0);
       }
-      .nav-links.open { display: flex; }
       .nav-links .nav-btn, .nav-links a {
-        width: 100%; text-align: left; padding: 0.85rem 1rem;
-        font-size: 1.05rem; border-radius: 12px;
+        width: 100%; text-align: left;
+        padding: 1rem 1.1rem;
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-radius: 14px;
+        color: var(--text-muted);
+        opacity: 0;
+        transform: translateY(10px);
+        transition: color 0.2s, background 0.2s, opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+      }
+      .nav-links.open .nav-btn,
+      .nav-links.open a {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .nav-links.open .nav-btn:nth-child(1) { transition-delay: 0.04s; }
+      .nav-links.open .nav-btn:nth-child(2) { transition-delay: 0.07s; }
+      .nav-links.open .nav-btn:nth-child(3) { transition-delay: 0.10s; }
+      .nav-links.open .nav-btn:nth-child(4) { transition-delay: 0.13s; }
+      .nav-links.open .nav-btn:nth-child(5) { transition-delay: 0.16s; }
+      .nav-links.open .nav-btn:nth-child(6) { transition-delay: 0.19s; }
+      .nav-links.open .nav-btn:nth-child(7) { transition-delay: 0.22s; }
+      .nav-links.open .btn-primary { transition-delay: 0.28s; }
+      .nav-links .nav-btn:hover,
+      .nav-links .nav-btn.active,
+      .nav-links a:hover {
+        color: white;
+        background: rgba(255,255,255,0.06);
+      }
+      .nav-links .nav-btn.active {
+        color: var(--primary-light);
+        background: rgba(99,102,241,0.12);
       }
       .nav-links .btn-primary {
-        margin-top: 0.75rem; width: 100%;
-        justify-content: center; padding: 0.9rem;
-        font-size: 1rem;
+        margin-top: 1.25rem;
+        width: 100%;
+        justify-content: center;
+        padding: 1rem 1.25rem;
+        font-size: 1.05rem;
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      .nav-links.open .btn-primary {
+        opacity: 1;
+        transform: translateY(0);
       }
       .menu-toggle { display: flex; }
       .stats { gap: 0.6rem; }
@@ -569,7 +639,11 @@
       <button type="button" class="nav-btn" data-page="contact">Contact</button>
       <button type="button" class="btn btn-primary btn-sm" data-page="join">Join Free →</button>
     </div>
-    <button class="menu-toggle" type="button" id="menuToggle" aria-label="Menu">☰</button>
+    <button class="menu-toggle" type="button" id="menuToggle" aria-label="Menu" aria-expanded="false">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
   </nav>
 
   <!-- HOME -->
@@ -1473,6 +1547,9 @@
         if (b.classList.contains("nav-btn")) b.classList.add("active");
       });
       document.getElementById("navLinks").classList.remove("open");
+      document.body.classList.remove("menu-open");
+      const toggle = document.getElementById("menuToggle");
+      if (toggle) toggle.setAttribute("aria-expanded", "false");
       if (pageId === "campaigns") loadLiveCampaigns(false);
     }
 
@@ -1484,7 +1561,10 @@
     });
 
     document.getElementById("menuToggle").addEventListener("click", () => {
-      document.getElementById("navLinks").classList.toggle("open");
+      const links = document.getElementById("navLinks");
+      const isOpen = links.classList.toggle("open");
+      document.body.classList.toggle("menu-open", isOpen);
+      document.getElementById("menuToggle").setAttribute("aria-expanded", isOpen ? "true" : "false");
     });
 
     document.getElementById("modalOverlay").addEventListener("click", (e) => {
