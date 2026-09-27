@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1152,6 +1153,7 @@
     // LIVE DATA URL - PASTE YOUR APPS SCRIPT WEB APP URL HERE
     // ============================================================
     const LIVE_DATA_URL = "https://script.google.com/macros/s/AKfycbxStD_Eckmqdd2CSZNmzEbFPDt1L9MJHXXfxbADPF3UU1qUJ-8mcwosP0VbLa1dK63tPQ/exec";
+    const SITE_TOKEN = "cnt_7f3a9c2e1b84d06f";
 
     // ============================================================
     // FALLBACK DATA (used only if live fetch fails)
@@ -1353,7 +1355,7 @@
       if (typeof Papa === "undefined") return;
 
       // Cache-bust so new sheet rows appear immediately (Apps Script / browser cache)
-      const fetchUrl = url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
+      const fetchUrl = url + (url.includes("?") ? "&" : "?") + "token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + Date.now();
 
       Papa.parse(fetchUrl, {
         download: true,
@@ -1707,7 +1709,7 @@
         return;
       }
       // Matches Apps Script: ?action=campaigns
-      const fetchUrl = url + (url.includes("?") ? "&" : "?") + "action=campaigns&t=" + Date.now();
+      const fetchUrl = url + (url.includes("?") ? "&" : "?") + "action=campaigns&token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + Date.now();
       Papa.parse(fetchUrl, {
         download: true,
         header: true,
@@ -1760,6 +1762,7 @@
       // Keys match Apps Script appendCampaign_() exactly
       const campaign = {
         action: "campaign",
+        token: SITE_TOKEN,
         campaignId: newId,
         brandName: (fd.get("brandName") || "").toString().trim(),
         title: (fd.get("title") || "").toString().trim(),
@@ -2032,6 +2035,7 @@
       // Sends to Campaign + Application sheet → Applications tab
       const sheetPayload = {
         action: "apply",
+        token: SITE_TOKEN,
         id: appId,
         campaignId: campaignId,
         campaignTitle: campaignTitle,
@@ -2141,6 +2145,7 @@
       const live = allInfluencers.find(x => x.id === creatorId) || {};
       const payload = {
         action: "invite",
+        token: SITE_TOKEN,
         id: "inv_" + uid(),
         creatorId: creatorId,
         creatorName: (fd.get("creatorName") || live.name || "").toString().trim(),
@@ -2214,6 +2219,7 @@
         cityVal = cleanCity(cityVal); // normalize before save
         const payload = {
           action: "join",
+          token: SITE_TOKEN,
           name: (fd.get("name") || "").toString().trim(),
           age: (fd.get("age") || "").toString().trim(),
           gender: (fd.get("gender") || "").toString().trim(),
