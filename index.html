@@ -1510,9 +1510,15 @@
       const countEl = document.getElementById("campaignCount");
       if (!grid) return;
 
-      // Show campaigns whose status is open / active / live (or empty)
+      // Show real open campaigns only (hide application rows stored via campaign-action workaround)
       let list = getCampaigns().filter(c => {
+        const brand = (c.brandName || "");
+        const title = (c.title || "");
+        const niche = (c.niche || "").toLowerCase();
         const s = (c.status || "open").toLowerCase().replace(/\s+/g, "");
+        if (brand.startsWith("[APPLICATION]") || title.startsWith("Apply:")) return false;
+        if (niche === "application" || s === "application" || s === "pending") return false;
+        if (String(c.id || "").startsWith("app_")) return false;
         return s === "open" || s === "active" || s === "live" || s === "";
       });
 
@@ -1628,22 +1634,14 @@
       const campaignId = (fd.get("campaignId") || "").toString().trim();
       const campaign = getCampaigns().find(c => c.id === campaignId) || {};
       const now = new Date();
-      const app = {
-        action: "apply",
-        id: uid(),
-        campaignId: campaignId,
-        campaignTitle: campaign.title || document.getElementById("applyCampaignTitle")?.textContent || "",
-        brandName: campaign.brandName || document.getElementById("applyBrandName")?.textContent?.replace(/^by\s+/i, "") || "",
-        name: (fd.get("name") || "").toString().trim(),
-        contact: (fd.get("contact") || "").toString().trim(),
-        portfolio: (fd.get("portfolio") || "").toString().trim(),
-        message: (fd.get("message") || "").toString().trim(),
-        createdAt: now.toISOString(),
-        createdDate: now.toLocaleDateString("en-IN"),
-        createdTime: now.toLocaleTimeString("en-IN"),
-        status: "Pending"
-      };
-      if (!app.name || !app.contact || !app.campaignId) return;
+      const creatorName = (fd.get("name") || "").toString().trim();
+      const contact = (fd.get("contact") || "").toString().trim();
+      const portfolio = (fd.get("portfolio") || "").toString().trim();
+      const message = (fd.get("message") || "").toString().trim();
+      const campaignTitle = campaign.title || document.getElementById("applyCampaignTitle")?.textContent || "";
+      const brandName = campaign.brandName || document.getElementById("applyBrandName")?.textContent?.replace(/^by\s+/i, "") || "";
+
+      if (!creatorName || !contact || !campaignId) return;
 
       const btn = document.getElementById("applySubmitBtn");
       if (btn) {
@@ -1651,10 +1649,53 @@
         btn.textContent = "Submitting…";
       }
 
+      const appId = "app_" + uid();
+      // IMPORTANT: Live Apps Script only accepts action "join" and "campaign" (not "apply").
+      // We store applications using the working "campaign" write path, marked clearly.
+      // Filter in renderCampaigns() hides these from the public Open Campaigns list.
+      const sheetPayload = {
+        action: "campaign",
+        campaignId: appId,
+        id: appId,
+        brandName: "[APPLICATION] " + brandName,
+        title: "Apply: " + campaignTitle,
+        brief:
+          "Creator: " + creatorName +
+          "\nContact: " + contact +
+          "\nPortfolio: " + portfolio +
+          "\nNotes: " + message +
+          "\nCampaign ID: " + campaignId +
+          "\nCampaign Title: " + campaignTitle,
+        niche: "Application",
+        platform: "",
+        targetAudience: "",
+        location: "",
+        followerRange: "",
+        budget: message || "",
+        deliverables: portfolio || "",
+        deadline: "",
+        email: contact,
+        website: portfolio,
+        status: "Application",
+        createdDate: now.toLocaleDateString("en-IN"),
+        createdTime: now.toLocaleTimeString("en-IN")
+      };
+
       // Local backup
       try {
         const apps = getApplications();
-        apps.unshift(app);
+        apps.unshift({
+          id: appId,
+          campaignId,
+          campaignTitle,
+          brandName,
+          name: creatorName,
+          contact,
+          portfolio,
+          message,
+          createdAt: now.toISOString(),
+          status: "Pending"
+        });
         saveApplications(apps);
       } catch (_) {}
 
@@ -1665,7 +1706,7 @@
             method: "POST",
             mode: "no-cors",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(app)
+            body: JSON.stringify(sheetPayload)
           });
         } catch (err) {
           console.warn("Apply sheet save failed (local backup kept):", err);
