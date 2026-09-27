@@ -869,6 +869,10 @@
             <label>Your Email (for applications)</label>
             <input type="email" name="email" placeholder="brand@email.com">
           </div>
+          <div class="form-group">
+            <label>Phone / WhatsApp (for applications)</label>
+            <input type="tel" name="phone" placeholder="10-digit mobile number" autocomplete="tel">
+          </div>
           <button type="submit" class="btn btn-primary" style="width:100%;" id="brandSubmitBtn">Post Campaign →</button>
         </form>
         <div id="formSuccess" style="display:none; text-align:center; padding:2rem 0;">
@@ -1629,6 +1633,7 @@
         deadline: get("Application Deadline", "deadline", "Deadline", "Timeline"),
         location: get("Location", "location"),
         email: get("Contact/Brand Email", "email", "Email", "Contact"),
+        phone: get("Brand Phone", "phone", "Phone", "WhatsApp", "Mobile"),
         website: get("Brand Website", "website"),
         targetAudience: get("Target Audience", "target audience", "audience"),
         followerRange: get("Follower Range", "follower range", "followers"),
@@ -1714,6 +1719,7 @@
         deliverables: (fd.get("deliverables") || "").toString().trim(),
         deadline: (fd.get("deadline") || "").toString().trim(),
         email: (fd.get("email") || "").toString().trim(),
+        phone: (fd.get("phone") || "").toString().trim(),
         website: "",
         status: "Active",
         createdDate: now.toLocaleDateString("en-IN"),
@@ -1773,6 +1779,7 @@
           deadline: campaign.deadline,
           location: campaign.location,
           email: campaign.email,
+          phone: campaign.phone,
           status: "active",
           createdAt: campaign.createdAt
         });
@@ -1949,6 +1956,15 @@
       const message = (fd.get("message") || "").toString().trim();
       const campaignTitle = campaign.title || document.getElementById("applyCampaignTitle")?.textContent || "";
       const brandName = campaign.brandName || document.getElementById("applyBrandName")?.textContent?.replace(/^by\s+/i, "") || "";
+      const brandEmail = (campaign.email || "").toString().trim();
+      const brandPhone = (campaign.phone || "").toString().trim();
+      const campaignBrief = (campaign.brief || "").toString().trim();
+      const campaignBudget = (campaign.budget || "").toString().trim();
+      const campaignNiche = (campaign.niche || "").toString().trim();
+      const campaignPlatform = (campaign.platform || "").toString().trim();
+      const campaignDeadline = (campaign.deadline || "").toString().trim();
+      const campaignLocation = (campaign.location || "").toString().trim();
+      const campaignDeliverables = (campaign.deliverables || "").toString().trim();
 
       if (!creatorName || !contact || !campaignId) return;
 
@@ -1966,9 +1982,21 @@
         campaignId: campaignId,
         campaignTitle: campaignTitle,
         brandName: brandName,
+        brandEmail: brandEmail,
+        brandPhone: brandPhone,
+        campaignBrief: campaignBrief,
+        budget: campaignBudget,
+        niche: campaignNiche,
+        platform: campaignPlatform,
+        deadline: campaignDeadline,
+        location: campaignLocation,
+        deliverables: campaignDeliverables,
         name: creatorName,
         contact: contact,
+        email: contact,
+        phone: contact,
         portfolio: portfolio,
+        instagram: portfolio,
         message: message,
         status: "Pending",
         createdDate: now.toLocaleDateString("en-IN"),
