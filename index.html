@@ -1208,7 +1208,17 @@
         followersLabel: followersRaw || formatFollowers(followersNum),
         platform: "Instagram",
         igLink: igLink.startsWith("http") ? igLink : (igLink ? "https://instagram.com/" + igLink : ""),
-        email: get("Email"),
+        email: (function () {
+          let em = get("Email address", "Email", "mail");
+          const m = String(em || "").match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+          if (m) return m[0];
+          for (const v of Object.values(row)) {
+            const mm = String(v || "").match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+            if (mm) return mm[0];
+          }
+          return "";
+        })(),
+        phone: get("Contact number", "phone", "mobile"),
         gender: get("Gender"),
         charges: get("charges", "Please mention"),
         age: get("age"),
@@ -2127,13 +2137,15 @@
       e.preventDefault();
       const fd = new FormData(e.target);
       const now = new Date();
+      const creatorId = (fd.get("creatorId") || "").toString().trim();
+      const live = allInfluencers.find(x => x.id === creatorId) || {};
       const payload = {
         action: "invite",
         id: "inv_" + uid(),
-        creatorId: (fd.get("creatorId") || "").toString().trim(),
-        creatorName: (fd.get("creatorName") || "").toString().trim(),
-        creatorEmail: (fd.get("creatorEmail") || "").toString().trim(),
-        creatorIg: (fd.get("creatorIg") || "").toString().trim(),
+        creatorId: creatorId,
+        creatorName: (fd.get("creatorName") || live.name || "").toString().trim(),
+        creatorEmail: (fd.get("creatorEmail") || live.email || "").toString().trim(),
+        creatorIg: (fd.get("creatorIg") || live.igLink || "").toString().trim(),
         brandName: (fd.get("brandName") || "").toString().trim(),
         brandEmail: (fd.get("brandEmail") || "").toString().trim(),
         brandPhone: (fd.get("brandPhone") || "").toString().trim(),
