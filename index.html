@@ -866,12 +866,12 @@
             <input type="text" name="location" placeholder="e.g. Pan-India / Hyderabad / Remote">
           </div>
           <div class="form-group">
-            <label>Your Email (for applications)</label>
-            <input type="email" name="email" placeholder="brand@email.com">
+            <label>Your Email (for applications) *</label>
+            <input type="email" name="email" required placeholder="brand@email.com">
           </div>
           <div class="form-group">
-            <label>Phone / WhatsApp (for applications)</label>
-            <input type="tel" name="phone" placeholder="10-digit mobile number" autocomplete="tel">
+            <label>Phone / WhatsApp (for applications) *</label>
+            <input type="tel" name="phone" required placeholder="10-digit mobile number" autocomplete="tel">
           </div>
           <button type="submit" class="btn btn-primary" style="width:100%;" id="brandSubmitBtn">Post Campaign →</button>
         </form>
@@ -1062,6 +1062,49 @@
   <!-- MODAL (influencer profile) -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal" id="modalContent"></div>
+  </div>
+
+  <!-- BRAND → CREATOR INVITE MODAL -->
+  <div class="modal-overlay" id="inviteModalOverlay">
+    <div class="modal" style="max-width:480px;">
+      <button type="button" class="modal-close" id="inviteModalClose">×</button>
+      <div class="modal-header" style="border-bottom:none; padding-bottom:0;">
+        <div>
+          <h3 style="margin:0 0 0.25rem; font-size:1.25rem;">Request this creator</h3>
+          <p style="color:var(--text-muted); font-size:0.9rem; margin:0;" id="inviteCreatorLabel"></p>
+        </div>
+      </div>
+      <div class="modal-body">
+        <form id="inviteForm">
+          <input type="hidden" id="inviteCreatorId" name="creatorId">
+          <input type="hidden" id="inviteCreatorName" name="creatorName">
+          <input type="hidden" id="inviteCreatorEmail" name="creatorEmail">
+          <input type="hidden" id="inviteCreatorIg" name="creatorIg">
+          <div class="form-group">
+            <label>Brand name *</label>
+            <input type="text" name="brandName" required placeholder="Your brand">
+          </div>
+          <div class="form-group">
+            <label>Brand email *</label>
+            <input type="email" name="brandEmail" required placeholder="brand@email.com">
+          </div>
+          <div class="form-group">
+            <label>Brand phone / WhatsApp *</label>
+            <input type="tel" name="brandPhone" required placeholder="10-digit mobile number">
+          </div>
+          <div class="form-group">
+            <label>Campaign / what you need *</label>
+            <textarea name="message" required placeholder="e.g. 1 Reel + 2 Stories for our Diwali launch in Hyderabad. Budget ₹8,000."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;" id="inviteSubmitBtn">Send request to creator →</button>
+        </form>
+        <div id="inviteSuccess" style="display:none; text-align:center; padding:1.5rem 0;">
+          <h3 style="color:var(--success); margin-bottom:0.5rem;">✓ Request sent</h3>
+          <p style="color:var(--text-muted);">The creator will get an email with your brand contact details.</p>
+          <button type="button" class="btn btn-outline" style="margin-top:1rem;" id="inviteDoneBtn">Done</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- APPLY MODAL -->
@@ -1528,7 +1571,7 @@
           ${i.charges ? `<div class="detail-row"><span>Charges</span><span style="text-align:right;max-width:60%;">${esc(i.charges.slice(0,130))}${i.charges.length>130?"…":""}</span></div>` : ""}
           <div style="margin-top:1.25rem;display:flex;gap:0.65rem;flex-wrap:wrap;">
             ${i.igLink ? `<a href="${i.igLink}" target="_blank" rel="noopener" class="btn btn-primary" style="text-decoration:none;">View Instagram</a>` : ""}
-            <button type="button" class="btn btn-outline" onclick="alert('Connect request sent! (demo)')">Request Collaboration</button>
+            <button type="button" class="btn btn-outline invite-creator-btn" data-creator-id="${i.id}">Request Collaboration</button>
           </div>
         </div>`;
       document.getElementById("modalOverlay").classList.add("open");
@@ -1578,6 +1621,7 @@
       if (e.key === "Escape") {
         closeModal();
         closeApplyModal();
+        closeInviteModal();
       }
     });
 
@@ -1733,11 +1777,11 @@
       let errEl = document.getElementById("brandFormError");
       if (errEl) errEl.remove();
 
-      if (!campaign.brandName || !campaign.title || !campaign.brief || !campaign.budget) {
+      if (!campaign.brandName || !campaign.title || !campaign.brief || !campaign.budget || !campaign.email || !campaign.phone) {
         errEl = document.createElement("div");
         errEl.id = "brandFormError";
         errEl.style.cssText = "background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;padding:0.7rem 1rem;border-radius:10px;font-size:0.88rem;margin-bottom:1rem;";
-        errEl.textContent = "Please fill Brand Name, Campaign Title, Brief and Budget.";
+        errEl.textContent = "Please fill Brand Name, Title, Brief, Budget, Email and Phone.";
         form.insertBefore(errEl, form.firstChild);
         return;
       }
@@ -1993,8 +2037,8 @@
         deliverables: campaignDeliverables,
         name: creatorName,
         contact: contact,
-        email: contact,
-        phone: contact,
+        creatorEmail: contact,
+        creatorPhone: contact,
         portfolio: portfolio,
         instagram: portfolio,
         message: message,
@@ -2041,6 +2085,87 @@
       if (btn) {
         btn.disabled = false;
         btn.textContent = "Submit Application →";
+      }
+    });
+
+    function openInviteModal(creatorId) {
+      const i = allInfluencers.find(x => x.id === creatorId);
+      if (!i) return;
+      document.getElementById("inviteCreatorId").value = i.id || "";
+      document.getElementById("inviteCreatorName").value = i.name || "";
+      document.getElementById("inviteCreatorEmail").value = i.email || "";
+      document.getElementById("inviteCreatorIg").value = i.igLink || "";
+      document.getElementById("inviteCreatorLabel").textContent =
+        (i.name || "Creator") + (i.location ? " · " + i.location : "") + (i.niche ? " · " + i.niche : "");
+      document.getElementById("inviteForm").style.display = "block";
+      document.getElementById("inviteSuccess").style.display = "none";
+      document.getElementById("inviteForm").reset();
+      document.getElementById("inviteCreatorId").value = i.id || "";
+      document.getElementById("inviteCreatorName").value = i.name || "";
+      document.getElementById("inviteCreatorEmail").value = i.email || "";
+      document.getElementById("inviteCreatorIg").value = i.igLink || "";
+      closeModal();
+      document.getElementById("inviteModalOverlay").classList.add("open");
+    }
+    function closeInviteModal() {
+      const el = document.getElementById("inviteModalOverlay");
+      if (el) el.classList.remove("open");
+    }
+    document.getElementById("inviteModalClose")?.addEventListener("click", closeInviteModal);
+    document.getElementById("inviteDoneBtn")?.addEventListener("click", closeInviteModal);
+    document.getElementById("inviteModalOverlay")?.addEventListener("click", (e) => {
+      if (e.target === document.getElementById("inviteModalOverlay")) closeInviteModal();
+    });
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".invite-creator-btn");
+      if (btn) {
+        e.stopPropagation();
+        openInviteModal(btn.dataset.creatorId);
+      }
+    });
+    document.getElementById("inviteForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const now = new Date();
+      const payload = {
+        action: "invite",
+        id: "inv_" + uid(),
+        creatorId: (fd.get("creatorId") || "").toString().trim(),
+        creatorName: (fd.get("creatorName") || "").toString().trim(),
+        creatorEmail: (fd.get("creatorEmail") || "").toString().trim(),
+        creatorIg: (fd.get("creatorIg") || "").toString().trim(),
+        brandName: (fd.get("brandName") || "").toString().trim(),
+        brandEmail: (fd.get("brandEmail") || "").toString().trim(),
+        brandPhone: (fd.get("brandPhone") || "").toString().trim(),
+        message: (fd.get("message") || "").toString().trim(),
+        status: "Sent",
+        createdDate: now.toLocaleDateString("en-IN"),
+        createdTime: now.toLocaleTimeString("en-IN")
+      };
+      if (!payload.brandName || !payload.brandEmail || !payload.brandPhone || !payload.message) return;
+      const btn = document.getElementById("inviteSubmitBtn");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Sending…";
+      }
+      const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+      if (url) {
+        try {
+          await fetch(url, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+          });
+        } catch (err) {
+          console.warn("Invite save failed:", err);
+        }
+      }
+      e.target.style.display = "none";
+      document.getElementById("inviteSuccess").style.display = "block";
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Send request to creator →";
       }
     });
 
