@@ -71,7 +71,7 @@
 
     /* ========== NAV ========== */
     .nav {
-      position: fixed; top: 10px; left: 12px; right: 12px; z-index: 1000;
+      position: fixed; top: calc(10px + env(safe-area-inset-top, 0px)); left: 12px; right: 12px; z-index: 1000;
       height: var(--nav-h);
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 0.85rem 0 1.1rem;
@@ -285,46 +285,38 @@
       .path-grid { grid-template-columns: 1fr; }
     }
     .menu-toggle {
-      display: none; background: none; border: none; color: white;
-      width: 44px; height: 44px; border-radius: 12px;
+      display: none;
+      background: #1c1916;
+      border: 1px solid rgba(247,243,234,0.16);
+      color: white;
+      width: 44px; height: 44px; border-radius: 14px;
       cursor: pointer; align-items: center; justify-content: center;
-      position: relative; z-index: 1100;
+      position: relative; z-index: 2100;
       transition: background 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
-    .menu-toggle:hover { background: rgba(255,255,255,0.06); }
+    .menu-toggle:hover { background: rgba(255,255,255,0.1); }
     .menu-toggle .bar {
-      display: block; width: 22px; height: 2px;
+      display: block; width: 18px; height: 1.8px;
       border-radius: 2px;
-      position: absolute; left: 50%; margin-left: -11px;
-      background: linear-gradient(90deg,
-        rgba(255,255,255,0.2) 0%,
-        #fff 46%,
-        #fdba74 55%,
-        #c4b5fd 64%,
-        rgba(255,255,255,0.2) 100%);
-      background-size: 220% 100%;
-      animation: menuImpulse 1.15s linear infinite;
-      box-shadow: 0 0 8px rgba(253,186,116,0.35);
+      position: absolute; left: 50%; margin-left: -9px;
+      background: #f7f3ea;
       transition: transform 0.3s var(--ease), opacity 0.25s;
     }
-    .menu-toggle .bar:nth-child(1) { top: 15px; animation-delay: 0s; }
-    .menu-toggle .bar:nth-child(2) { top: 21px; animation-delay: 0.18s; }
-    .menu-toggle .bar:nth-child(3) { top: 27px; animation-delay: 0.36s; }
-    @keyframes menuImpulse {
-      from { background-position: 100% 0; }
-      to { background-position: -100% 0; }
-    }
+    .menu-toggle .bar:nth-child(1) { top: 14px; }
+    .menu-toggle .bar:nth-child(2) { top: 20px; }
+    .menu-toggle .bar:nth-child(3) { top: 26px; }
     body.menu-open .menu-toggle .bar { animation: none; background: #fff; }
+    body.menu-open .menu-toggle { background: #2a221c; }
     /* Cross (X) when open */
     body.menu-open .menu-toggle .bar:nth-child(1) {
-      top: 21px; transform: rotate(45deg);
+      top: 20px; transform: rotate(45deg);
     }
     body.menu-open .menu-toggle .bar:nth-child(2) {
       opacity: 0; transform: scaleX(0);
     }
     body.menu-open .menu-toggle .bar:nth-child(3) {
-      top: 21px; transform: rotate(-45deg);
+      top: 20px; transform: rotate(-45deg);
     }
     body.menu-open { overflow: hidden; }
 
@@ -510,27 +502,19 @@
       gap: 1.1rem;
     }
     .card {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015));
+      background: #171512;
       border: 1px solid rgba(247,243,234,0.12);
-      border-radius: 22px;
+      border-radius: 20px;
       overflow: hidden;
-      transform: perspective(900px) rotateX(2deg);
-      box-shadow:
-        0 1px 0 rgba(255,255,255,0.08) inset,
-        0 18px 36px -16px rgba(0,0,0,0.7),
-        0 8px 16px rgba(0,0,0,0.35);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.35);
       transition: transform 0.3s var(--ease), border-color 0.3s, box-shadow 0.3s;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
     .card:hover {
-      transform: perspective(900px) rotateX(0deg) translateY(-8px);
-      border-color: rgba(232,195,154,0.35);
-      box-shadow:
-        0 1px 0 rgba(255,255,255,0.12) inset,
-        0 28px 50px -18px rgba(0,0,0,0.8),
-        0 10px 22px rgba(0,0,0,0.4);
+      transform: translateY(-4px);
+      border-color: rgba(232,195,154,0.3);
+      box-shadow: 0 16px 32px rgba(0,0,0,0.4);
     }
     .card:active { transform: translateY(-2px) scale(0.99); }
     .card-img {
@@ -576,8 +560,8 @@
     .creator-theme .section-title { color: #fb923c; }
     .creator-theme .section-sub { color: #fdba74; }
     .creator-theme .card {
-      border-color: rgba(243,161,76,0.22);
-      background: var(--bg-card);
+      border-color: rgba(243,161,76,0.28);
+      background: #171512;
     }
     .creator-theme .card:hover {
       border-color: rgba(243,161,76,0.45);
@@ -953,16 +937,30 @@
         transform: translateY(0);
       }
       .menu-toggle { display: flex; }
-      .stats { gap: 0.6rem; }
-      .stat { min-width: 72px; padding: 0.6rem 0.5rem; }
-      .stat-num { font-size: 1.45rem; }
-      .hero { padding: 3rem 1.1rem 2.5rem; }
-      .hero h1 { font-size: clamp(1.9rem, 7vw, 2.5rem); }
-      .hero p { font-size: 0.98rem; }
+      .stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.55rem;
+        width: 100%;
+        max-width: 100%;
+        margin: 1.6rem 0 0;
+      }
+      .stat { min-width: 0; padding: 0.7rem 0.4rem; }
+      .stat-num { font-size: 1.3rem; }
+      .hero { padding: 3.2rem 1rem 2.2rem; }
+      .hero h1 { font-size: clamp(1.75rem, 8vw, 2.4rem); }
+      .hero p { font-size: 0.95rem; padding: 0 0.2rem; }
       .hero-cta { gap: 0.6rem; }
       .hero-cta .btn { flex: 1 1 auto; min-width: 140px; justify-content: center; }
-      .page { padding-top: calc(var(--nav-h) + env(safe-area-inset-top)); }
-      .section { padding: 2rem 1.1rem; }
+      .page { padding-top: calc(var(--nav-h) + 28px + env(safe-area-inset-top, 0px)); }
+      .section { padding: 1.6rem 1rem 2rem; }
+      .card { min-width: 0; transform: none; }
+      .card:hover { transform: translateY(-3px); }
+      .path-card { transform: none; }
+      #featuredGrid { grid-template-columns: 1fr; }
+      .card-footer { flex-wrap: nowrap; }
+      .card-footer .btn { flex-shrink: 0; }
+      .card-footer { flex-wrap: wrap; gap: 0.4rem; }
       #page-campaigns .section,
       #page-discover .section { padding-top: 1.25rem; }
       #page-campaigns .influencer-grid {
@@ -970,7 +968,7 @@
       }
       .section-title { font-size: 1.45rem; }
       .influencer-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        grid-template-columns: 1fr;
         gap: 0.85rem;
       }
       .card-img { height: 110px; }
@@ -988,7 +986,7 @@
     }
 
     @media (max-width: 400px) {
-      .influencer-grid { grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+      .influencer-grid { grid-template-columns: 1fr; gap: 0.7rem; }
       #page-campaigns .influencer-grid { grid-template-columns: 1fr; }
       .card-meta span:last-child { display: none; }
       .nav { padding: 0 0.9rem; }
@@ -1076,7 +1074,7 @@
       </div>
       </div>
     </section>
-    <section class="section creator-theme">
+    <section class="section">
       <h2 class="section-title">Featured Creators</h2>
       <p class="section-sub">Hand-picked talent ready to collaborate</p>
       <div class="influencer-grid" id="featuredGrid"></div>
@@ -1878,8 +1876,8 @@
         }
         console.warn("Live fetch failed:", lastErr);
         if (!hadCache) {
-          const grid = document.getElementById("influencerGrid");
-          if (grid) grid.innerHTML = `<div class="empty-state"><p>Could not load creators. Pull to refresh or try again.</p></div>`;
+          allInfluencers = prepare(FALLBACK_DATA);
+          finishLoad();
         }
         hideProgress();
       })();
