@@ -91,6 +91,40 @@
     .nav-links {
       display: flex; gap: 0.15rem; align-items: center;
     }
+    .menu-extra { display: none; }
+    .menu-acc { display: none; width: 100%; }
+    .menu-parent {
+      width: 100%; text-align: left;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit; font-weight: 650; font-size: 1.15rem;
+      padding: 1rem 1.1rem; border-radius: 14px; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .menu-parent.creator {
+      border-color: rgba(243,161,76,0.45);
+      color: #ffedd5;
+      background: linear-gradient(90deg, rgba(243,161,76,0.18), rgba(243,161,76,0.04));
+    }
+    .menu-parent.brand {
+      border-color: rgba(124,108,246,0.45);
+      color: #ede9fe;
+      background: linear-gradient(90deg, rgba(124,108,246,0.2), rgba(124,108,246,0.04));
+    }
+    .menu-acc.open .menu-parent.creator { background: rgba(243,161,76,0.22); }
+    .menu-acc.open .menu-parent.brand { background: rgba(124,108,246,0.22); }
+    .menu-sub {
+      display: none; flex-direction: column; gap: 0.25rem;
+      padding: 0.45rem 0 0.7rem 0.7rem;
+    }
+    .menu-acc.open .menu-sub { display: flex; }
+    .menu-sub .nav-btn { font-size: 1.02rem; padding: 0.8rem 1rem; }
+    @media (max-width: 860px) {
+      .menu-extra { display: none; }
+      .desk-only { display: none !important; }
+      .menu-acc { display: block; margin: 0.35rem 0; }
+    }
     .nav-links a, .nav-links button.nav-btn {
       color: var(--text-muted); text-decoration: none; font-weight: 500;
       font-size: 0.9rem; transition: color 0.2s, background 0.2s;
@@ -766,17 +800,16 @@
         top: 0; left: 0; right: 0; bottom: 0;
         width: 100%; height: 100%;
         height: 100dvh;
-        top: calc(var(--nav-h) + 18px);
-        left: 12px; right: 12px; bottom: auto;
-        width: auto; height: auto;
-        max-height: min(70dvh, 520px);
-        background: rgba(18, 16, 14, 0.62);
-        backdrop-filter: blur(24px) saturate(1.4);
-        -webkit-backdrop-filter: blur(24px) saturate(1.4);
-        border: 1px solid rgba(247,243,234,0.14);
-        border-radius: 22px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-        padding: 1rem 1rem 1.15rem;
+        background:
+          radial-gradient(ellipse 80% 50% at 10% 0%, rgba(243,161,76,0.22), transparent 55%),
+          radial-gradient(ellipse 70% 45% at 100% 15%, rgba(124,108,246,0.2), transparent 50%),
+          #100e0c;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        padding: calc(var(--nav-h) + 2rem) 1.4rem 2.5rem;
         gap: 0.15rem;
         overflow-y: auto;
         z-index: 1050;
@@ -906,8 +939,25 @@
   <nav class="nav">
     <button class="logo" type="button" data-page="home">Connectly</button>
     <div class="nav-links" id="navLinks">
-      <button type="button" class="btn btn-creator btn-sm" data-page="creators">Influencers</button>
-      <button type="button" class="btn btn-primary btn-sm" data-page="brandhome">Brands</button>
+      <button type="button" class="btn btn-creator btn-sm desk-only" data-page="creators">Influencers</button>
+      <button type="button" class="btn btn-primary btn-sm desk-only" data-page="brandhome">Brands</button>
+      <div class="menu-acc">
+        <button type="button" class="menu-parent creator">Influencers <span>▾</span></button>
+        <div class="menu-sub">
+          <button type="button" class="nav-btn" data-page="creators">Influencer home</button>
+          <button type="button" class="nav-btn" data-page="join">Join / Register</button>
+          <button type="button" class="nav-btn" data-page="campaigns">Open Campaigns</button>
+        </div>
+      </div>
+      <div class="menu-acc">
+        <button type="button" class="menu-parent brand">Brands <span>▾</span></button>
+        <div class="menu-sub">
+          <button type="button" class="nav-btn" data-page="brandhome">Brand home</button>
+          <button type="button" class="nav-btn" data-page="discover">Find Creators</button>
+          <button type="button" class="nav-btn" data-page="brands">Post a Campaign</button>
+          <button type="button" class="nav-btn" data-page="campaigns">See Open Campaigns</button>
+        </div>
+      </div>
       <button type="button" class="nav-btn" data-page="how">How it Works</button>
       <button type="button" class="nav-btn" data-page="contact">Contact</button>
     </div>
@@ -1964,6 +2014,17 @@
       btn.addEventListener("click", () => showPage(btn.dataset.page));
     });
 
+    document.querySelectorAll(".menu-parent").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const box = btn.parentElement;
+        document.querySelectorAll(".menu-acc").forEach((el) => {
+          if (el !== box) el.classList.remove("open");
+        });
+        box.classList.toggle("open");
+      });
+    });
     document.getElementById("menuToggle").addEventListener("click", () => {
       const links = document.getElementById("navLinks");
       const isOpen = links.classList.toggle("open");
