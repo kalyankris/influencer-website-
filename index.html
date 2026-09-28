@@ -88,9 +88,13 @@
       cursor: pointer; border: none; background-color: transparent;
       letter-spacing: -0.03em; padding: 0.25rem 0;
     }
-    .nav-links {
+    .nav-links.desk-bar {
       display: flex; gap: 0.15rem; align-items: center;
     }
+    #navLinks {
+      display: none;
+    }
+    .menu-toggle { z-index: 2100; }
     .menu-extra { display: none; }
     .menu-acc { display: none; width: 100%; }
     .menu-parent {
@@ -286,7 +290,7 @@
     body.menu-open .menu-toggle .bar:nth-child(3) {
       top: 21px; transform: rotate(-45deg);
     }
-    body.menu-open { overflow: auto; }
+    body.menu-open { overflow: hidden; }
 
     /* Pages */
     .page {
@@ -792,14 +796,16 @@
 
     /* ========== MOBILE ========== */
     @media (max-width: 860px) {
-      .nav-links {
-        display: flex;
+      .desk-bar { display: none; }
+      #navLinks {
+        display: none;
         flex-direction: column;
         position: fixed;
         inset: 0;
         top: 0; left: 0; right: 0; bottom: 0;
-        width: 100%; height: 100%;
+        width: 100vw; height: 100%;
         height: 100dvh;
+        margin: 0;
         background:
           radial-gradient(ellipse 80% 50% at 10% 0%, rgba(243,161,76,0.22), transparent 55%),
           radial-gradient(ellipse 70% 45% at 100% 15%, rgba(124,108,246,0.2), transparent 50%),
@@ -812,18 +818,19 @@
         padding: calc(var(--nav-h) + 2rem) 1.4rem 2.5rem;
         gap: 0.15rem;
         overflow-y: auto;
-        z-index: 1050;
+        z-index: 2000;
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
         transform: translateY(-12px);
         transition: opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out), visibility 0.35s;
       }
-      .nav-links.open {
+      #navLinks.open {
+        display: flex;
         opacity: 1;
         visibility: visible;
         pointer-events: all;
-        transform: translateY(0);
+        transform: none;
       }
       .nav-links .nav-btn, .nav-links a {
         width: 100%; text-align: left;
@@ -938,28 +945,9 @@
   <!-- NAV -->
   <nav class="nav">
     <button class="logo" type="button" data-page="home">Connectly</button>
-    <div class="nav-links" id="navLinks">
+    <div class="nav-links desk-bar">
       <button type="button" class="btn btn-creator btn-sm desk-only" data-page="creators">Influencers</button>
       <button type="button" class="btn btn-primary btn-sm desk-only" data-page="brandhome">Brands</button>
-      <div class="menu-acc">
-        <button type="button" class="menu-parent creator">Influencers <span>▾</span></button>
-        <div class="menu-sub">
-          <button type="button" class="nav-btn" data-page="creators">Influencer home</button>
-          <button type="button" class="nav-btn" data-page="join">Join / Register</button>
-          <button type="button" class="nav-btn" data-page="campaigns">Open Campaigns</button>
-        </div>
-      </div>
-      <div class="menu-acc">
-        <button type="button" class="menu-parent brand">Brands <span>▾</span></button>
-        <div class="menu-sub">
-          <button type="button" class="nav-btn" data-page="brandhome">Brand home</button>
-          <button type="button" class="nav-btn" data-page="discover">Find Creators</button>
-          <button type="button" class="nav-btn" data-page="brands">Post a Campaign</button>
-          <button type="button" class="nav-btn" data-page="campaigns">See Open Campaigns</button>
-        </div>
-      </div>
-      <button type="button" class="nav-btn" data-page="how">How it Works</button>
-      <button type="button" class="nav-btn" data-page="contact">Contact</button>
     </div>
     <button class="menu-toggle" type="button" id="menuToggle" aria-label="Menu" aria-expanded="false">
       <span class="bar"></span>
@@ -967,6 +955,28 @@
       <span class="bar"></span>
     </button>
   </nav>
+  <div class="nav-links" id="navLinks">
+    <button type="button" class="btn btn-outline" id="menuCloseBtn" style="width:100%;margin-bottom:1rem;">Close menu</button>
+    <div class="menu-acc">
+      <button type="button" class="menu-parent creator">Influencers <span>▾</span></button>
+      <div class="menu-sub">
+        <button type="button" class="nav-btn" data-page="creators">Influencer home</button>
+        <button type="button" class="nav-btn" data-page="join">Join / Register</button>
+        <button type="button" class="nav-btn" data-page="campaigns">Open Campaigns</button>
+      </div>
+    </div>
+    <div class="menu-acc">
+      <button type="button" class="menu-parent brand">Brands <span>▾</span></button>
+      <div class="menu-sub">
+        <button type="button" class="nav-btn" data-page="brandhome">Brand home</button>
+        <button type="button" class="nav-btn" data-page="discover">Find Creators</button>
+        <button type="button" class="nav-btn" data-page="brands">Post a Campaign</button>
+        <button type="button" class="nav-btn" data-page="campaigns">See Open Campaigns</button>
+      </div>
+    </div>
+    <button type="button" class="nav-btn" data-page="how">How it Works</button>
+    <button type="button" class="nav-btn" data-page="contact">Contact</button>
+  </div>
 
   <!-- HOME -->
   <div class="page active" id="page-home">
@@ -2042,7 +2052,7 @@
     }
     let lastScrollY = 0;
     window.addEventListener("scroll", () => {
-      closeMenuSoft();
+      if (document.body.classList.contains("menu-open")) return;
       const nav = document.querySelector(".nav");
       if (!nav) return;
       const y = window.scrollY || 0;
@@ -2050,7 +2060,7 @@
       else nav.classList.remove("nav-hidden");
       lastScrollY = y;
     }, { passive: true });
-    document.getElementById("navLinks")?.addEventListener("scroll", closeMenuSoft, { passive: true });
+    document.getElementById("menuCloseBtn")?.addEventListener("click", closeMenuSoft);
 
 
     document.getElementById("modalOverlay").addEventListener("click", (e) => {
