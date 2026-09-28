@@ -1640,7 +1640,7 @@
     async function loadCreatorsFromFirebase() {
       const db = getFirebaseDb();
       if (!db) return [];
-      const snap = await db.collection("creators").limit(80).get();
+      const snap = await db.collection("creators").limit(300).get();
       const rows = [];
       snap.forEach((doc) => {
         const d = doc.data() || {};
