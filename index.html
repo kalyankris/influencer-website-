@@ -1580,8 +1580,13 @@
             <input type="text" name="name" required placeholder="Full name">
           </div>
           <div class="form-group">
-            <label>Email / WhatsApp *</label>
-            <input type="text" name="contact" required placeholder="you@email.com or +91…">
+            <label>Email *</label>
+            <input type="email" name="email" required placeholder="you@email.com" autocomplete="email">
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.35rem;">Required — status updates (approved / rejected) are sent here.</p>
+          </div>
+          <div class="form-group">
+            <label>WhatsApp / Phone *</label>
+            <input type="tel" name="phone" required placeholder="+91 98765 43210" autocomplete="tel" minlength="10">
           </div>
           <div class="form-group">
             <label>Instagram / Portfolio link</label>
@@ -2571,7 +2576,19 @@
       const campaign = getCampaigns().find(c => c.id === campaignId) || {};
       const now = new Date();
       const creatorName = (fd.get("name") || "").toString().trim();
-      const contact = (fd.get("contact") || "").toString().trim();
+      const email = (fd.get("email") || "").toString().trim();
+      const phone = (fd.get("phone") || "").toString().trim();
+      const emailOk = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email);
+      if (!emailOk) {
+        alert("Please enter a valid email. Brands send approve / reject updates to this address.");
+        return;
+      }
+      const phoneDigits = phone.replace(/\D/g, "");
+      if (phoneDigits.length < 10) {
+        alert("Please enter a valid WhatsApp / phone number.");
+        return;
+      }
+      const contact = phone ? (email + " | " + phone) : email;
       const portfolio = (fd.get("portfolio") || "").toString().trim();
       const message = (fd.get("message") || "").toString().trim();
       const campaignTitle = campaign.title || document.getElementById("applyCampaignTitle")?.textContent || "";
@@ -2586,7 +2603,7 @@
       const campaignLocation = (campaign.location || "").toString().trim();
       const campaignDeliverables = (campaign.deliverables || "").toString().trim();
 
-      if (!creatorName || !contact || !campaignId) return;
+      if (!creatorName || !emailOk || phoneDigits.length < 10 || !campaignId) return;
 
       const btn = document.getElementById("applySubmitBtn");
       if (btn) {
@@ -2614,8 +2631,8 @@
         deliverables: campaignDeliverables,
         name: creatorName,
         contact: contact,
-        creatorEmail: contact,
-        creatorPhone: contact,
+        creatorEmail: email,
+        creatorPhone: phone,
         portfolio: portfolio,
         instagram: portfolio,
         message: message,
