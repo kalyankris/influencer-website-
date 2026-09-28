@@ -11,6 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <style>
     :root {
       --primary: #7c6cf6;
@@ -1613,6 +1615,47 @@
     // ============================================================
     const LIVE_DATA_URL = "https://script.google.com/macros/s/AKfycbxStD_Eckmqdd2CSZNmzEbFPDt1L9MJHXXfxbADPF3UU1qUJ-8mcwosP0VbLa1dK63tPQ/exec";
     const SITE_TOKEN = "cnt_7f3a9c2e1b84d06f";
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyBt0ECNNg_MTHf_RT2Dr0USdXm8WRPULDQ",
+      authDomain: "connectly-29085.firebaseapp.com",
+      projectId: "connectly-29085",
+      storageBucket: "connectly-29085.firebasestorage.app",
+      messagingSenderId: "1017296155344",
+      appId: "1:1017296155344:web:f2a16995094acab35624d5",
+      measurementId: "G-0J14JQZK4D"
+    };
+    let fbDb = null;
+    function getFirebaseDb() {
+      if (fbDb) return fbDb;
+      if (typeof firebase === "undefined") return null;
+      try {
+        if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+        fbDb = firebase.firestore();
+        return fbDb;
+      } catch (err) {
+        console.warn("Firebase init failed", err);
+        return null;
+      }
+    }
+    async function loadCreatorsFromFirebase() {
+      const db = getFirebaseDb();
+      if (!db) return [];
+      const snap = await db.collection("creators").limit(80).get();
+      const rows = [];
+      snap.forEach((doc) => {
+        const d = doc.data() || {};
+        rows.push({
+          name: d.name || "",
+          city: d.city || d.location || "",
+          niche: d.niche || d.skill || "",
+          followers: d.followers || "",
+          instagram: d.instagram || d.portfolio || "",
+          charges: d.charges || d.rate || "",
+          gender: d.gender || ""
+        });
+      });
+      return rows.filter((r) => String(r.name || "").trim());
+    }
 
     // ============================================================
     // FALLBACK DATA (used only if live fetch fails)
@@ -1781,20 +1824,44 @@
     // ============================================================
     // LIVE DATA + AUTO REFRESH
     // ============================================================
+    function xhrCsvText(fetchUrl, ms) {
+      return new Promise((resolve, reject) => {
+        try {
+          const x = new XMLHttpRequest();
+          x.open("GET", fetchUrl, true);
+          x.timeout = ms || 45000;
+          x.onload = function () {
+            if (x.status >= 200 && x.status < 400) resolve(x.responseText || "");
+            else reject(new Error("http " + x.status));
+          };
+          x.onerror = function () { reject(new Error("xhr")); };
+          x.ontimeout = function () { reject(new Error("timeout")); };
+          x.send();
+        } catch (err) {
+          reject(err);
+        }
+      });
+    }
     async function fetchCsvText(fetchUrl) {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 28000);
       try {
-        const res = await fetch(fetchUrl, {
-          method: "GET",
-          redirect: "follow",
-          cache: "no-store",
-          signal: ctrl.signal
-        });
-        if (!res.ok) throw new Error("http " + res.status);
-        return await res.text();
-      } finally {
-        clearTimeout(timer);
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 45000);
+        try {
+          const res = await fetch(fetchUrl, {
+            method: "GET",
+            mode: "cors",
+            credentials: "omit",
+            redirect: "follow",
+            cache: "no-store",
+            signal: ctrl.signal
+          });
+          if (!res.ok) throw new Error("http " + res.status);
+          return await res.text();
+        } finally {
+          clearTimeout(timer);
+        }
+      } catch (_) {
+        return xhrCsvText(fetchUrl, 45000);
       }
     }
     function parseCsvRows(text) {
@@ -1843,15 +1910,29 @@
       }
 
       const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
-      if (!url) { hideProgress(); return; }
       if (hadCache && cacheAge < 120000 && isSilent) return;
 
-      const base = url + (url.includes("?") ? "&" : "?");
-      const fetchUrl = base + "token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + Date.now();
+      const base = url ? (url + (url.includes("?") ? "&" : "?")) : "";
+      const fetchUrl = base ? base + "token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + Date.now() : "";
 
       (async () => {
+        try {
+          const fbRows = await loadCreatorsFromFirebase();
+          if (fbRows.length) {
+            allInfluencers = prepare(fbRows);
+            try {
+              localStorage.setItem("cnt_inf_cache_v2", JSON.stringify({ ts: Date.now(), rows: fbRows }));
+            } catch (_) {}
+            finishLoad();
+            hideProgress();
+            return;
+          }
+        } catch (err) {
+          console.warn("Firebase creators:", err);
+        }
+        if (!fetchUrl) { hideProgress(); return; }
         let lastErr = null;
-        for (let attempt = 0; attempt < 3; attempt++) {
+        for (let attempt = 0; attempt < 4; attempt++) {
           try {
             const text = await fetchCsvText(fetchUrl);
             const trimmed = String(text || "").trim();
@@ -2918,7 +2999,7 @@
     // INIT + Meta Ads deep link (?page=join or #join)
     // ============================================================
     loadLiveData(false);
-    loadLiveCampaigns(false);
+    setTimeout(() => loadLiveCampaigns(false), 2500);
     setInterval(() => {
       loadLiveData(true);
       loadLiveCampaigns(true);
