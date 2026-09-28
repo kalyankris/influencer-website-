@@ -1795,14 +1795,18 @@
       }
 
       let hadCache = false;
+      let cacheAge = 1e12;
       try {
-        const cached = sessionStorage.getItem("cnt_inf_cache");
-        if (cached) {
-          const rows = JSON.parse(cached);
+        const raw = localStorage.getItem("cnt_inf_cache_v2") || sessionStorage.getItem("cnt_inf_cache");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const rows = Array.isArray(parsed) ? parsed : parsed.rows;
+          cacheAge = parsed && parsed.ts ? (Date.now() - parsed.ts) : 0;
           if (Array.isArray(rows) && rows.length) {
             allInfluencers = prepare(rows);
             finishLoad();
             hadCache = true;
+            hideProgress();
           }
         }
       } catch (_) {}
@@ -1813,13 +1817,11 @@
 
       const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
       if (!url) { hideProgress(); return; }
+      if (hadCache && cacheAge < 120000 && isSilent) return;
 
-      const tick = Math.floor(Date.now() / 15000);
+      const tick = Math.floor(Date.now() / 180000);
       const base = url + (url.includes("?") ? "&" : "?");
-      const urls = [
-        base + "token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + tick,
-        base + "t=" + tick
-      ];
+      const urls = [base + "token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + tick];
 
       (async () => {
         let lastErr = null;
@@ -1832,7 +1834,9 @@
               .filter(i => i && String(i.name || "").trim().length > 0);
             if (live.length > 0) {
               allInfluencers = prepare(live);
-              try { sessionStorage.setItem("cnt_inf_cache", JSON.stringify(live)); } catch (_) {}
+              try {
+                localStorage.setItem("cnt_inf_cache_v2", JSON.stringify({ ts: Date.now(), rows: live }));
+              } catch (_) {}
               finishLoad();
               hideProgress();
               return;
@@ -2232,16 +2236,18 @@
       }
       // Matches Apps Script: ?action=campaigns
       try {
-        const cached = sessionStorage.getItem("cnt_camp_cache");
-        if (cached && !isSilent) {
-          const rows = JSON.parse(cached);
+        const raw = localStorage.getItem("cnt_camp_cache_v2") || sessionStorage.getItem("cnt_camp_cache");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const rows = Array.isArray(parsed) ? parsed : parsed.rows;
           if (Array.isArray(rows) && rows.length) {
             allCampaigns = rows;
-            renderCampaigns();
+            if (!isSilent) renderCampaigns();
+            if (parsed.ts && Date.now() - parsed.ts < 120000 && isSilent) return;
           }
         }
       } catch (_) {}
-      const tick = Math.floor(Date.now() / 20000);
+      const tick = Math.floor(Date.now() / 180000);
       const fetchUrl = url + (url.includes("?") ? "&" : "?") + "action=campaigns&token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + tick;
       fetchCsvText(fetchUrl).then((text) => {
         const live = parseCsvRows(text)
@@ -2249,7 +2255,7 @@
           .filter(c => c && c.title);
         if (live.length > 0) {
           allCampaigns = live;
-          try { sessionStorage.setItem("cnt_camp_cache", JSON.stringify(live)); } catch (_) {}
+          try { localStorage.setItem("cnt_camp_cache_v2", JSON.stringify({ ts: Date.now(), rows: live })); } catch (_) {}
         }
         renderCampaigns();
       }).catch(() => {
