@@ -1640,16 +1640,21 @@
     async function loadCreatorsFromFirebase() {
       const db = getFirebaseDb();
       if (!db) return [];
-      const snap = await db.collection("creators").limit(300).get();
+      const snap = await db.collection("creators").limit(800).get();
       const rows = [];
       snap.forEach((doc) => {
         const d = doc.data() || {};
+        const ig = String(d.instagram || d.portfolio || "").trim();
+        const followersRaw = String(d.followers || "");
         rows.push({
           name: d.name || "",
+          niche: d.niche || d.skill || "Creator",
+          location: d.city || d.location || "",
           city: d.city || d.location || "",
-          niche: d.niche || d.skill || "",
-          followers: d.followers || "",
-          instagram: d.instagram || d.portfolio || "",
+          followers: parseFollowers(followersRaw),
+          followersLabel: followersRaw || "",
+          instagram: ig,
+          igLink: ig ? (ig.startsWith("http") ? ig : "https://instagram.com/" + ig.replace(/^@/, "")) : "",
           charges: d.charges || d.rate || "",
           gender: d.gender || ""
         });
@@ -2108,7 +2113,7 @@
             </div>
             ${i.charges ? `<div class="card-rate">${esc(shortCharges(i.charges))}</div>` : ""}
             <div class="card-footer">
-              <span></span>
+              ${i.igLink ? `<a class="btn btn-outline btn-sm" href="${esc(i.igLink)}" target="_blank" rel="noopener">Instagram</a>` : `<span></span>`}
               <button type="button" class="btn btn-creator btn-sm view-btn" data-id="${i.id}">View</button>
             </div>
           </div>
@@ -2929,6 +2934,23 @@
         }
 
         try {
+          try {
+            const db = getFirebaseDb();
+            if (db) {
+              await db.collection("creators").add({
+                name: payload.name,
+                city: payload.city,
+                niche: payload.skill,
+                followers: payload.followers,
+                instagram: payload.instagram,
+                charges: payload.charges,
+                gender: payload.gender,
+                createdAt: Date.now()
+              });
+            }
+          } catch (fbErr) {
+            console.warn("Firebase join write:", fbErr);
+          }
           // text/plain avoids CORS preflight issues with Apps Script
           await fetch(url, {
             method: "POST",
