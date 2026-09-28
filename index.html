@@ -1,0 +1,2465 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Connectly — Influencer-Brand Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: #818cf8;
+      --accent: #22d3ee;
+      --accent-soft: rgba(34, 211, 238, 0.15);
+      --bg: #09090b;
+      --bg-elevated: #0f0f14;
+      --bg-card: rgba(255, 255, 255, 0.035);
+      --bg-card-hover: rgba(255, 255, 255, 0.055);
+      --bg-glass: rgba(255, 255, 255, 0.06);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --text: #fafafa;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+      --success: #22c55e;
+      --success-soft: rgba(34, 197, 94, 0.12);
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --radius: 18px;
+      --radius-sm: 12px;
+      --radius-full: 999px;
+      --shadow-sm: 0 4px 12px rgba(0,0,0,0.25);
+      --shadow-md: 0 12px 32px -8px rgba(0,0,0,0.45);
+      --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.18);
+      --nav-h: 68px;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    h1,h2,h3,h4 { font-family: 'Outfit', sans-serif; font-weight: 600; letter-spacing: -0.02em; }
+    ::selection { background: rgba(99,102,241,0.35); color: white; }
+    button, input, select, textarea { font-family: inherit; }
+    a { color: inherit; }
+
+    /* ========== NAV ========== */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      height: var(--nav-h);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.25rem;
+      background: rgba(9, 9, 11, 0.82);
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.3s var(--ease);
+    }
+    .logo {
+      font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.4rem;
+      background: linear-gradient(135deg, #a5b4fc 0%, var(--accent) 100%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      cursor: pointer; border: none; background-color: transparent;
+      letter-spacing: -0.03em; padding: 0.25rem 0;
+    }
+    .nav-links {
+      display: flex; gap: 0.15rem; align-items: center;
+    }
+    .nav-links a, .nav-links button.nav-btn {
+      color: var(--text-muted); text-decoration: none; font-weight: 500;
+      font-size: 0.9rem; transition: color 0.2s, background 0.2s;
+      cursor: pointer; background: none; border: none; font-family: inherit;
+      padding: 0.45rem 0.75rem; border-radius: 10px;
+    }
+    .nav-links a:hover, .nav-links a.active,
+    .nav-links button.nav-btn:hover, .nav-links button.nav-btn.active {
+      color: var(--text); background: rgba(255,255,255,0.05);
+    }
+    .nav-links button.nav-btn.active {
+      color: var(--primary-light);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
+      padding: 0.7rem 1.35rem; border-radius: var(--radius-full);
+      font-weight: 600; font-size: 0.9rem; cursor: pointer;
+      border: none; transition: all 0.25s var(--ease); font-family: inherit;
+      text-decoration: none; white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      box-shadow: 0 4px 18px rgba(99,102,241,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(99,102,241,0.45), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .btn-outline {
+      background: transparent; border: 1px solid var(--border-strong); color: var(--text);
+    }
+    .btn-outline:hover {
+      background: var(--bg-glass); border-color: var(--primary-light);
+      color: white;
+    }
+    .btn-sm { padding: 0.42rem 0.95rem; font-size: 0.8rem; }
+    .menu-toggle {
+      display: none; background: none; border: none; color: white;
+      width: 44px; height: 44px; border-radius: 12px;
+      cursor: pointer; align-items: center; justify-content: center;
+      position: relative; z-index: 1100;
+      transition: background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .menu-toggle:hover { background: rgba(255,255,255,0.06); }
+    .menu-toggle .bar {
+      display: block; width: 22px; height: 2px;
+      background: white; border-radius: 2px;
+      transition: transform 0.3s var(--ease), opacity 0.25s, background 0.2s;
+      position: absolute; left: 50%; margin-left: -11px;
+    }
+    .menu-toggle .bar:nth-child(1) { top: 15px; }
+    .menu-toggle .bar:nth-child(2) { top: 21px; }
+    .menu-toggle .bar:nth-child(3) { top: 27px; }
+    /* Cross (X) when open */
+    body.menu-open .menu-toggle .bar:nth-child(1) {
+      top: 21px; transform: rotate(45deg);
+    }
+    body.menu-open .menu-toggle .bar:nth-child(2) {
+      opacity: 0; transform: scaleX(0);
+    }
+    body.menu-open .menu-toggle .bar:nth-child(3) {
+      top: 21px; transform: rotate(-45deg);
+    }
+    body.menu-open { overflow: hidden; }
+
+    /* Pages */
+    .page {
+      display: none; min-height: calc(100vh - var(--nav-h));
+      min-height: calc(100dvh - var(--nav-h));
+      padding-top: var(--nav-h);
+    }
+    .page.active {
+      display: block;
+      animation: pageIn 0.4s var(--ease-out);
+    }
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      position: relative; padding: 4.5rem 1.25rem 3.5rem;
+      text-align: center; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 90% 55% at 50% -15%, rgba(99,102,241,0.28), transparent 60%),
+        radial-gradient(ellipse 50% 40% at 85% 40%, rgba(34,211,238,0.1), transparent 50%),
+        radial-gradient(ellipse 40% 30% at 10% 60%, rgba(99,102,241,0.08), transparent);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.28);
+      padding: 0.4rem 1rem; border-radius: var(--radius-full);
+      font-size: 0.82rem; font-weight: 500; color: var(--primary-light);
+      margin-bottom: 1.4rem; backdrop-filter: blur(8px);
+    }
+    .hero h1 {
+      font-size: clamp(2.15rem, 5.8vw, 3.6rem); line-height: 1.1;
+      max-width: 760px; margin: 0 auto 1.15rem; letter-spacing: -0.035em;
+      font-weight: 700;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, #a5b4fc 0%, var(--accent) 100%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 1.05rem; color: var(--text-muted);
+      max-width: 500px; margin: 0 auto 2rem; line-height: 1.65;
+    }
+    .hero-cta {
+      display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;
+    }
+    .stats {
+      display: flex; justify-content: center; gap: 1.5rem;
+      margin-top: 3rem; flex-wrap: wrap;
+    }
+    .stat {
+      text-align: center; min-width: 90px;
+      padding: 0.75rem 1rem; border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.02); border: 1px solid transparent;
+      transition: border-color 0.25s, background 0.25s;
+    }
+    .stat:hover { background: var(--bg-card); border-color: var(--border); }
+    .stat-num {
+      font-family: 'Outfit', sans-serif; font-size: 1.9rem; font-weight: 700;
+      background: linear-gradient(135deg, #fff 30%, var(--primary-light));
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      line-height: 1.15;
+    }
+    .stat-label { color: var(--text-dim); font-size: 0.8rem; margin-top: 0.15rem; font-weight: 500; }
+
+    /* ========== SECTIONS ========== */
+    .section { padding: 2.75rem 1.25rem; max-width: 1160px; margin: 0 auto; }
+    .section-title { font-size: 1.7rem; margin-bottom: 0.3rem; letter-spacing: -0.025em; }
+    .section-sub { color: var(--text-muted); margin-bottom: 1.6rem; font-size: 0.95rem; }
+
+    /* ========== FILTERS ========== */
+    .filters-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1.15rem;
+      backdrop-filter: blur(12px);
+    }
+    .search-row { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 0.7rem; }
+    .search-box { flex: 1; min-width: 180px; position: relative; }
+    .search-box input {
+      width: 100%; padding: 0.72rem 1rem 0.72rem 2.6rem;
+      background: rgba(0,0,0,0.35); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: white; font-size: 0.92rem;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-box input::placeholder { color: var(--text-dim); }
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+    }
+    .search-box svg {
+      position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+      color: var(--text-dim); width: 16px; height: 16px; pointer-events: none;
+    }
+    .filter-selects { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+    select {
+      padding: 0.55rem 0.8rem; background: rgba(0,0,0,0.35);
+      border: 1px solid var(--border); border-radius: 10px;
+      color: white; font-size: 0.85rem; outline: none; cursor: pointer;
+      min-width: 118px; transition: border-color 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a1a1aa' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 0.7rem center;
+      padding-right: 1.8rem;
+    }
+    select:focus { border-color: var(--primary); }
+    select option { background: #18181b; color: white; }
+    .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.7rem; min-height: 26px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      background: rgba(99,102,241,0.18); border: 1px solid rgba(99,102,241,0.35);
+      color: var(--primary-light); padding: 0.28rem 0.7rem;
+      border-radius: var(--radius-full); font-size: 0.76rem; font-weight: 500;
+      animation: chipIn 0.25s var(--ease-out);
+    }
+    @keyframes chipIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: none; } }
+    .chip button {
+      background: none; border: none; color: inherit; cursor: pointer;
+      font-size: 1rem; line-height: 1; padding: 0 0 0 0.15rem; opacity: 0.7;
+      display: flex; align-items: center;
+    }
+    .chip button:hover { opacity: 1; }
+    .results-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 0.9rem; flex-wrap: wrap; gap: 0.5rem;
+    }
+    .results-count { color: var(--text-muted); font-size: 0.88rem; font-weight: 500; }
+
+    /* ========== CARDS ========== */
+    .influencer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.1rem;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: transform 0.3s var(--ease), border-color 0.3s, box-shadow 0.3s, background 0.3s;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(99,102,241,0.4);
+      box-shadow: var(--shadow-md), var(--shadow-glow);
+      background: var(--bg-card-hover);
+    }
+    .card:active { transform: translateY(-2px) scale(0.99); }
+    .card-img {
+      height: 140px;
+      background: linear-gradient(145deg, #1e1b4b 0%, #312e81 50%, #1e3a5f 100%);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .card-img::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 70% 30%, rgba(34,211,238,0.15), transparent 55%);
+    }
+    .card-avatar {
+      width: 74px; height: 74px; border-radius: 50%;
+      background: linear-gradient(145deg, var(--primary) 0%, var(--accent) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.55rem; font-weight: 700; color: white;
+      border: 3px solid rgba(255,255,255,0.18);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      position: relative; z-index: 1;
+      font-family: 'Outfit', sans-serif;
+    }
+    .card-body { padding: 1.05rem 1.1rem 1.15rem; }
+    .card-name {
+      font-family: 'Outfit', sans-serif; font-size: 1.05rem;
+      font-weight: 600; margin-bottom: 0.12rem; letter-spacing: -0.01em;
+    }
+    .card-niche {
+      color: var(--primary-light); font-size: 0.8rem; font-weight: 500;
+      margin-bottom: 0.55rem;
+    }
+    .card-meta {
+      display: flex; gap: 0.7rem; flex-wrap: wrap; font-size: 0.76rem;
+      color: var(--text-dim); margin-bottom: 0.75rem;
+    }
+    .card-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 0.65rem; border-top: 1px solid var(--border);
+    }
+    .engagement {
+      font-size: 0.8rem; color: var(--success); font-weight: 600;
+      display: flex; align-items: center; gap: 0.25rem;
+    }
+
+    /* ========== MODAL ========== */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      z-index: 2000; display: flex; align-items: center; justify-content: center;
+      padding: 1rem; opacity: 0; pointer-events: none;
+      transition: opacity 0.28s var(--ease);
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: #121218; border: 1px solid var(--border-strong);
+      border-radius: 22px; max-width: 500px; width: 100%;
+      max-height: min(90vh, 90dvh); overflow-y: auto; position: relative;
+      transform: scale(0.94) translateY(12px);
+      transition: transform 0.32s var(--ease-out);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+    .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+    .modal-header {
+      padding: 1.35rem 1.35rem 1.15rem; display: flex; gap: 1rem; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-avatar {
+      width: 68px; height: 68px; border-radius: 50%;
+      background: linear-gradient(145deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; font-weight: 700; flex-shrink: 0;
+      font-family: 'Outfit', sans-serif;
+      border: 2px solid rgba(255,255,255,0.15);
+    }
+    .modal-body { padding: 1.25rem 1.35rem 1.5rem; }
+    .modal-close {
+      position: absolute; top: 0.85rem; right: 0.85rem;
+      background: rgba(255,255,255,0.08); border: none; color: white;
+      width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+      font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.14); }
+    .detail-row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 0.55rem 0; border-bottom: 1px solid var(--border);
+      font-size: 0.9rem; gap: 1rem;
+    }
+    .detail-row span:first-child { color: var(--text-muted); flex-shrink: 0; }
+    .detail-row span:last-child { text-align: right; }
+
+    /* ========== STEPS ========== */
+    .steps {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.1rem; margin-top: 1.5rem;
+    }
+    .step {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.6rem 1.2rem; text-align: center;
+      transition: transform 0.3s var(--ease), border-color 0.3s, box-shadow 0.3s;
+    }
+    .step:hover {
+      transform: translateY(-5px);
+      border-color: rgba(99,102,241,0.3);
+      box-shadow: var(--shadow-sm);
+    }
+    .step-num {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(145deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; margin: 0 auto 1rem; font-size: 1.1rem;
+      font-family: 'Outfit', sans-serif;
+      box-shadow: 0 6px 20px rgba(99,102,241,0.3);
+    }
+    .step h3 { font-size: 1.05rem; margin-bottom: 0.4rem; }
+    .step p { color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; }
+
+    /* ========== FORMS ========== */
+    .form-card {
+      max-width: 500px; margin: 0 auto;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 22px; padding: 1.85rem 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .form-group { margin-bottom: 1.05rem; }
+    .form-group label {
+      display: block; font-size: 0.84rem; font-weight: 500;
+      margin-bottom: 0.35rem; color: var(--text-muted);
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 0.72rem 1rem;
+      background: rgba(0,0,0,0.35); border: 1px solid var(--border);
+      border-radius: 11px; color: white; font-size: 0.92rem;
+      outline: none; font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: var(--text-dim); }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+    }
+    .form-group textarea { min-height: 88px; resize: vertical; }
+    .charge-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;
+    }
+    .charge-cell {
+      background: rgba(0,0,0,0.28); border: 1px solid var(--border);
+      border-radius: 12px; padding: 0.65rem 0.7rem 0.75rem;
+    }
+    .charge-cell label {
+      display: block; font-size: 0.72rem; font-weight: 600;
+      color: var(--text-muted); margin-bottom: 0.35rem; letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .charge-cell .inr {
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .charge-cell .inr span {
+      color: var(--text-dim); font-weight: 600; font-size: 0.9rem;
+    }
+    .charge-cell input {
+      width: 100%; padding: 0.5rem 0.65rem;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: 8px; color: white; font-size: 0.92rem; outline: none;
+    }
+    .charge-cell input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+    }
+    .charge-hint { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.45rem; }
+    .charge-error { font-size: 0.78rem; color: var(--danger); margin-top: 0.4rem; display: none; }
+    .charge-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: flex-end; }
+    .charge-pill {
+      font-size: 0.72rem; font-weight: 600;
+      background: rgba(99,102,241,0.16); border: 1px solid rgba(99,102,241,0.3);
+      color: var(--primary-light); padding: 0.22rem 0.55rem; border-radius: 999px;
+    }
+    .card-rate {
+      font-size: 0.75rem; color: var(--accent); font-weight: 600;
+      margin: 0 0 0.65rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* ========== FOOTER ========== */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.2rem 1.25rem 1.8rem;
+      text-align: center; color: var(--text-dim); font-size: 0.85rem;
+      margin-top: 1rem;
+    }
+    .footer-links {
+      display: flex; gap: 0.4rem 1.1rem; justify-content: center;
+      margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .footer-links a {
+      color: var(--text-muted); text-decoration: none; cursor: pointer;
+      background: none; border: none; font-family: inherit; font-size: 0.85rem;
+      padding: 0.2rem 0; transition: color 0.2s;
+    }
+    .footer-links a:hover { color: white; }
+
+    /* ========== EMPTY + STATUS ========== */
+    .empty-state {
+      text-align: center; padding: 3.5rem 1.25rem;
+      color: var(--text-muted); grid-column: 1 / -1;
+    }
+    .empty-state p { font-size: 0.95rem; max-width: 320px; margin: 0 auto; line-height: 1.55; }
+    .status-bar {
+      background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.28);
+      color: var(--primary-light); padding: 0.55rem 1rem; border-radius: 11px;
+      font-size: 0.82rem; margin-bottom: 1rem; display: none;
+      font-weight: 500; animation: chipIn 0.3s var(--ease-out);
+    }
+    .status-bar.show { display: block; }
+
+    /* Campaign specific */
+    .campaign-card .card-body { padding: 1.2rem; }
+    .campaign-card .card-name { font-size: 1.08rem; margin-bottom: 0.15rem; }
+    .campaign-card .card-brand { color: var(--accent); font-size: 0.82rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .campaign-card .card-brief {
+      color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;
+      white-space: normal; overflow: visible;
+      margin-bottom: 0.8rem;
+    }
+    .campaign-card .card-name {
+      white-space: normal;
+      overflow: visible;
+      line-height: 1.25;
+    }
+    .campaign-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.85rem; }
+    .campaign-tag {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      padding: 0.22rem 0.55rem; border-radius: var(--radius-full);
+      font-size: 0.72rem; color: var(--text-muted); font-weight: 500;
+    }
+    .campaign-tag.budget {
+      color: var(--success); border-color: rgba(34,197,94,0.3);
+      background: var(--success-soft);
+    }
+    .campaign-card .card-footer {
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    .campaign-card .card-footer span {
+      white-space: normal;
+      line-height: 1.35;
+      flex: 1;
+    }
+    #page-campaigns .section {
+      padding-top: 1.5rem;
+    }
+    #page-campaigns .influencer-grid {
+      grid-template-columns: 1fr;
+    }
+
+    /* ========== MOBILE ========== */
+    @media (max-width: 860px) {
+      .nav-links {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        inset: 0;
+        top: 0; left: 0; right: 0; bottom: 0;
+        width: 100%; height: 100%;
+        height: 100dvh;
+        background: rgba(9, 9, 11, 0.98);
+        backdrop-filter: blur(28px) saturate(1.3);
+        -webkit-backdrop-filter: blur(28px) saturate(1.3);
+        padding: calc(var(--nav-h) + 1.5rem) 1.5rem 2.5rem;
+        gap: 0.15rem;
+        overflow-y: auto;
+        z-index: 1050;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(-12px);
+        transition: opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out), visibility 0.35s;
+      }
+      .nav-links.open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+        transform: translateY(0);
+      }
+      .nav-links .nav-btn, .nav-links a {
+        width: 100%; text-align: left;
+        padding: 1rem 1.1rem;
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-radius: 14px;
+        color: var(--text-muted);
+        opacity: 0;
+        transform: translateY(10px);
+        transition: color 0.2s, background 0.2s, opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+      }
+      .nav-links.open .nav-btn,
+      .nav-links.open a {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .nav-links.open .nav-btn:nth-child(1) { transition-delay: 0.04s; }
+      .nav-links.open .nav-btn:nth-child(2) { transition-delay: 0.07s; }
+      .nav-links.open .nav-btn:nth-child(3) { transition-delay: 0.10s; }
+      .nav-links.open .nav-btn:nth-child(4) { transition-delay: 0.13s; }
+      .nav-links.open .nav-btn:nth-child(5) { transition-delay: 0.16s; }
+      .nav-links.open .nav-btn:nth-child(6) { transition-delay: 0.19s; }
+      .nav-links.open .nav-btn:nth-child(7) { transition-delay: 0.22s; }
+      .nav-links.open .btn-primary { transition-delay: 0.28s; }
+      .nav-links .nav-btn:hover,
+      .nav-links .nav-btn.active,
+      .nav-links a:hover {
+        color: white;
+        background: rgba(255,255,255,0.06);
+      }
+      .nav-links .nav-btn.active {
+        color: var(--primary-light);
+        background: rgba(99,102,241,0.12);
+      }
+      .nav-links .btn-primary {
+        margin-top: 1.25rem;
+        width: 100%;
+        justify-content: center;
+        padding: 1rem 1.25rem;
+        font-size: 1.05rem;
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      .nav-links.open .btn-primary {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .menu-toggle { display: flex; }
+      .stats { gap: 0.6rem; }
+      .stat { min-width: 72px; padding: 0.6rem 0.5rem; }
+      .stat-num { font-size: 1.45rem; }
+      .hero { padding: 3rem 1.1rem 2.5rem; }
+      .hero h1 { font-size: clamp(1.9rem, 7vw, 2.5rem); }
+      .hero p { font-size: 0.98rem; }
+      .hero-cta { gap: 0.6rem; }
+      .hero-cta .btn { flex: 1 1 auto; min-width: 140px; justify-content: center; }
+      .page { padding-top: calc(var(--nav-h) + env(safe-area-inset-top)); }
+      .section { padding: 2rem 1.1rem; }
+      #page-campaigns .section,
+      #page-discover .section { padding-top: 1.25rem; }
+      #page-campaigns .influencer-grid {
+        grid-template-columns: 1fr;
+      }
+      .section-title { font-size: 1.45rem; }
+      .influencer-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.85rem;
+      }
+      .card-img { height: 110px; }
+      .card-avatar { width: 58px; height: 58px; font-size: 1.25rem; }
+      .card-body { padding: 0.85rem 0.9rem 1rem; }
+      .card-name { font-size: 0.95rem; }
+      .filters-bar { padding: 0.85rem; }
+      .filter-selects { gap: 0.4rem; }
+      select { min-width: 0; flex: 1 1 45%; font-size: 0.82rem; }
+      .form-card { padding: 1.5rem 1.15rem; border-radius: 18px; }
+      .modal { border-radius: 18px 18px 0 0; max-height: 92dvh; }
+      .modal-overlay { align-items: flex-end; padding: 0; }
+      .steps { grid-template-columns: 1fr; gap: 0.85rem; }
+      .step { padding: 1.35rem 1.1rem; }
+    }
+
+    @media (max-width: 400px) {
+      .influencer-grid { grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+      #page-campaigns .influencer-grid { grid-template-columns: 1fr; }
+      .card-meta span:last-child { display: none; }
+      .nav { padding: 0 0.9rem; }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <button class="logo" type="button" data-page="home">Connectly</button>
+    <div class="nav-links" id="navLinks">
+      <button type="button" class="nav-btn active" data-page="home">Home</button>
+      <button type="button" class="nav-btn" data-page="discover">Discover</button>
+      <button type="button" class="nav-btn" data-page="campaigns">Open Campaigns</button>
+      <button type="button" class="nav-btn" data-page="how">How it Works</button>
+      <button type="button" class="nav-btn" data-page="brands">For Brands</button>
+      <button type="button" class="nav-btn" data-page="join">Join as Creator</button>
+      <button type="button" class="nav-btn" data-page="contact">Contact</button>
+      <button type="button" class="btn btn-primary btn-sm" data-page="join">Join Free →</button>
+    </div>
+    <button class="menu-toggle" type="button" id="menuToggle" aria-label="Menu" aria-expanded="false">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
+  </nav>
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <section class="hero">
+      <div class="hero-badge">✨ Connecting creators with brands</div>
+      <h1>Discover the perfect <span>influencer</span> for your next campaign</h1>
+      <p>Connectly is the modern marketplace where brands find authentic creators and creators find meaningful collaborations.</p>
+      <div class="hero-cta">
+        <button type="button" class="btn btn-primary" data-page="discover">Explore Influencers →</button>
+        <button type="button" class="btn btn-outline" data-page="join">I'm a Creator — Join Free</button>
+        <button type="button" class="btn btn-outline" data-page="brands">I'm a Brand</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-num" data-target="500">0</div><div class="stat-label">Brands</div></div>
+        <div class="stat"><div class="stat-num" data-target="10000">0</div><div class="stat-label">Influencers</div></div>
+        <div class="stat"><div class="stat-num" data-target="8500">0</div><div class="stat-label">Campaigns</div></div>
+        <div class="stat"><div class="stat-num" data-target="98">0</div><div class="stat-label">% Satisfaction</div></div>
+      </div>
+    </section>
+    <section class="section">
+      <h2 class="section-title">Featured Creators</h2>
+      <p class="section-sub">Hand-picked talent ready to collaborate</p>
+      <div class="influencer-grid" id="featuredGrid"></div>
+    </section>
+  </div>
+
+  <!-- DISCOVER -->
+  <div class="page" id="page-discover">
+    <section class="section" style="padding-top: 2rem;">
+      <h2 class="section-title">Influencer Directory</h2>
+      <p class="section-sub">Search, filter and connect with creators</p>
+      <div class="status-bar" id="statusBar"></div>
+
+      <div class="filters-bar">
+        <div class="search-row">
+          <div class="search-box">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="searchInput" placeholder="Search by name, niche or location..." autocomplete="off">
+          </div>
+        </div>
+        <div class="filter-selects">
+          <select id="filterNiche"><option value="">All Niches</option></select>
+          <select id="filterLocation"><option value="">All Locations</option></select>
+          <select id="filterFollowers">
+            <option value="">All Followers</option>
+            <option value="0-1000">0 - 1K</option>
+            <option value="1000-10000">1K - 10K</option>
+            <option value="10000-50000">10K - 50K</option>
+            <option value="50000-100000">50K - 100K</option>
+            <option value="100000+">100K+</option>
+          </select>
+          <select id="filterPlatform">
+            <option value="">All Platforms</option>
+            <option value="Instagram">Instagram</option>
+          </select>
+          <select id="sortSelect">
+            <option value="followers-desc">Followers: High to Low</option>
+            <option value="followers-asc">Followers: Low to High</option>
+            <option value="engagement-desc">Engagement: High to Low</option>
+            <option value="name-asc">Name: A-Z</option>
+          </select>
+          <button type="button" class="btn btn-outline btn-sm" id="clearFiltersBtn">Clear</button>
+        </div>
+        <div class="chips" id="activeChips"></div>
+      </div>
+
+      <div class="results-meta">
+        <div class="results-count" id="resultsCount">Type to search creators…</div>
+      </div>
+
+      <div class="influencer-grid" id="influencerGrid">
+        <div class="empty-state"><p>Type a name, niche or location to search creators</p></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- OPEN CAMPAIGNS -->
+  <div class="page" id="page-campaigns">
+    <section class="section" style="padding-top:2rem;">
+      <h2 class="section-title">Open Campaigns</h2>
+      <p class="section-sub">Browse live brand campaigns and apply with one click</p>
+
+      <div class="filters-bar">
+        <div class="search-row">
+          <div class="search-box">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="campaignSearch" placeholder="Search campaigns by title, brand or niche..." autocomplete="off">
+          </div>
+        </div>
+        <div class="filter-selects">
+          <select id="campaignFilterNiche">
+            <option value="">All Niches</option>
+            <option>Fashion</option>
+            <option>Beauty</option>
+            <option>Lifestyle</option>
+            <option>Food</option>
+            <option>Fitness</option>
+            <option>Tech</option>
+            <option>Travel</option>
+            <option>Parenting</option>
+            <option>Finance</option>
+            <option>Education</option>
+            <option>Other</option>
+          </select>
+          <select id="campaignFilterBudget">
+            <option value="">All Budgets</option>
+            <option>Under ₹10,000</option>
+            <option>₹10,000 - ₹50,000</option>
+            <option>₹50,000 - ₹1,00,000</option>
+            <option>Above ₹1,00,000</option>
+            <option>Product only / Barter</option>
+          </select>
+          <button type="button" class="btn btn-outline btn-sm" id="clearCampaignFilters">Clear</button>
+        </div>
+      </div>
+
+      <div class="results-meta">
+        <div class="results-count" id="campaignCount">Loading campaigns…</div>
+      </div>
+
+      <div class="influencer-grid" id="campaignGrid">
+        <div class="empty-state"><p>No open campaigns yet. Brands can post from the For Brands page.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="page" id="page-how">
+    <section class="section">
+      <h2 class="section-title">How Connectly Works</h2>
+      <p class="section-sub">Simple steps to find the perfect collaboration</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>Search Creators</h3>
+          <p>Browse thousands of verified influencers by niche, location and followers.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>Review Profiles</h3>
+          <p>Check engagement, past work and pricing before reaching out.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>Connect & Collaborate</h3>
+          <p>Send collaboration requests and manage campaigns in one place.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- FOR BRANDS -->
+  <div class="page" id="page-brands">
+    <section class="section">
+      <h2 class="section-title">For Brands</h2>
+      <p class="section-sub">Post your campaign — it will appear in Open Campaigns for creators to apply</p>
+      <div class="form-card" style="max-width:560px;">
+        <form id="brandForm">
+          <div class="form-group">
+            <label>Brand Name *</label>
+            <input type="text" name="brandName" required placeholder="Your brand name">
+          </div>
+          <div class="form-group">
+            <label>Campaign Title *</label>
+            <input type="text" name="title" required placeholder="e.g. Summer Collection Launch">
+          </div>
+          <div class="form-group">
+            <label>Campaign Brief *</label>
+            <textarea name="brief" required placeholder="Describe goals, key messages, target audience, any must-haves..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Deliverables</label>
+            <input type="text" name="deliverables" placeholder="e.g. 1 Reel + 2 Stories + 1 Post">
+          </div>
+          <div class="form-group">
+            <label>Budget Range *</label>
+            <select name="budget" required>
+              <option value="">Select budget</option>
+              <option value="Under ₹10,000">Under ₹10,000</option>
+              <option value="₹10,000 - ₹50,000">₹10,000 - ₹50,000</option>
+              <option value="₹50,000 - ₹1,00,000">₹50,000 - ₹1,00,000</option>
+              <option value="Above ₹1,00,000">Above ₹1,00,000</option>
+              <option value="Product only / Barter">Product only / Barter</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Preferred Niche</label>
+            <select name="niche">
+              <option value="">Any niche</option>
+              <option>Fashion</option>
+              <option>Beauty</option>
+              <option>Lifestyle</option>
+              <option>Food</option>
+              <option>Fitness</option>
+              <option>Tech</option>
+              <option>Travel</option>
+              <option>Parenting</option>
+              <option>Finance</option>
+              <option>Education</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Platform</label>
+            <select name="platform">
+              <option value="">Any platform</option>
+              <option>Instagram</option>
+              <option>YouTube</option>
+              <option>TikTok / Reels</option>
+              <option>Multiple</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Deadline / Timeline</label>
+            <input type="text" name="deadline" placeholder="e.g. Content live by 15 Oct, or 2 weeks">
+          </div>
+          <div class="form-group">
+            <label>Location Preference</label>
+            <input type="text" name="location" placeholder="e.g. Pan-India / Hyderabad / Remote">
+          </div>
+          <div class="form-group">
+            <label>Your Email (for applications) *</label>
+            <input type="email" name="email" required placeholder="brand@email.com">
+          </div>
+          <div class="form-group">
+            <label>Phone / WhatsApp (for applications) *</label>
+            <input type="tel" name="phone" required placeholder="10-digit mobile number" autocomplete="tel">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;" id="brandSubmitBtn">Post Campaign →</button>
+        </form>
+        <div id="formSuccess" style="display:none; text-align:center; padding:2rem 0;">
+          <h3 style="color:var(--success); margin-bottom:0.5rem;">✓ Campaign Posted!</h3>
+          <p style="margin-bottom:1.2rem;">Your campaign is now live in Open Campaigns. Creators can start applying.</p>
+          <button type="button" class="btn btn-primary" data-page="campaigns">View Open Campaigns →</button>
+          <button type="button" class="btn btn-outline" style="margin-top:0.6rem;" id="postAnotherBtn">Post Another</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- JOIN AS CREATOR (Meta Ads landing form) -->
+  <div class="page" id="page-join">
+    <section class="section" style="padding-top:2rem;">
+      <div style="text-align:center; max-width:560px; margin:0 auto 2rem;">
+        <div class="hero-badge" style="margin-bottom:1rem;">🚀 Free for creators</div>
+        <h2 class="section-title" style="margin-bottom:0.5rem;">Join Connectly as a Creator</h2>
+        <p class="section-sub" style="margin-bottom:0;">Get discovered by brands. Fill this form once — your profile goes live on the marketplace.</p>
+      </div>
+
+      <div class="form-card" style="max-width:560px;">
+        <form id="joinForm">
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" name="name" required placeholder="Your name" autocomplete="name">
+          </div>
+          <div class="form-group">
+            <label>Age *</label>
+            <input type="number" name="age" required min="13" max="80" placeholder="e.g. 24">
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select name="gender">
+              <option value="">Select</option>
+              <option>Female</option>
+              <option>Male</option>
+              <option>Other</option>
+              <option>Prefer not to say</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" name="email" required placeholder="you@email.com" autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label>WhatsApp / Contact number *</label>
+            <input type="tel" name="phone" required placeholder="10-digit mobile number" autocomplete="tel">
+          </div>
+          <div class="form-group">
+            <label>City *</label>
+            <select name="city" id="joinCity" required>
+              <option value="">Select your city</option>
+              <option>Hyderabad</option>
+              <option>Bangalore</option>
+              <option>Mumbai</option>
+              <option>Delhi</option>
+              <option>New Delhi</option>
+              <option>Noida</option>
+              <option>Gurugram</option>
+              <option>Pune</option>
+              <option>Chennai</option>
+              <option>Kolkata</option>
+              <option>Ahmedabad</option>
+              <option>Jaipur</option>
+              <option>Lucknow</option>
+              <option>Chandigarh</option>
+              <option>Indore</option>
+              <option>Bhopal</option>
+              <option>Nagpur</option>
+              <option>Surat</option>
+              <option>Kochi</option>
+              <option>Coimbatore</option>
+              <option>Mysore</option>
+              <option>Visakhapatnam</option>
+              <option>Vijayawada</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group" id="joinCityOtherWrap" style="display:none;">
+            <label>Type your city</label>
+            <input type="text" name="cityOther" id="joinCityOther" placeholder="Enter city name">
+          </div>
+          <div class="form-group">
+            <label>Instagram profile link *</label>
+            <input type="url" name="instagram" required placeholder="https://instagram.com/yourhandle">
+          </div>
+          <div class="form-group">
+            <label>Total Instagram followers *</label>
+            <select name="followers" required>
+              <option value="">Select range</option>
+              <option>100 - 1000</option>
+              <option>1000 - 10,000</option>
+              <option>10,000 - 50,000</option>
+              <option>50,000 - 1lakh</option>
+              <option>1 - 3 lakh</option>
+              <option>3 lakh+</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Niche / skills *</label>
+            <input type="text" name="skill" required placeholder="Dance, Fashion, Food, Lifestyle, Tech…">
+          </div>
+          <div class="form-group">
+            <label>Monthly income (INR)</label>
+            <select name="income">
+              <option value="">Select</option>
+              <option>Under 10k</option>
+              <option>1k to 10k</option>
+              <option>10k to 50k</option>
+              <option>50k to 1lak</option>
+              <option>1lakh+</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Currently working?</label>
+            <select name="working">
+              <option value="">Select</option>
+              <option>Yes</option>
+              <option>No</option>
+              <option>Student</option>
+            </select>
+          </div>
+          <div class="form-group" id="chargesGroup">
+            <label>Your charges (INR) *</label>
+            <p class="charge-hint" style="margin:0 0 0.55rem;">Enter at least one rate. Brands see this on your profile.</p>
+            <div class="charge-grid">
+              <div class="charge-cell">
+                <label for="chargePost">Post</label>
+                <div class="inr"><span>₹</span><input type="number" id="chargePost" name="chargePost" min="0" step="50" inputmode="numeric" placeholder="2000"></div>
+              </div>
+              <div class="charge-cell">
+                <label for="chargeStory">Story</label>
+                <div class="inr"><span>₹</span><input type="number" id="chargeStory" name="chargeStory" min="0" step="50" inputmode="numeric" placeholder="1000"></div>
+              </div>
+              <div class="charge-cell">
+                <label for="chargeReel">Reel</label>
+                <div class="inr"><span>₹</span><input type="number" id="chargeReel" name="chargeReel" min="0" step="50" inputmode="numeric" placeholder="2500"></div>
+              </div>
+              <div class="charge-cell">
+                <label for="chargeShoutout">Shoutout</label>
+                <div class="inr"><span>₹</span><input type="number" id="chargeShoutout" name="chargeShoutout" min="0" step="50" inputmode="numeric" placeholder="1500"></div>
+              </div>
+            </div>
+            <div class="form-group" style="margin:0.7rem 0 0;">
+              <label>Extra note (optional)</label>
+              <input type="text" name="chargeNote" maxlength="120" placeholder="e.g. Combo Reel + 2 Stories ₹4000">
+            </div>
+            <p class="charge-error" id="chargesError">Add at least one charge (post, story, reel or shoutout).</p>
+          </div>
+          <button type="submit" class="btn btn-primary" id="joinSubmitBtn" style="width:100%; justify-content:center;">
+            Submit &amp; Get Listed →
+          </button>
+          <p style="text-align:center; color:var(--text-muted); font-size:0.8rem; margin-top:1rem;">
+            By submitting you agree to be listed on Connectly for brand collaborations.
+          </p>
+        </form>
+
+        <div id="joinSuccess" style="display:none; text-align:center; padding:2rem 0;">
+          <div style="font-size:3rem; margin-bottom:0.75rem;">🎉</div>
+          <h3 style="color:var(--success); margin-bottom:0.5rem;">You're in!</h3>
+          <p style="color:var(--text-muted); margin-bottom:1.25rem;">Your profile was saved. Brands can discover you on Connectly.</p>
+          <button type="button" class="btn btn-primary" data-page="discover">Browse creators →</button>
+        </div>
+
+        <div id="joinError" style="display:none; text-align:center; padding:1rem 0;">
+          <p style="color:#f87171; margin-bottom:1rem;">Something went wrong. Please try again.</p>
+          <button type="button" class="btn btn-outline" id="joinRetryBtn">Try again</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="page" id="page-contact">
+    <section class="section">
+      <h2 class="section-title">Contact Us</h2>
+      <p class="section-sub">Have questions? Reach out anytime.</p>
+      <div class="form-card">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea placeholder="How can we help?"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary" style="width:100%;" onclick="alert('Message sent! (demo)')">Send Message</button>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="footer-links">
+      <a data-page="home">Home</a>
+      <a data-page="discover">Discover</a>
+      <a data-page="campaigns">Open Campaigns</a>
+      <a data-page="how">How it Works</a>
+      <a data-page="brands">For Brands</a>
+      <a data-page="join">Join as Creator</a>
+      <a data-page="contact">Contact</a>
+    </div>
+    <p>© 2026 Connectly. All rights reserved.</p>
+  </footer>
+
+  <!-- MODAL (influencer profile) -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modalContent"></div>
+  </div>
+
+  <!-- BRAND → CREATOR INVITE MODAL -->
+  <div class="modal-overlay" id="inviteModalOverlay">
+    <div class="modal" style="max-width:480px;">
+      <button type="button" class="modal-close" id="inviteModalClose">×</button>
+      <div class="modal-header" style="border-bottom:none; padding-bottom:0;">
+        <div>
+          <h3 style="margin:0 0 0.25rem; font-size:1.25rem;">Request this creator</h3>
+          <p style="color:var(--text-muted); font-size:0.9rem; margin:0;" id="inviteCreatorLabel"></p>
+        </div>
+      </div>
+      <div class="modal-body">
+        <form id="inviteForm">
+          <input type="hidden" id="inviteCreatorId" name="creatorId">
+          <input type="hidden" id="inviteCreatorName" name="creatorName">
+          <input type="hidden" id="inviteCreatorEmail" name="creatorEmail">
+          <input type="hidden" id="inviteCreatorIg" name="creatorIg">
+          <div class="form-group">
+            <label>Brand name *</label>
+            <input type="text" name="brandName" required placeholder="Your brand">
+          </div>
+          <div class="form-group">
+            <label>Brand email *</label>
+            <input type="email" name="brandEmail" required placeholder="brand@email.com">
+          </div>
+          <div class="form-group">
+            <label>Brand phone / WhatsApp *</label>
+            <input type="tel" name="brandPhone" required placeholder="10-digit mobile number">
+          </div>
+          <div class="form-group">
+            <label>Campaign / what you need *</label>
+            <textarea name="message" required placeholder="e.g. 1 Reel + 2 Stories for our Diwali launch in Hyderabad. Budget ₹8,000."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;" id="inviteSubmitBtn">Send request to creator →</button>
+        </form>
+        <div id="inviteSuccess" style="display:none; text-align:center; padding:1.5rem 0;">
+          <h3 style="color:var(--success); margin-bottom:0.5rem;">✓ Request sent</h3>
+          <p style="color:var(--text-muted);">The creator will get an email with your brand contact details.</p>
+          <button type="button" class="btn btn-outline" style="margin-top:1rem;" id="inviteDoneBtn">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLY MODAL -->
+  <div class="modal-overlay" id="applyModalOverlay">
+    <div class="modal" style="max-width:480px;">
+      <button type="button" class="modal-close" id="applyModalClose">×</button>
+      <div class="modal-header" style="border-bottom:none; padding-bottom:0;">
+        <div>
+          <h3 style="margin:0 0 0.25rem; font-size:1.25rem;" id="applyCampaignTitle">Apply to Campaign</h3>
+          <p style="color:var(--text-muted); font-size:0.9rem; margin:0;" id="applyBrandName"></p>
+        </div>
+      </div>
+      <div class="modal-body">
+        <form id="applyForm">
+          <input type="hidden" id="applyCampaignId" name="campaignId">
+          <div class="form-group">
+            <label>Your Name *</label>
+            <input type="text" name="name" required placeholder="Full name">
+          </div>
+          <div class="form-group">
+            <label>Email / WhatsApp *</label>
+            <input type="text" name="contact" required placeholder="you@email.com or +91…">
+          </div>
+          <div class="form-group">
+            <label>Instagram / Portfolio link</label>
+            <input type="url" name="portfolio" placeholder="https://instagram.com/yourhandle">
+          </div>
+          <div class="form-group">
+            <label>Your proposed rate / notes</label>
+            <textarea name="message" placeholder="e.g. ₹8,000 for 1 Reel + 2 Stories. I have 25K fashion audience in Hyderabad…"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;" id="applySubmitBtn">Submit Application →</button>
+        </form>
+        <div id="applySuccess" style="display:none; text-align:center; padding:1.5rem 0;">
+          <h3 style="color:var(--success); margin-bottom:0.5rem;">✓ Application Sent!</h3>
+          <p style="color:var(--text-muted);">The brand will review and get back to you.</p>
+          <button type="button" class="btn btn-outline" style="margin-top:1rem;" id="applyDoneBtn">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // LIVE DATA URL - PASTE YOUR APPS SCRIPT WEB APP URL HERE
+    // ============================================================
+    const LIVE_DATA_URL = "https://script.google.com/macros/s/AKfycbxStD_Eckmqdd2CSZNmzEbFPDt1L9MJHXXfxbADPF3UU1qUJ-8mcwosP0VbLa1dK63tPQ/exec";
+    const SITE_TOKEN = "cnt_7f3a9c2e1b84d06f";
+
+    // ============================================================
+    // FALLBACK DATA (used only if live fetch fails)
+    // ============================================================
+    const FALLBACK_DATA = [
+      { name: "Poonam Nirankari", niche: "Fashion", location: "Delhi", followers: 75000, followersLabel: "50K-1L", platform: "Instagram", igLink: "https://instagram.com/poonirankaree", engagement: 2.7, age: "25", gender: "Female", charges: "1500 post, 800 story" },
+      { name: "Hymavathi", niche: "Dance", location: "Hyderabad", followers: 500, followersLabel: "100-1K", platform: "Instagram", igLink: "https://instagram.com/Mom_of_my_king_", engagement: 3.9, age: "26", gender: "Female", charges: "500 for everything" },
+      { name: "Suma", niche: "Cooking", location: "Hyderabad", followers: 5000, followersLabel: "1K-10K", platform: "Instagram", igLink: "https://instagram.com/vibin_withfood", engagement: 3.2, age: "28", gender: "Female", charges: "1000 reel" }
+    ];
+
+    let allInfluencers = [];
+    let filtered = [];
+    let activeFilters = { niche: "", location: "", followers: "", platform: "", search: "" };
+
+    // ============================================================
+    // HELPERS
+    // ============================================================
+    function prepare(data) {
+      return data.map((item, idx) => ({
+        ...item,
+        id: "inf_" + idx,
+        initials: (item.name || "C").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
+      }));
+    }
+
+    function normalizeRow(row) {
+      const get = (...keys) => {
+        for (const k of keys) {
+          const found = Object.keys(row).find(h => h && h.toLowerCase().includes(k.toLowerCase()));
+          if (found && row[found]) return String(row[found]).trim();
+        }
+        return "";
+      };
+
+      let name = get("Name");
+      const igLink = get("Instagram", "profile link", "instagram");
+      if (!name && igLink) {
+        const m = igLink.match(/instagram\.com\/([A-Za-z0-9._]+)/i);
+        name = m ? m[1].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "Creator";
+      }
+      if (!name) name = "Anonymous Creator";
+
+      const followersRaw = get("followers", "Total Instagram");
+      const followersNum = parseFollowers(followersRaw);
+      const skill = get("skill", "Professional") || "Content Creator";
+      const city = get("city", "from which") || "India";
+      const engagement = +(Math.random() * 3.5 + 1.5).toFixed(1);
+
+      return {
+        name,
+        niche: cleanNiche(skill),
+        location: cleanCity(city),
+        followers: followersNum,
+        followersLabel: followersRaw || formatFollowers(followersNum),
+        platform: "Instagram",
+        igLink: igLink.startsWith("http") ? igLink : (igLink ? "https://instagram.com/" + igLink : ""),
+        email: (function () {
+          let em = get("Email address", "Email", "mail");
+          const m = String(em || "").match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+          if (m) return m[0];
+          for (const v of Object.values(row)) {
+            const mm = String(v || "").match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+            if (mm) return mm[0];
+          }
+          return "";
+        })(),
+        phone: get("Contact number", "phone", "mobile"),
+        gender: get("Gender"),
+        charges: get("charges", "Please mention"),
+        age: get("age"),
+        engagement
+      };
+    }
+
+    function parseFollowers(str) {
+      if (!str) return 500;
+      str = str.toLowerCase().replace(/,/g, "").replace(/\s/g, "");
+      if (str.includes("100-1000") || str.includes("100-1")) return 500;
+      if (str.includes("1000-10") || str.includes("1k-10")) return 5000;
+      if (str.includes("10,000-50") || str.includes("10k-50") || str.includes("10000-50")) return 25000;
+      if (str.includes("50,000-1") || str.includes("50k-1") || str.includes("50000-1")) return 75000;
+      if (str.includes("1lakh") || str.includes("100000")) return 150000;
+      const n = parseInt(str.replace(/[^0-9]/g, ""));
+      return isNaN(n) ? 1000 : n;
+    }
+
+    function formatFollowers(n) {
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
+      if (n >= 1000) return (n / 1000).toFixed(1) + "K";
+      return String(n);
+    }
+
+    function cleanNiche(s) {
+      if (!s || /^(none|no|nil|na|yes)$/i.test(s.trim())) return "Lifestyle";
+      const parts = s.split(/[,&]/).map(p => p.trim()).filter(Boolean);
+      let niche = parts[0] || "Content Creator";
+      return niche.charAt(0).toUpperCase() + niche.slice(1);
+    }
+
+    function cleanCity(s) {
+      if (!s) return "India";
+      let raw = String(s).replace(/\s+/g, " ").trim();
+      // Drop pure noise (charges, numbers-only, symbols)
+      if (!raw || /^(none|no|nil|na|yes|\*|-+)$/i.test(raw)) return "India";
+      if (/^\d/.test(raw) && /(?:post|story|reel|shoutout|rs|₹)/i.test(raw)) return "India";
+      if (raw.length > 60) raw = raw.slice(0, 60);
+
+      const aliases = {
+        "banglore": "Bangalore", "bengaluru": "Bangalore", "bangalore": "Bangalore",
+        "new delhi": "New Delhi", "delhi": "Delhi", "delhi1": "Delhi", "delh": "Delhi",
+        "hyderabad": "Hyderabad", "hyd": "Hyderabad", "hi tech city": "Hyderabad",
+        "hitech city": "Hyderabad", "madhapur": "Hyderabad", "secunderabad": "Hyderabad",
+        "mumbai": "Mumbai", "bombay": "Mumbai",
+        "pune": "Pune", "noida": "Noida", "gurgaon": "Gurugram", "gurugram": "Gurugram",
+        "kolkata": "Kolkata", "calcutta": "Kolkata", "chennai": "Chennai", "madras": "Chennai",
+        "ahmedabad": "Ahmedabad", "lucknow": "Lucknow", "jaipur": "Jaipur",
+        "chandigarh": "Chandigarh", "mohali": "Mohali", "indore": "Indore",
+        "bhopal": "Bhopal", "patna": "Patna", "surat": "Surat", "nagpur": "Nagpur",
+        "mysore": "Mysore", "mysuru": "Mysore", "mangalore": "Mangalore",
+        "vijayawada": "Vijayawada", "visakhapatnam": "Visakhapatnam", "vizag": "Visakhapatnam",
+        "coimbatore": "Coimbatore", "kochi": "Kochi", "trivandrum": "Thiruvananthapuram",
+        "jalandhar": "Jalandhar", "ludhiana": "Ludhiana", "amritsar": "Amritsar",
+        "varanasi": "Varanasi", "kanpur": "Kanpur", "agra": "Agra", "meerut": "Meerut",
+        "moradabad": "Moradabad", "mathura": "Mathura", "bareilly": "Bareilly",
+        "rajkot": "Rajkot", "baroda": "Vadodara", "vadodara": "Vadodara",
+        "guwahati": "Guwahati", "agartala": "Agartala", "hamirpur": "Hamirpur",
+        "amaravti": "Amravati", "amravati": "Amravati", "anand": "Anand",
+        "armoor": "Armoor", "nandyal": "Nandyal", "nabadwip": "Nabadwip"
+      };
+
+      // Known city names to search inside free-text answers
+      const known = Object.keys(aliases).sort((a, b) => b.length - a.length);
+      const low = raw.toLowerCase();
+
+      // Exact match first
+      if (aliases[low]) return aliases[low];
+
+      // "I am from X" / "mostly X" / "live in X" patterns
+      const fromMatch = low.match(/(?:from|mostly|live(?:\s+in)?|based\s+in|staying\s+in)\s+([a-z\s]{3,25})/i);
+      if (fromMatch) {
+        const part = fromMatch[1].replace(/[^\w\s]/g, " ").trim();
+        for (const k of known) {
+          if (part.includes(k) || k.includes(part.split(/\s+/)[0])) {
+            return aliases[k];
+          }
+        }
+      }
+
+      // Any known city name appears anywhere in the string
+      for (const k of known) {
+        if (new RegExp("\\b" + k.replace(/\s+/g, "\\s+") + "\\b", "i").test(low)) {
+          return aliases[k];
+        }
+      }
+
+      // First comma-separated segment, title-case if it looks like a place name
+      let c = raw.split(",")[0].trim();
+      c = c.replace(/^(i am from|from|i live in|live in|based in)\s+/i, "").trim();
+      if (c.length < 2 || c.length > 28) return "India";
+      if (/\d{3,}/.test(c) || /(?:post|story|reel|charge|₹|rs\.?)/i.test(c)) return "India";
+      // Title case
+      return c.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+    }
+
+    function esc(str) {
+      return String(str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    // ============================================================
+    // LIVE DATA + AUTO REFRESH
+    // ============================================================
+    function loadLiveData(isSilent = false) {
+      const status = document.getElementById("statusBar");
+      if (!isSilent && status) {
+        status.className = "status-bar show";
+        status.textContent = "Loading latest data...";
+        status.style.background = "rgba(99,102,241,0.15)";
+        status.style.borderColor = "rgba(99,102,241,0.3)";
+        status.style.color = "var(--primary-light)";
+      }
+
+      if (!isSilent) {
+        allInfluencers = prepare(FALLBACK_DATA);
+        finishLoad();
+      }
+
+      const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+      if (!url) {
+        if (!isSilent && status) {
+          status.textContent = `Using offline data (${allInfluencers.length} creators)`;
+          status.style.background = "rgba(234,179,8,0.12)";
+          status.style.borderColor = "rgba(234,179,8,0.3)";
+          status.style.color = "#fbbf24";
+          setTimeout(() => status.classList.remove("show"), 4000);
+        }
+        return;
+      }
+
+      if (typeof Papa === "undefined") return;
+
+      // Cache-bust so new sheet rows appear immediately (Apps Script / browser cache)
+      const fetchUrl = url + (url.includes("?") ? "&" : "?") + "token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + Date.now();
+
+      Papa.parse(fetchUrl, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          if (results.data && results.data.length > 0) {
+            // Keep every row with a non-empty name (even 1 letter like "E")
+            const live = results.data
+              .map(normalizeRow)
+              .filter(i => i && i.name && String(i.name).trim().length > 0);
+            if (live.length > 0) {
+              allInfluencers = prepare(live);
+              finishLoad();
+              if (!isSilent && status) {
+                status.textContent = `Live: ${allInfluencers.length} creators (auto-updates every 30s)`;
+                status.style.background = "rgba(34,197,94,0.15)";
+                status.style.borderColor = "rgba(34,197,94,0.3)";
+                status.style.color = "#4ade80";
+                setTimeout(() => status.classList.remove("show"), 4000);
+              }
+              return;
+            }
+          }
+          if (!isSilent && status) {
+            status.textContent = `No new data — showing ${allInfluencers.length} creators`;
+            status.style.background = "rgba(234,179,8,0.12)";
+            status.style.borderColor = "rgba(234,179,8,0.3)";
+            status.style.color = "#fbbf24";
+            setTimeout(() => status.classList.remove("show"), 4000);
+          }
+        },
+        error: (err) => {
+          console.warn("Live fetch failed:", err);
+          if (!isSilent && status) {
+            status.textContent = `Fetch failed — offline data (${allInfluencers.length})`;
+            status.style.background = "rgba(239,68,68,0.12)";
+            status.style.borderColor = "rgba(239,68,68,0.3)";
+            status.style.color = "#f87171";
+            setTimeout(() => status.classList.remove("show"), 5000);
+          }
+        }
+      });
+    }
+
+    function finishLoad() {
+      populateFilterOptions();
+      applyFilters();
+      renderFeatured();
+    }
+
+    // ============================================================
+    // FILTERS
+    // ============================================================
+    function populateFilterOptions() {
+      const niches = [...new Set(allInfluencers.map(i => i.niche))].sort();
+      const locations = [...new Set(allInfluencers.map(i => i.location))].sort();
+
+      const nicheSelect = document.getElementById("filterNiche");
+      if (nicheSelect) {
+        nicheSelect.innerHTML = '<option value="">All Niches</option>';
+        niches.forEach(n => {
+          const o = document.createElement("option");
+          o.value = n; o.textContent = n;
+          nicheSelect.appendChild(o);
+        });
+      }
+
+      const locSelect = document.getElementById("filterLocation");
+      if (locSelect) {
+        locSelect.innerHTML = '<option value="">All Locations</option>';
+        locations.forEach(l => {
+          const o = document.createElement("option");
+          o.value = l; o.textContent = l;
+          locSelect.appendChild(o);
+        });
+      }
+    }
+
+    function applyFilters() {
+      if (!activeFilters.search || activeFilters.search.trim() === "") {
+        filtered = [];
+        renderGrid();
+        renderChips();
+        const countEl = document.getElementById("resultsCount");
+        if (countEl) countEl.textContent = "Type to search creators…";
+        return;
+      }
+
+      let list = [...allInfluencers];
+      const q = activeFilters.search.toLowerCase();
+
+      list = list.filter(i =>
+        (i.name && i.name.toLowerCase().includes(q)) ||
+        (i.niche && i.niche.toLowerCase().includes(q)) ||
+        (i.location && i.location.toLowerCase().includes(q))
+      );
+
+      if (activeFilters.niche) list = list.filter(i => i.niche === activeFilters.niche);
+      if (activeFilters.location) list = list.filter(i => i.location === activeFilters.location);
+      if (activeFilters.platform) list = list.filter(i => i.platform === activeFilters.platform);
+      if (activeFilters.followers) {
+        if (activeFilters.followers === "100000+") {
+          list = list.filter(i => i.followers >= 100000);
+        } else {
+          const [min, max] = activeFilters.followers.split("-").map(Number);
+          list = list.filter(i => i.followers >= min && i.followers <= max);
+        }
+      }
+
+      const sortEl = document.getElementById("sortSelect");
+      const sort = sortEl ? sortEl.value : "";
+      if (sort === "followers-desc") list.sort((a, b) => b.followers - a.followers);
+      else if (sort === "followers-asc") list.sort((a, b) => a.followers - b.followers);
+      else if (sort === "engagement-desc") list.sort((a, b) => b.engagement - a.engagement);
+      else if (sort === "name-asc") list.sort((a, b) => a.name.localeCompare(b.name));
+
+      filtered = list;
+      renderGrid();
+      renderChips();
+      const countEl = document.getElementById("resultsCount");
+      if (countEl) {
+        countEl.textContent = `${filtered.length} creator${filtered.length !== 1 ? "s" : ""} found`;
+      }
+    }
+
+    function renderChips() {
+      const container = document.getElementById("activeChips");
+      if (!container) return;
+      container.innerHTML = "";
+      const labels = { niche: "Niche", location: "Location", followers: "Followers", platform: "Platform", search: "Search" };
+      Object.entries(activeFilters).forEach(([key, val]) => {
+        if (!val) return;
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        chip.innerHTML = `${labels[key]}: ${val} <button type="button" data-remove="${key}">×</button>`;
+        container.appendChild(chip);
+      });
+    }
+
+    function removeFilter(key) {
+      activeFilters[key] = "";
+      if (key === "search") document.getElementById("searchInput").value = "";
+      if (key === "niche") document.getElementById("filterNiche").value = "";
+      if (key === "location") document.getElementById("filterLocation").value = "";
+      if (key === "followers") document.getElementById("filterFollowers").value = "";
+      if (key === "platform") document.getElementById("filterPlatform").value = "";
+      applyFilters();
+    }
+
+    function clearFilters() {
+      activeFilters = { niche: "", location: "", followers: "", platform: "", search: "" };
+      document.getElementById("searchInput").value = "";
+      document.getElementById("filterNiche").value = "";
+      document.getElementById("filterLocation").value = "";
+      document.getElementById("filterFollowers").value = "";
+      document.getElementById("filterPlatform").value = "";
+      applyFilters();
+    }
+
+    // ============================================================
+    // RENDER
+    // ============================================================
+    function shortCharges(s) {
+      if (!s) return "";
+      const t = String(s).replace(/\s+/g, " ").trim();
+      return t.length > 42 ? t.slice(0, 40) + "…" : t;
+    }
+    function chargePillsHTML(s) {
+      if (!s) return "";
+      const parts = String(s).split(/[·|,;/]+/).map(p => p.trim()).filter(Boolean);
+      if (!parts.length) return esc(String(s).slice(0, 140));
+      return `<span class="charge-pills">${parts.slice(0, 6).map(p => `<span class="charge-pill">${esc(p.slice(0, 40))}</span>`).join("")}</span>`;
+    }
+
+    function cardHTML(i) {
+      return `
+        <div class="card" data-id="${i.id}">
+          <div class="card-img"><div class="card-avatar">${i.initials}</div></div>
+          <div class="card-body">
+            <div class="card-name">${esc(i.name)}</div>
+            <div class="card-niche">${esc(i.niche)}</div>
+            <div class="card-meta">
+              <span>📍 ${esc(i.location)}</span>
+              <span>👥 ${i.followersLabel}</span>
+            </div>
+            ${i.charges ? `<div class="card-rate">${esc(shortCharges(i.charges))}</div>` : ""}
+            <div class="card-footer">
+              <span class="engagement">${i.engagement}% eng.</span>
+              <button type="button" class="btn btn-primary btn-sm view-btn" data-id="${i.id}">View</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById("influencerGrid");
+      if (!grid) return;
+
+      if (filtered.length === 0) {
+        const msg = (!activeFilters.search || activeFilters.search.trim() === "")
+          ? "Type a name, niche or location to search creators"
+          : "No creators match your search. Try different keywords.";
+        grid.innerHTML = `<div class="empty-state"><p>${msg}</p></div>`;
+        return;
+      }
+      grid.innerHTML = filtered.map(cardHTML).join("");
+    }
+
+    function renderFeatured() {
+      const featured = [...allInfluencers].sort((a, b) => b.followers - a.followers).slice(0, 4);
+      const el = document.getElementById("featuredGrid");
+      if (el) el.innerHTML = featured.map(cardHTML).join("");
+    }
+
+    // ============================================================
+    // MODAL
+    // ============================================================
+    function openModal(id) {
+      const i = allInfluencers.find(x => x.id === id);
+      if (!i) return;
+      document.getElementById("modalContent").innerHTML = `
+        <button type="button" class="modal-close" id="modalCloseBtn">×</button>
+        <div class="modal-header">
+          <div class="modal-avatar">${i.initials}</div>
+          <div>
+            <h3 style="font-size:1.28rem;margin-bottom:0.2rem;">${esc(i.name)}</h3>
+            <div style="color:var(--primary-light);font-weight:500;">${esc(i.niche)}</div>
+            <div style="color:var(--text-muted);font-size:0.88rem;margin-top:0.2rem;">📍 ${esc(i.location)}</div>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div class="detail-row"><span>Followers</span><span>${i.followersLabel}</span></div>
+          <div class="detail-row"><span>Engagement Rate</span><span style="color:var(--success)">${i.engagement}%</span></div>
+          <div class="detail-row"><span>Platform</span><span>Instagram</span></div>
+          ${i.age ? `<div class="detail-row"><span>Age</span><span>${i.age}</span></div>` : ""}
+          ${i.gender ? `<div class="detail-row"><span>Gender</span><span>${i.gender}</span></div>` : ""}
+          <div class="detail-row" style="align-items:flex-start;">
+            <span>Charges</span>
+            <span style="text-align:right;max-width:68%;">${i.charges ? chargePillsHTML(i.charges) : "<span style='color:var(--text-dim)'>Not listed</span>"}</span>
+          </div>
+          <div style="margin-top:1.25rem;display:flex;gap:0.65rem;flex-wrap:wrap;">
+            ${i.igLink ? `<a href="${i.igLink}" target="_blank" rel="noopener" class="btn btn-primary" style="text-decoration:none;">View Instagram</a>` : ""}
+            <button type="button" class="btn btn-outline invite-creator-btn" data-creator-id="${i.id}">Request Collaboration</button>
+          </div>
+        </div>`;
+      document.getElementById("modalOverlay").classList.add("open");
+      document.getElementById("modalCloseBtn").onclick = closeModal;
+    }
+
+    function closeModal() {
+      document.getElementById("modalOverlay").classList.remove("open");
+    }
+
+    // ============================================================
+    // PAGE NAVIGATION
+    // ============================================================
+    function showPage(pageId) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+      const page = document.getElementById("page-" + pageId);
+      if (page) page.classList.add("active");
+      document.querySelectorAll(`[data-page="${pageId}"]`).forEach(b => {
+        if (b.classList.contains("nav-btn")) b.classList.add("active");
+      });
+      document.getElementById("navLinks").classList.remove("open");
+      document.body.classList.remove("menu-open");
+      const toggle = document.getElementById("menuToggle");
+      if (toggle) toggle.setAttribute("aria-expanded", "false");
+      if (pageId === "campaigns") loadLiveCampaigns(false);
+    }
+
+    // ============================================================
+    // EVENT LISTENERS
+    // ============================================================
+    document.querySelectorAll("[data-page]").forEach(btn => {
+      btn.addEventListener("click", () => showPage(btn.dataset.page));
+    });
+
+    document.getElementById("menuToggle").addEventListener("click", () => {
+      const links = document.getElementById("navLinks");
+      const isOpen = links.classList.toggle("open");
+      document.body.classList.toggle("menu-open", isOpen);
+      document.getElementById("menuToggle").setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    document.getElementById("modalOverlay").addEventListener("click", (e) => {
+      if (e.target === document.getElementById("modalOverlay")) closeModal();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeModal();
+        closeApplyModal();
+        closeInviteModal();
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      const card = e.target.closest(".card[data-id], .view-btn[data-id]");
+      if (card) {
+        e.stopPropagation();
+        openModal(card.dataset.id);
+      }
+      const removeBtn = e.target.closest("[data-remove]");
+      if (removeBtn) removeFilter(removeBtn.dataset.remove);
+    });
+
+    // ============================================================
+    // CAMPAIGNS (LIVE from Google Sheet — no localStorage)
+    // ============================================================
+    // Applications are saved to Google Sheet tab "Applications" via Apps Script
+    const APPLICATIONS_KEY = "connectly_applications"; // local backup only
+    let allCampaigns = [];
+
+    function uid() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
+
+    function normalizeCampaignRow(row) {
+      const get = (...keys) => {
+        for (const k of keys) {
+          const found = Object.keys(row).find(h => h && h.toLowerCase().includes(k.toLowerCase()));
+          if (found && row[found] !== undefined && row[found] !== null && String(row[found]).trim() !== "") {
+            return String(row[found]).trim();
+          }
+        }
+        return "";
+      };
+      // Exact headers from your Google Sheet:
+      // Campaign ID | Brand Name | Campaign Title | Campaign Description | Campaign Category |
+      // Platform | Target Audience | Location | Follower Range | Campaign Budget | Deliverables |
+      // Application Deadline | Contact/Brand Email | Brand Website | Campaign Status | Created Date | Created Time
+      const title = get("Campaign Title", "title", "campaign title");
+      const brandName = get("Brand Name", "brandName", "brand name", "brand");
+      if (!title && !brandName) return null;
+
+      const statusRaw = get("Campaign Status", "status", "Status") || "open";
+      return {
+        id: get("Campaign ID", "id", "Id") || ("camp_" + uid()),
+        brandName: brandName || "Brand",
+        title: title || "Untitled Campaign",
+        brief: get("Campaign Description", "brief", "description", "Campaign Brief"),
+        deliverables: get("Deliverables", "deliverables"),
+        budget: get("Campaign Budget", "budget", "Budget", "Budget Range"),
+        niche: get("Campaign Category", "niche", "Niche", "Preferred Niche", "Category"),
+        platform: get("Platform", "platform"),
+        deadline: get("Application Deadline", "deadline", "Deadline", "Timeline"),
+        location: get("Location", "location"),
+        email: get("Contact/Brand Email", "email", "Email", "Contact"),
+        phone: get("Brand Phone", "phone", "Phone", "WhatsApp", "Mobile"),
+        website: get("Brand Website", "website"),
+        targetAudience: get("Target Audience", "target audience", "audience"),
+        followerRange: get("Follower Range", "follower range", "followers"),
+        status: statusRaw.toLowerCase().replace(/\s+/g, ""),
+        createdAt: get("Created Date", "Created Time", "createdAt", "timestamp", "created") || new Date().toISOString()
+      };
+    }
+
+    function getCampaigns() {
+      return Array.isArray(allCampaigns) ? allCampaigns : [];
+    }
+
+    function loadLiveCampaigns(isSilent = false) {
+      const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+      if (!url || typeof Papa === "undefined") {
+        if (!isSilent) renderCampaigns();
+        return;
+      }
+      // Matches Apps Script: ?action=campaigns
+      const fetchUrl = url + (url.includes("?") ? "&" : "?") + "action=campaigns&token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + Date.now();
+      Papa.parse(fetchUrl, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          if (results.data && results.data.length > 0) {
+            const live = results.data
+              .map(normalizeCampaignRow)
+              .filter(c => c && c.title);
+            if (live.length > 0) {
+              allCampaigns = live;
+            }
+          }
+          renderCampaigns();
+        },
+        error: () => {
+          renderCampaigns();
+        }
+      });
+    }
+
+    function getApplications() {
+      try {
+        const stored = localStorage.getItem(APPLICATIONS_KEY);
+        if (!stored) return [];
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch { return []; }
+    }
+    function saveApplications(list) {
+      try {
+        localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(list));
+      } catch (e) {
+        console.error("saveApplications failed:", e);
+        throw e;
+      }
+    }
+
+    // Brand form → post campaign to Google Sheet via Apps Script
+    document.getElementById("brandForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const form = e.target;
+      const btn = document.getElementById("brandSubmitBtn");
+      const fd = new FormData(form);
+
+      const now = new Date();
+      const newId = uid();
+      // Keys match Apps Script appendCampaign_() exactly
+      const campaign = {
+        action: "campaign",
+        token: SITE_TOKEN,
+        campaignId: newId,
+        brandName: (fd.get("brandName") || "").toString().trim(),
+        title: (fd.get("title") || "").toString().trim(),
+        brief: (fd.get("brief") || "").toString().trim(),
+        niche: (fd.get("niche") || "").toString().trim(),
+        platform: (fd.get("platform") || "").toString().trim(),
+        targetAudience: "",
+        location: (fd.get("location") || "").toString().trim(),
+        followerRange: "",
+        budget: (fd.get("budget") || "").toString().trim(),
+        deliverables: (fd.get("deliverables") || "").toString().trim(),
+        deadline: (fd.get("deadline") || "").toString().trim(),
+        email: (fd.get("email") || "").toString().trim(),
+        phone: (fd.get("phone") || "").toString().trim(),
+        website: "",
+        status: "Active",
+        createdDate: now.toLocaleDateString("en-IN"),
+        createdTime: now.toLocaleTimeString("en-IN"),
+        // UI helpers
+        id: newId,
+        createdAt: now.toISOString()
+      };
+
+      // Clear any previous error
+      let errEl = document.getElementById("brandFormError");
+      if (errEl) errEl.remove();
+
+      if (!campaign.brandName || !campaign.title || !campaign.brief || !campaign.budget || !campaign.email || !campaign.phone) {
+        errEl = document.createElement("div");
+        errEl.id = "brandFormError";
+        errEl.style.cssText = "background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;padding:0.7rem 1rem;border-radius:10px;font-size:0.88rem;margin-bottom:1rem;";
+        errEl.textContent = "Please fill Brand Name, Title, Brief, Budget, Email and Phone.";
+        form.insertBefore(errEl, form.firstChild);
+        return;
+      }
+
+      const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+      if (!url) {
+        errEl = document.createElement("div");
+        errEl.id = "brandFormError";
+        errEl.style.cssText = "background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;padding:0.7rem 1rem;border-radius:10px;font-size:0.88rem;margin-bottom:1rem;";
+        errEl.textContent = "Live data URL not configured.";
+        form.insertBefore(errEl, form.firstChild);
+        return;
+      }
+
+      try {
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Posting…";
+        }
+
+        // Send to Google Apps Script (same pattern as join form)
+        await fetch(url, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(campaign)
+        });
+
+        // Optimistically show it immediately, then refresh from sheet
+        allCampaigns.unshift({
+          id: campaign.id,
+          brandName: campaign.brandName,
+          title: campaign.title,
+          brief: campaign.brief,
+          deliverables: campaign.deliverables,
+          budget: campaign.budget,
+          niche: campaign.niche,
+          platform: campaign.platform,
+          deadline: campaign.deadline,
+          location: campaign.location,
+          email: campaign.email,
+          phone: campaign.phone,
+          status: "active",
+          createdAt: campaign.createdAt
+        });
+        renderCampaigns();
+
+        form.style.display = "none";
+        document.getElementById("formSuccess").style.display = "block";
+
+        // Refresh from sheet after a short delay so new row appears for everyone
+        setTimeout(() => loadLiveCampaigns(true), 3000);
+      } catch (err) {
+        console.error("Campaign save error:", err);
+        errEl = document.createElement("div");
+        errEl.id = "brandFormError";
+        errEl.style.cssText = "background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;padding:0.7rem 1rem;border-radius:10px;font-size:0.88rem;margin-bottom:1rem;";
+        errEl.textContent = "Could not post campaign. Please try again.";
+        form.insertBefore(errEl, form.firstChild);
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Post Campaign →";
+        }
+      }
+    });
+
+    document.getElementById("postAnotherBtn")?.addEventListener("click", () => {
+      const form = document.getElementById("brandForm");
+      form.reset();
+      form.style.display = "block";
+      document.getElementById("formSuccess").style.display = "none";
+      const errEl = document.getElementById("brandFormError");
+      if (errEl) errEl.remove();
+      const btn = document.getElementById("brandSubmitBtn");
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Post Campaign →";
+      }
+    });
+
+    // Campaign filters
+    let campaignFilters = { search: "", niche: "", budget: "" };
+
+    function renderCampaigns() {
+      const grid = document.getElementById("campaignGrid");
+      const countEl = document.getElementById("campaignCount");
+      if (!grid) return;
+
+      // Show real open campaigns only (hide application rows stored via campaign-action workaround)
+      let list = getCampaigns().filter(c => {
+        const brand = (c.brandName || "");
+        const title = (c.title || "");
+        const niche = (c.niche || "").toLowerCase();
+        const s = (c.status || "open").toLowerCase().replace(/\s+/g, "");
+        if (brand.startsWith("[APPLICATION]") || title.startsWith("Apply:")) return false;
+        if (niche === "application" || s === "application" || s === "pending") return false;
+        if (String(c.id || "").startsWith("app_")) return false;
+        return s === "open" || s === "active" || s === "live" || s === "";
+      });
+
+      const q = campaignFilters.search.toLowerCase();
+      if (q) {
+        list = list.filter(c =>
+          (c.title && c.title.toLowerCase().includes(q)) ||
+          (c.brandName && c.brandName.toLowerCase().includes(q)) ||
+          (c.niche && c.niche.toLowerCase().includes(q)) ||
+          (c.brief && c.brief.toLowerCase().includes(q))
+        );
+      }
+      if (campaignFilters.niche) {
+        list = list.filter(c => c.niche === campaignFilters.niche);
+      }
+      if (campaignFilters.budget) {
+        list = list.filter(c => c.budget === campaignFilters.budget);
+      }
+
+      if (countEl) {
+        countEl.textContent = list.length
+          ? `${list.length} open campaign${list.length !== 1 ? "s" : ""}`
+          : "No matching campaigns";
+      }
+
+      if (!list.length) {
+        grid.innerHTML = `<div class="empty-state"><p>No open campaigns yet. Brands can post from the <button type="button" class="nav-btn" data-page="brands" style="color:var(--primary-light);background:none;border:none;cursor:pointer;font:inherit;text-decoration:underline;">For Brands</button> page.</p></div>`;
+        return;
+      }
+
+      grid.innerHTML = list.map(c => {
+        const tags = [];
+        if (c.budget) tags.push(`<span class="campaign-tag budget">${esc(c.budget)}</span>`);
+        if (c.niche) tags.push(`<span class="campaign-tag">${esc(c.niche)}</span>`);
+        if (c.platform) tags.push(`<span class="campaign-tag">${esc(c.platform)}</span>`);
+        if (c.deadline) tags.push(`<span class="campaign-tag">⏰ ${esc(c.deadline)}</span>`);
+        if (c.location) tags.push(`<span class="campaign-tag">📍 ${esc(c.location)}</span>`);
+
+        return `
+          <div class="card campaign-card" data-campaign-id="${esc(c.id)}">
+            <div class="card-body">
+              <div class="card-name">${esc(c.title)}</div>
+              <div class="card-brand">${esc(c.brandName)}</div>
+              <div class="card-brief">${esc(c.brief)}</div>
+              <div class="campaign-meta">${tags.join("")}</div>
+              <div class="card-footer">
+                <span style="font-size:0.78rem;color:var(--text-muted);">${c.deliverables ? esc(c.deliverables) : "See brief"}</span>
+                <button type="button" class="btn btn-primary btn-sm apply-btn" data-apply-id="${esc(c.id)}">Apply</button>
+              </div>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    document.getElementById("campaignSearch")?.addEventListener("input", (e) => {
+      campaignFilters.search = e.target.value.trim();
+      renderCampaigns();
+    });
+    document.getElementById("campaignFilterNiche")?.addEventListener("change", (e) => {
+      campaignFilters.niche = e.target.value;
+      renderCampaigns();
+    });
+    document.getElementById("campaignFilterBudget")?.addEventListener("change", (e) => {
+      campaignFilters.budget = e.target.value;
+      renderCampaigns();
+    });
+    document.getElementById("clearCampaignFilters")?.addEventListener("click", () => {
+      campaignFilters = { search: "", niche: "", budget: "" };
+      const s = document.getElementById("campaignSearch");
+      if (s) s.value = "";
+      const n = document.getElementById("campaignFilterNiche");
+      if (n) n.value = "";
+      const b = document.getElementById("campaignFilterBudget");
+      if (b) b.value = "";
+      renderCampaigns();
+    });
+
+    // Apply modal
+    function openApplyModal(campaignId) {
+      const campaigns = getCampaigns();
+      const c = campaigns.find(x => x.id === campaignId);
+      if (!c) return;
+      document.getElementById("applyCampaignId").value = c.id;
+      document.getElementById("applyCampaignTitle").textContent = c.title;
+      document.getElementById("applyBrandName").textContent = "by " + c.brandName;
+      document.getElementById("applyForm").style.display = "block";
+      document.getElementById("applySuccess").style.display = "none";
+      document.getElementById("applyForm").reset();
+      document.getElementById("applyCampaignId").value = c.id;
+      document.getElementById("applyModalOverlay").classList.add("open");
+    }
+    function closeApplyModal() {
+      document.getElementById("applyModalOverlay").classList.remove("open");
+    }
+
+    document.getElementById("applyModalClose")?.addEventListener("click", closeApplyModal);
+    document.getElementById("applyDoneBtn")?.addEventListener("click", closeApplyModal);
+    document.getElementById("applyModalOverlay")?.addEventListener("click", (e) => {
+      if (e.target === document.getElementById("applyModalOverlay")) closeApplyModal();
+    });
+
+    document.addEventListener("click", (e) => {
+      const applyBtn = e.target.closest(".apply-btn");
+      if (applyBtn) {
+        e.stopPropagation();
+        openApplyModal(applyBtn.dataset.applyId);
+      }
+    });
+
+    document.getElementById("applyForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const campaignId = (fd.get("campaignId") || "").toString().trim();
+      const campaign = getCampaigns().find(c => c.id === campaignId) || {};
+      const now = new Date();
+      const creatorName = (fd.get("name") || "").toString().trim();
+      const contact = (fd.get("contact") || "").toString().trim();
+      const portfolio = (fd.get("portfolio") || "").toString().trim();
+      const message = (fd.get("message") || "").toString().trim();
+      const campaignTitle = campaign.title || document.getElementById("applyCampaignTitle")?.textContent || "";
+      const brandName = campaign.brandName || document.getElementById("applyBrandName")?.textContent?.replace(/^by\s+/i, "") || "";
+      const brandEmail = (campaign.email || "").toString().trim();
+      const brandPhone = (campaign.phone || "").toString().trim();
+      const campaignBrief = (campaign.brief || "").toString().trim();
+      const campaignBudget = (campaign.budget || "").toString().trim();
+      const campaignNiche = (campaign.niche || "").toString().trim();
+      const campaignPlatform = (campaign.platform || "").toString().trim();
+      const campaignDeadline = (campaign.deadline || "").toString().trim();
+      const campaignLocation = (campaign.location || "").toString().trim();
+      const campaignDeliverables = (campaign.deliverables || "").toString().trim();
+
+      if (!creatorName || !contact || !campaignId) return;
+
+      const btn = document.getElementById("applySubmitBtn");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Submitting…";
+      }
+
+      const appId = "app_" + uid();
+      // Sends to Campaign + Application sheet → Applications tab
+      const sheetPayload = {
+        action: "apply",
+        token: SITE_TOKEN,
+        id: appId,
+        campaignId: campaignId,
+        campaignTitle: campaignTitle,
+        brandName: brandName,
+        brandEmail: brandEmail,
+        brandPhone: brandPhone,
+        campaignBrief: campaignBrief,
+        budget: campaignBudget,
+        niche: campaignNiche,
+        platform: campaignPlatform,
+        deadline: campaignDeadline,
+        location: campaignLocation,
+        deliverables: campaignDeliverables,
+        name: creatorName,
+        contact: contact,
+        creatorEmail: contact,
+        creatorPhone: contact,
+        portfolio: portfolio,
+        instagram: portfolio,
+        message: message,
+        status: "Pending",
+        createdDate: now.toLocaleDateString("en-IN"),
+        createdTime: now.toLocaleTimeString("en-IN"),
+        createdAt: now.toISOString()
+      };
+
+      // Local backup
+      try {
+        const apps = getApplications();
+        apps.unshift({
+          id: appId,
+          campaignId,
+          campaignTitle,
+          brandName,
+          name: creatorName,
+          contact,
+          portfolio,
+          message,
+          createdAt: now.toISOString(),
+          status: "Pending"
+        });
+        saveApplications(apps);
+      } catch (_) {}
+
+      const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+      if (url) {
+        try {
+          await fetch(url, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(sheetPayload)
+          });
+        } catch (err) {
+          console.warn("Apply sheet save failed (local backup kept):", err);
+        }
+      }
+
+      e.target.style.display = "none";
+      document.getElementById("applySuccess").style.display = "block";
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Submit Application →";
+      }
+    });
+
+    function openInviteModal(creatorId) {
+      const i = allInfluencers.find(x => x.id === creatorId);
+      if (!i) return;
+      document.getElementById("inviteCreatorId").value = i.id || "";
+      document.getElementById("inviteCreatorName").value = i.name || "";
+      document.getElementById("inviteCreatorEmail").value = i.email || "";
+      document.getElementById("inviteCreatorIg").value = i.igLink || "";
+      document.getElementById("inviteCreatorLabel").textContent =
+        (i.name || "Creator") + (i.location ? " · " + i.location : "") + (i.niche ? " · " + i.niche : "");
+      document.getElementById("inviteForm").style.display = "block";
+      document.getElementById("inviteSuccess").style.display = "none";
+      document.getElementById("inviteForm").reset();
+      document.getElementById("inviteCreatorId").value = i.id || "";
+      document.getElementById("inviteCreatorName").value = i.name || "";
+      document.getElementById("inviteCreatorEmail").value = i.email || "";
+      document.getElementById("inviteCreatorIg").value = i.igLink || "";
+      closeModal();
+      document.getElementById("inviteModalOverlay").classList.add("open");
+    }
+    function closeInviteModal() {
+      const el = document.getElementById("inviteModalOverlay");
+      if (el) el.classList.remove("open");
+    }
+    document.getElementById("inviteModalClose")?.addEventListener("click", closeInviteModal);
+    document.getElementById("inviteDoneBtn")?.addEventListener("click", closeInviteModal);
+    document.getElementById("inviteModalOverlay")?.addEventListener("click", (e) => {
+      if (e.target === document.getElementById("inviteModalOverlay")) closeInviteModal();
+    });
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".invite-creator-btn");
+      if (btn) {
+        e.stopPropagation();
+        openInviteModal(btn.dataset.creatorId);
+      }
+    });
+    document.getElementById("inviteForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const now = new Date();
+      const creatorId = (fd.get("creatorId") || "").toString().trim();
+      const live = allInfluencers.find(x => x.id === creatorId) || {};
+      const payload = {
+        action: "invite",
+        token: SITE_TOKEN,
+        id: "inv_" + uid(),
+        creatorId: creatorId,
+        creatorName: (fd.get("creatorName") || live.name || "").toString().trim(),
+        creatorEmail: (fd.get("creatorEmail") || live.email || "").toString().trim(),
+        creatorIg: (fd.get("creatorIg") || live.igLink || "").toString().trim(),
+        brandName: (fd.get("brandName") || "").toString().trim(),
+        brandEmail: (fd.get("brandEmail") || "").toString().trim(),
+        brandPhone: (fd.get("brandPhone") || "").toString().trim(),
+        message: (fd.get("message") || "").toString().trim(),
+        status: "Sent",
+        createdDate: now.toLocaleDateString("en-IN"),
+        createdTime: now.toLocaleTimeString("en-IN")
+      };
+      if (!payload.brandName || !payload.brandEmail || !payload.brandPhone || !payload.message) return;
+      const btn = document.getElementById("inviteSubmitBtn");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Sending…";
+      }
+      const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+      if (url) {
+        try {
+          await fetch(url, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+          });
+        } catch (err) {
+          console.warn("Invite save failed:", err);
+        }
+      }
+      e.target.style.display = "none";
+      document.getElementById("inviteSuccess").style.display = "block";
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Send request to creator →";
+      }
+    });
+
+    // ============================================================
+    // JOIN FORM → Google Sheet via Apps Script (doPost)
+    // ============================================================
+    const joinForm = document.getElementById("joinForm");
+    const joinSuccess = document.getElementById("joinSuccess");
+    const joinError = document.getElementById("joinError");
+    const joinSubmitBtn = document.getElementById("joinSubmitBtn");
+
+    // Show "Other city" text field when needed
+    document.getElementById("joinCity")?.addEventListener("change", (e) => {
+      const wrap = document.getElementById("joinCityOtherWrap");
+      const other = document.getElementById("joinCityOther");
+      if (e.target.value === "Other") {
+        wrap.style.display = "block";
+        other.required = true;
+      } else {
+        wrap.style.display = "none";
+        other.required = false;
+        other.value = "";
+      }
+    });
+
+    if (joinForm) {
+      joinForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(joinForm);
+        const postAmt = (fd.get("chargePost") || "").toString().trim();
+        const storyAmt = (fd.get("chargeStory") || "").toString().trim();
+        const reelAmt = (fd.get("chargeReel") || "").toString().trim();
+        const shoutAmt = (fd.get("chargeShoutout") || "").toString().trim();
+        const chargeNote = (fd.get("chargeNote") || "").toString().trim();
+        const chargeBits = [];
+        if (postAmt) chargeBits.push("Post ₹" + postAmt);
+        if (storyAmt) chargeBits.push("Story ₹" + storyAmt);
+        if (reelAmt) chargeBits.push("Reel ₹" + reelAmt);
+        if (shoutAmt) chargeBits.push("Shoutout ₹" + shoutAmt);
+        if (chargeNote) chargeBits.push(chargeNote);
+        const chargesText = chargeBits.join(" · ");
+        const chargesErr = document.getElementById("chargesError");
+        if (!postAmt && !storyAmt && !reelAmt && !shoutAmt) {
+          if (chargesErr) chargesErr.style.display = "block";
+          document.getElementById("chargesGroup")?.scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
+        if (chargesErr) chargesErr.style.display = "none";
+
+        let cityVal = (fd.get("city") || "").toString().trim();
+        if (cityVal === "Other") {
+          cityVal = (fd.get("cityOther") || "").toString().trim();
+        }
+        cityVal = cleanCity(cityVal); // normalize before save
+        const payload = {
+          action: "join",
+          token: SITE_TOKEN,
+          name: (fd.get("name") || "").toString().trim(),
+          age: (fd.get("age") || "").toString().trim(),
+          gender: (fd.get("gender") || "").toString().trim(),
+          email: (fd.get("email") || "").toString().trim(),
+          phone: (fd.get("phone") || "").toString().trim(),
+          city: cityVal,
+          instagram: (fd.get("instagram") || "").toString().trim(),
+          followers: (fd.get("followers") || "").toString().trim(),
+          skill: (fd.get("skill") || "").toString().trim(),
+          income: (fd.get("income") || "").toString().trim(),
+          working: (fd.get("working") || "").toString().trim(),
+          charges: chargesText
+        };
+
+        joinSubmitBtn.disabled = true;
+        joinSubmitBtn.textContent = "Submitting…";
+        joinError.style.display = "none";
+
+        const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+        if (!url) {
+          joinForm.style.display = "none";
+          joinError.style.display = "block";
+          joinSubmitBtn.disabled = false;
+          joinSubmitBtn.textContent = "Submit & Get Listed →";
+          return;
+        }
+
+        try {
+          // text/plain avoids CORS preflight issues with Apps Script
+          await fetch(url, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+          });
+          // no-cors cannot read response — assume success if no network throw
+          joinForm.style.display = "none";
+          joinSuccess.style.display = "block";
+          joinError.style.display = "none";
+          // refresh directory shortly so new creator can appear
+          setTimeout(() => loadLiveData(true), 2500);
+        } catch (err) {
+          console.error(err);
+          joinError.style.display = "block";
+          joinSubmitBtn.disabled = false;
+          joinSubmitBtn.textContent = "Submit & Get Listed →";
+        }
+      });
+    }
+
+    document.getElementById("joinRetryBtn")?.addEventListener("click", () => {
+      joinError.style.display = "none";
+      joinForm.style.display = "block";
+      joinSubmitBtn.disabled = false;
+      joinSubmitBtn.textContent = "Submit & Get Listed →";
+    });
+
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+      activeFilters.search = e.target.value.trim();
+      applyFilters();
+    });
+    document.getElementById("filterNiche").addEventListener("change", (e) => {
+      activeFilters.niche = e.target.value; applyFilters();
+    });
+    document.getElementById("filterLocation").addEventListener("change", (e) => {
+      activeFilters.location = e.target.value; applyFilters();
+    });
+    document.getElementById("filterFollowers").addEventListener("change", (e) => {
+      activeFilters.followers = e.target.value; applyFilters();
+    });
+    document.getElementById("filterPlatform").addEventListener("change", (e) => {
+      activeFilters.platform = e.target.value; applyFilters();
+    });
+    document.getElementById("sortSelect").addEventListener("change", applyFilters);
+    document.getElementById("clearFiltersBtn").addEventListener("click", clearFilters);
+
+    function animateStats() {
+      document.querySelectorAll(".stat-num").forEach(el => {
+        const target = parseInt(el.dataset.target);
+        const duration = 1500;
+        const start = performance.now();
+        const step = (now) => {
+          const progress = Math.min((now - start) / duration, 1);
+          const ease = 1 - Math.pow(1 - progress, 3);
+          const val = Math.floor(ease * target);
+          el.textContent = target >= 1000
+            ? (val >= 1000 ? (val / 1000).toFixed(val >= 10000 ? 0 : 1) + "K+" : val)
+            : val + (target === 98 ? "%" : "+");
+          if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      });
+    }
+
+    // ============================================================
+    // INIT + Meta Ads deep link (?page=join or #join)
+    // ============================================================
+    loadLiveData(false);
+    loadLiveCampaigns(false);
+    setInterval(() => {
+      loadLiveData(true);
+      loadLiveCampaigns(true);
+    }, 30000);
+    setTimeout(animateStats, 200);
+
+    // Open Join form when landing from Meta ads
+    (function openJoinFromAds() {
+      const params = new URLSearchParams(window.location.search);
+      const page = (params.get("page") || params.get("p") || "").toLowerCase();
+      const hash = (window.location.hash || "").replace("#", "").toLowerCase();
+      if (page === "join" || page === "register" || page === "signup" || hash === "join" || hash === "register") {
+        showPage("join");
+      } else if (page === "campaigns" || hash === "campaigns") {
+        showPage("campaigns");
+      }
+    })();
+  </script>
+</body>
+</html>
