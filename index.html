@@ -251,22 +251,20 @@
     .path-card h3 { font-size: 1.25rem; margin-bottom: 0.35rem; }
     .path-card p { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 0.9rem; }
     .path-card.creator {
-      border-color: rgba(249,115,22,0.45);
+      border-color: rgba(255,200,150,0.28);
       background:
-        radial-gradient(circle at 18% 20%, rgba(249,115,22,0.28), transparent 42%),
-        radial-gradient(circle at 88% 90%, rgba(234,88,12,0.12), transparent 40%),
-        linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-      transform: perspective(900px) rotateX(4deg);
-      box-shadow: 0 18px 40px rgba(249,115,22,0.12);
+        linear-gradient(165deg, rgba(255,176,90,0.28), rgba(249,115,22,0.10));
+      backdrop-filter: blur(22px) saturate(1.5);
+      -webkit-backdrop-filter: blur(22px) saturate(1.5);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 18px 40px rgba(249,115,22,0.12);
     }
     .path-card.brand {
-      border-color: rgba(99,102,241,0.45);
+      border-color: rgba(196,181,253,0.28);
       background:
-        radial-gradient(circle at 82% 16%, rgba(99,102,241,0.32), transparent 44%),
-        radial-gradient(circle at 12% 88%, rgba(34,211,238,0.12), transparent 40%),
-        linear-gradient(200deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-      transform: perspective(900px) rotateX(4deg);
-      box-shadow: 0 18px 40px rgba(99,102,241,0.14);
+        linear-gradient(165deg, rgba(167,139,250,0.26), rgba(91,79,224,0.10));
+      backdrop-filter: blur(22px) saturate(1.5);
+      -webkit-backdrop-filter: blur(22px) saturate(1.5);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), 0 18px 40px rgba(99,102,241,0.12);
     }
     .path-card.creator:hover, .path-card.brand:hover {
       transform: perspective(900px) rotateX(0deg) translateY(-6px);
@@ -767,12 +765,32 @@
     }
     .empty-state p { font-size: 0.95rem; max-width: 320px; margin: 0 auto; line-height: 1.55; }
     .status-bar {
-      background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.28);
-      color: var(--primary-light); padding: 0.55rem 1rem; border-radius: 11px;
-      font-size: 0.82rem; margin-bottom: 1rem; display: none;
-      font-weight: 500; animation: chipIn 0.3s var(--ease-out);
+      display: none;
+      height: 6px;
+      margin: 0 0 1rem;
+      padding: 0;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(12px);
+      overflow: hidden;
+      font-size: 0;
+      color: transparent;
     }
     .status-bar.show { display: block; }
+    .status-bar::after {
+      content: "";
+      display: block;
+      height: 100%;
+      width: 38%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255,180,90,0.15), rgba(249,115,22,0.85), rgba(255,180,90,0.15));
+      animation: barSlide 1.1s ease-in-out infinite;
+    }
+    @keyframes barSlide {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(280%); }
+    }
 
     /* Campaign specific */
     .campaign-card .card-body { padding: 1.2rem; }
@@ -1738,14 +1756,42 @@
     // ============================================================
     // LIVE DATA + AUTO REFRESH
     // ============================================================
+    async function fetchCsvText(fetchUrl) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 14000);
+      try {
+        const res = await fetch(fetchUrl, {
+          method: "GET",
+          redirect: "follow",
+          cache: "no-store",
+          signal: ctrl.signal
+        });
+        if (!res.ok) throw new Error("http " + res.status);
+        return await res.text();
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    function parseCsvRows(text) {
+      if (!text || typeof Papa === "undefined") return [];
+      const results = Papa.parse(text, { header: true, skipEmptyLines: true });
+      return results.data || [];
+    }
+    function hideProgress() {
+      const status = document.getElementById("statusBar");
+      if (status) {
+        status.classList.remove("show");
+        status.textContent = "";
+        status.removeAttribute("style");
+      }
+    }
+
     function loadLiveData(isSilent = false) {
       const status = document.getElementById("statusBar");
       if (!isSilent && status) {
         status.className = "status-bar show";
-        status.textContent = "Loading latest data...";
-        status.style.background = "rgba(99,102,241,0.15)";
-        status.style.borderColor = "rgba(99,102,241,0.3)";
-        status.style.color = "var(--primary-light)";
+        status.textContent = "";
+        status.removeAttribute("style");
       }
 
       if (!isSilent) {
@@ -1754,63 +1800,35 @@
       }
 
       const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
-      if (!url) {
-        if (!isSilent && status) {
-          status.textContent = `Using offline data (${allInfluencers.length} creators)`;
-          status.style.background = "rgba(234,179,8,0.12)";
-          status.style.borderColor = "rgba(234,179,8,0.3)";
-          status.style.color = "#fbbf24";
-          setTimeout(() => status.classList.remove("show"), 4000);
-        }
-        return;
-      }
+      if (!url) { hideProgress(); return; }
 
-      if (typeof Papa === "undefined") return;
-
-      // Cache-bust so new sheet rows appear immediately (Apps Script / browser cache)
-      const fetchUrl = url + (url.includes("?") ? "&" : "?") + "token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + Date.now();
-
-      Papa.parse(fetchUrl, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          if (results.data && results.data.length > 0) {
-            // Keep every row with a non-empty name (even 1 letter like "E")
-            const live = results.data
-              .map(normalizeRow)
-              .filter(i => i && i.name && String(i.name).trim().length > 0);
-            if (live.length > 0) {
-              allInfluencers = prepare(live);
-              finishLoad();
-              if (!isSilent && status) {
-                status.textContent = `Live: ${allInfluencers.length} creators (auto-updates every 30s)`;
-                status.style.background = "rgba(34,197,94,0.15)";
-                status.style.borderColor = "rgba(34,197,94,0.3)";
-                status.style.color = "#4ade80";
-                setTimeout(() => status.classList.remove("show"), 4000);
-              }
-              return;
-            }
-          }
-          if (!isSilent && status) {
-            status.textContent = `No new data — showing ${allInfluencers.length} creators`;
-            status.style.background = "rgba(234,179,8,0.12)";
-            status.style.borderColor = "rgba(234,179,8,0.3)";
-            status.style.color = "#fbbf24";
-            setTimeout(() => status.classList.remove("show"), 4000);
-          }
-        },
-        error: (err) => {
-          console.warn("Live fetch failed:", err);
-          if (!isSilent && status) {
-            status.textContent = `Fetch failed — offline data (${allInfluencers.length})`;
-            status.style.background = "rgba(239,68,68,0.12)";
-            status.style.borderColor = "rgba(239,68,68,0.3)";
-            status.style.color = "#f87171";
-            setTimeout(() => status.classList.remove("show"), 5000);
+      try {
+        const cached = sessionStorage.getItem("cnt_inf_cache");
+        if (cached && !isSilent) {
+          const rows = JSON.parse(cached);
+          if (Array.isArray(rows) && rows.length) {
+            allInfluencers = prepare(rows);
+            finishLoad();
           }
         }
+      } catch (_) {}
+
+      const tick = Math.floor(Date.now() / 20000);
+      const fetchUrl = url + (url.includes("?") ? "&" : "?") + "token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + tick;
+
+      fetchCsvText(fetchUrl).then((text) => {
+        const live = parseCsvRows(text)
+          .map(normalizeRow)
+          .filter(i => i && i.name && String(i.name).trim().length > 0);
+        if (live.length > 0) {
+          allInfluencers = prepare(live);
+          try { sessionStorage.setItem("cnt_inf_cache", JSON.stringify(live)); } catch (_) {}
+          finishLoad();
+        }
+        hideProgress();
+      }).catch((err) => {
+        console.warn("Live fetch failed:", err);
+        hideProgress();
       });
     }
 
@@ -2199,25 +2217,29 @@
         return;
       }
       // Matches Apps Script: ?action=campaigns
-      const fetchUrl = url + (url.includes("?") ? "&" : "?") + "action=campaigns&token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + Date.now();
-      Papa.parse(fetchUrl, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          if (results.data && results.data.length > 0) {
-            const live = results.data
-              .map(normalizeCampaignRow)
-              .filter(c => c && c.title);
-            if (live.length > 0) {
-              allCampaigns = live;
-            }
+      try {
+        const cached = sessionStorage.getItem("cnt_camp_cache");
+        if (cached && !isSilent) {
+          const rows = JSON.parse(cached);
+          if (Array.isArray(rows) && rows.length) {
+            allCampaigns = rows;
+            renderCampaigns();
           }
-          renderCampaigns();
-        },
-        error: () => {
-          renderCampaigns();
         }
+      } catch (_) {}
+      const tick = Math.floor(Date.now() / 20000);
+      const fetchUrl = url + (url.includes("?") ? "&" : "?") + "action=campaigns&token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + tick;
+      fetchCsvText(fetchUrl).then((text) => {
+        const live = parseCsvRows(text)
+          .map(normalizeCampaignRow)
+          .filter(c => c && c.title);
+        if (live.length > 0) {
+          allCampaigns = live;
+          try { sessionStorage.setItem("cnt_camp_cache", JSON.stringify(live)); } catch (_) {}
+        }
+        renderCampaigns();
+      }).catch(() => {
+        renderCampaigns();
       });
     }
 
@@ -2832,7 +2854,7 @@
     setInterval(() => {
       loadLiveData(true);
       loadLiveCampaigns(true);
-    }, 30000);
+    }, 45000);
     setTimeout(animateStats, 200);
 
     // Open Join form when landing from Meta ads
