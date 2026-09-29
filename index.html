@@ -1679,7 +1679,17 @@
     // HELPERS
     // ============================================================
     function prepare(data) {
-      return data.map((item, idx) => ({
+      const seen = new Set();
+      const unique = [];
+      (data || []).forEach((item) => {
+        const name = String(item.name || "").trim().toLowerCase();
+        const ig = String(item.igLink || item.instagram || "").trim().toLowerCase().replace(/\/$/, "");
+        const key = name + "|" + ig;
+        if (!name || seen.has(key)) return;
+        seen.add(key);
+        unique.push(item);
+      });
+      return unique.map((item, idx) => ({
         ...item,
         id: "inf_" + idx,
         initials: (item.name || "C").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
@@ -2924,46 +2934,24 @@
         joinSubmitBtn.textContent = "Submitting…";
         joinError.style.display = "none";
 
-        const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
-        if (!url) {
-          joinForm.style.display = "none";
-          joinError.style.display = "block";
-          joinSubmitBtn.disabled = false;
-          joinSubmitBtn.textContent = "Submit & Get Listed →";
-          return;
-        }
-
         try {
-          try {
-            const db = getFirebaseDb();
-            if (db) {
-              await db.collection("creators").add({
-                name: payload.name,
-                city: payload.city,
-                niche: payload.skill,
-                followers: payload.followers,
-                instagram: payload.instagram,
-                charges: payload.charges,
-                gender: payload.gender,
-                createdAt: Date.now()
-              });
-            }
-          } catch (fbErr) {
-            console.warn("Firebase join write:", fbErr);
-          }
-          // text/plain avoids CORS preflight issues with Apps Script
-          await fetch(url, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload)
+          const db = getFirebaseDb();
+          if (!db) throw new Error("firebase");
+          await db.collection("creators").add({
+            name: payload.name,
+            city: payload.city,
+            niche: payload.skill,
+            followers: payload.followers,
+            instagram: payload.instagram,
+            charges: payload.charges,
+            gender: payload.gender,
+            createdAt: Date.now()
           });
-          // no-cors cannot read response — assume success if no network throw
+
           joinForm.style.display = "none";
           joinSuccess.style.display = "block";
           joinError.style.display = "none";
-          // refresh directory shortly so new creator can appear
-          setTimeout(() => loadLiveData(true), 2500);
+          setTimeout(() => loadLiveData(true), 400);
         } catch (err) {
           console.error(err);
           joinError.style.display = "block";
