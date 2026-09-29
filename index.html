@@ -1844,7 +1844,7 @@
       }
     }
 
-    function loadLiveData(isSilent = false) {
+    function loadLiveData(isSilent = false, force = false) {
       const status = document.getElementById("statusBar");
       if (!isSilent && status) {
         status.className = "status-bar show";
@@ -1877,7 +1877,7 @@
 
       const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
       if (!url) { hideProgress(); return; }
-      if (hadCache && cacheAge < 6 * 60 * 60 * 1000 && isSilent) return;
+      if (!force && hadCache && cacheAge < 6 * 60 * 60 * 1000 && isSilent) return;
 
       const base = url + (url.includes("?") ? "&" : "?");
       const fetchUrl = base + "token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + Date.now();
@@ -2888,7 +2888,27 @@
           joinForm.style.display = "none";
           joinSuccess.style.display = "block";
           joinError.style.display = "none";
-          setTimeout(() => loadLiveData(true), 2500);
+          try {
+            const local = {
+              name: payload.name,
+              niche: payload.skill || "Creator",
+              location: payload.city || "",
+              city: payload.city || "",
+              followers: payload.followers,
+              followersLabel: payload.followers,
+              instagram: payload.instagram,
+              igLink: payload.instagram,
+              charges: payload.charges,
+              gender: payload.gender
+            };
+            const merged = [local].concat(allInfluencers || []);
+            allInfluencers = prepare(merged);
+            try {
+              localStorage.setItem("cnt_inf_cache_v2", JSON.stringify({ ts: Date.now(), rows: allInfluencers }));
+            } catch (_) {}
+            finishLoad();
+          } catch (_) {}
+          setTimeout(() => loadLiveData(true, true), 4000);
         } catch (err) {
           console.error(err);
           joinError.style.display = "block";
