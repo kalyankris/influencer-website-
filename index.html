@@ -1613,6 +1613,7 @@
     // ============================================================
     const LIVE_DATA_URL = "https://script.google.com/macros/s/AKfycbxStD_Eckmqdd2CSZNmzEbFPDt1L9MJHXXfxbADPF3UU1qUJ-8mcwosP0VbLa1dK63tPQ/exec";
     const SITE_TOKEN = "cnt_7f3a9c2e1b84d06f";
+    const CREATORS_JSON_URL = "creators.json";
     // ============================================================
     // FALLBACK DATA (used only if live fetch fails)
     // ============================================================
@@ -1876,13 +1877,28 @@
       }
 
       const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
-      if (!url) { hideProgress(); return; }
       if (!force && hadCache && cacheAge < 6 * 60 * 60 * 1000 && isSilent) return;
 
-      const base = url + (url.includes("?") ? "&" : "?");
-      const fetchUrl = base + "token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + Date.now();
+      const base = url ? (url + (url.includes("?") ? "&" : "?")) : "";
+      const fetchUrl = base ? base + "token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + Date.now() : "";
 
       (async () => {
+        try {
+          const jr = await fetch(CREATORS_JSON_URL + "?t=" + Date.now(), { cache: "no-store" });
+          if (jr.ok) {
+            const j = await jr.json();
+            const rows = Array.isArray(j) ? j : (j.rows || []);
+            const live = rows.map(normalizeRow).filter(i => i && String(i.name || "").trim());
+            if (live.length) {
+              allInfluencers = prepare(live);
+              try { localStorage.setItem("cnt_inf_cache_v2", JSON.stringify({ ts: Date.now(), rows: live })); } catch (_) {}
+              finishLoad();
+              hideProgress();
+              return;
+            }
+          }
+        } catch (_) {}
+        if (!fetchUrl) { hideProgress(); return; }
         let lastErr = null;
         for (let attempt = 0; attempt < 4; attempt++) {
           try {
