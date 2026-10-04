@@ -1405,7 +1405,30 @@
           </div>
           <div class="form-group">
             <label>Niche / skills *</label>
-            <input type="text" name="skill" required placeholder="Dance, Fashion, Food, Lifestyle, Tech…">
+            <select name="skill" required>
+              <option value="">Select niche</option>
+              <option>Fashion</option>
+              <option>Beauty</option>
+              <option>Dance</option>
+              <option>Music</option>
+              <option>Cooking</option>
+              <option>Fitness</option>
+              <option>Travel</option>
+              <option>Comedy</option>
+              <option>Tech</option>
+              <option>Education</option>
+              <option>Business</option>
+              <option>Art</option>
+              <option>Acting</option>
+              <option>Photography</option>
+              <option>Parenting</option>
+              <option>Gaming</option>
+              <option>UGC Creators</option>
+              <option>Editing</option>
+              <option>UGC</option>
+              <option>Video Editing</option>
+              <option>Lifestyle</option>
+            </select>
           </div>
           <div class="form-group">
             <label>Monthly income (INR)</label>
@@ -1712,10 +1735,41 @@
     }
 
     function cleanNiche(s) {
-      if (!s || /^(none|no|nil|na|yes)$/i.test(s.trim())) return "Lifestyle";
-      const parts = s.split(/[,&]/).map(p => p.trim()).filter(Boolean);
-      let niche = parts[0] || "Content Creator";
-      return niche.charAt(0).toUpperCase() + niche.slice(1);
+      const raw = String(s || "").trim();
+      if (!raw) return "Lifestyle";
+      const t = raw.toLowerCase().replace(/\s+/g, " ");
+      if (/^(none|no|nil|na|n\/a|yes|nonr|nope|null|ok|okay|-|\.|x+)$/i.test(t)) return "Lifestyle";
+      if (/all of the above|working professional|anything|everything|timepass|for fun/i.test(t)) return "Lifestyle";
+
+      const rules = [
+        ["UGC", /\bugc\b|user generated|brand reel|paid collab|collab with brand/],
+        ["Video Editing", /video edit|editing|editor|premiere|capcut|final cut|after effect|transition/],
+        ["Travel", /trav|tour|trip|explore|wanderlust|holiday|vacation/],
+        ["Fashion", /fashion|style|outfit|model|modell?ing|wardrobe|lookbook|runway/],
+        ["Beauty", /beauty|makeup|make-?up|skincare|skin care|cosmetic|hair|salon|glow/],
+        ["Dance", /danc|choreograph|hip.?hop|bharat|kathak|freestyle/],
+        ["Music", /music|singer|singing|\brap\b|dj\b|instrument|vocal|song/],
+        ["Cooking", /cook|food|recipe|chef|baking|kitchen|cuisine|mukbang/],
+        ["Fitness", /fitness|gym|yoga|workout|health|nutrition|sport|athlete/],
+        ["Comedy", /comedy|funny|humour|humor|meme|roast|stand.?up/],
+        ["Tech", /tech|gadget|coding|software|\bai\b|app review|mobile review/],
+        ["Education", /educat|tutor|teach|student|study|academic|phd|debat|mentor/],
+        ["Business", /business|finance|startup|entrepreneur|marketing|branding/],
+        ["Art", /paint|drawing|sketch|craft|\bart\b|illustrat|graphic design/],
+        ["Acting", /acting|\bact\b|drama|theatre|theater|cinema|\bfilm\b/],
+        ["Photography", /photo|photograph|camera|\bshoot\b|cinemat/],
+        ["Parenting", /parent|mom\b|mother|baby|kid|family|home maker|homemaker/],
+        ["Gaming", /game|gaming|esport|streamer/],
+        ["Lifestyle", /lifestyle|daily vlog|content creat|influencer|\breels?\b|instagram|vlog|youtube|short form|creator/]
+      ];
+
+      for (const [label, re] of rules) {
+        if (re.test(t)) return label;
+      }
+      if (t.length > 22 || t.split(" ").length > 3) return "Lifestyle";
+      const first = raw.split(/[,&/|]/)[0].trim();
+      if (!first || first.length > 22) return "Lifestyle";
+      return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
     }
 
     function cleanCity(s) {
@@ -1943,8 +1997,8 @@
     // FILTERS
     // ============================================================
     function populateFilterOptions() {
-      const niches = [...new Set(allInfluencers.map(i => i.niche))].sort();
-      const locations = [...new Set(allInfluencers.map(i => i.location))].sort();
+      const niches = [...new Set(allInfluencers.map(i => cleanNiche(i.niche || "")).filter(Boolean))].sort();
+      const locations = [...new Set(allInfluencers.map(i => i.location).filter(Boolean))].sort();
 
       const nicheSelect = document.getElementById("filterNiche");
       if (nicheSelect) {
