@@ -997,6 +997,69 @@
         transition-duration: 0.01ms !important;
       }
     }
+  
+    /* ===== Deals premium timeline ===== */
+    .deal-card {
+      background: linear-gradient(165deg, rgba(28,24,40,0.95), rgba(14,12,22,0.98));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 1.15rem 1.2rem 1.25rem;
+      margin-bottom: 1.15rem;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .deal-card-head { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:0.6rem; margin-bottom:0.65rem; }
+    .deal-parties { font-size:1.05rem; font-weight:650; letter-spacing:-0.02em; }
+    .deal-parties .bn { color:#c4b5fd; }
+    .deal-parties .cn { color:#fb923c; }
+    .deal-status-pill {
+      font-size:0.72rem; font-weight:600; letter-spacing:0.04em; text-transform:uppercase;
+      padding:0.28rem 0.65rem; border-radius:999px;
+      background:rgba(124,108,246,0.18); color:#c4b5fd; border:1px solid rgba(124,108,246,0.35);
+    }
+    .deal-status-pill.s-Submitted { background:rgba(56,189,248,0.15); color:#7dd3fc; border-color:rgba(56,189,248,0.35); }
+    .deal-status-pill.s-Approved, .deal-status-pill.s-Paid, .deal-status-pill.s-PlatformReceived { background:rgba(52,211,153,0.12); color:#6ee7b7; border-color:rgba(52,211,153,0.35); }
+    .deal-status-pill.s-Accepted, .deal-status-pill.s-BrandPaidPlatform { background:rgba(251,146,60,0.12); color:#fdba74; border-color:rgba(251,146,60,0.3); }
+    .deal-meta-row { display:flex; flex-wrap:wrap; gap:0.45rem; margin:0.5rem 0 0.35rem; }
+    .deal-chip {
+      font-size:0.78rem; padding:0.25rem 0.55rem; border-radius:8px;
+      background:rgba(255,255,255,0.04); color:var(--text-muted); border:1px solid rgba(255,255,255,0.06);
+    }
+    .deal-chip strong { color:#e8e4f0; font-weight:600; }
+    .pay-rail {
+      margin:0.85rem 0 0.5rem; padding:0.85rem 0.9rem; border-radius:14px;
+      background:linear-gradient(135deg, rgba(124,108,246,0.12), rgba(251,146,60,0.08));
+      border:1px solid rgba(124,108,246,0.22);
+    }
+    .pay-rail h4 { margin:0 0 0.45rem; font-size:0.8rem; letter-spacing:0.06em; text-transform:uppercase; color:#c4b5fd; }
+    .pay-steps { display:flex; flex-direction:column; gap:0.35rem; font-size:0.84rem; color:var(--text-muted); }
+    .pay-steps .on { color:#6ee7b7; }
+    .pay-steps .wait { color:#fdba74; }
+    .timeline {
+      margin:1rem 0 0.5rem; padding:0.2rem 0 0.2rem 0.15rem;
+      border-left:2px solid rgba(124,108,246,0.35);
+    }
+    .tl-item { position:relative; padding:0 0 1rem 1.1rem; }
+    .tl-item:last-child { padding-bottom:0.2rem; }
+    .tl-item::before {
+      content:""; position:absolute; left:-5px; top:0.35rem; width:8px; height:8px; border-radius:50%;
+      background:#7c6cf6; box-shadow:0 0 0 3px rgba(124,108,246,0.25);
+    }
+    .tl-item.pay::before { background:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,0.25); }
+    .tl-item.file::before { background:#38bdf8; box-shadow:0 0 0 3px rgba(56,189,248,0.25); }
+    .tl-item.msg::before { background:#fb923c; box-shadow:0 0 0 3px rgba(251,146,60,0.25); }
+    .tl-time { font-size:0.72rem; color:var(--text-muted); margin-bottom:0.15rem; }
+    .tl-who { font-size:0.8rem; font-weight:600; margin-bottom:0.15rem; }
+    .tl-who.brand { color:#c4b5fd; }
+    .tl-who.creator { color:#fb923c; }
+    .tl-who.connectly { color:#6ee7b7; }
+    .tl-body { font-size:0.88rem; color:#d4d0dc; line-height:1.45; }
+    .tl-body a { color:#93c5fd; text-decoration:underline; text-underline-offset:2px; }
+    .deal-actions { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.9rem; }
+    .deal-msg-box { margin-top:0.75rem; }
+    .deal-msg-box textarea { min-height:72px; }
+    .deal-edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-top:0.5rem; }
+    @media (max-width:560px) { .deal-edit-grid { grid-template-columns:1fr; } }
+
   </style>
 </head>
 <body>
@@ -1508,19 +1571,21 @@
   <div class="page" id="page-deals">
     <section class="section" style="padding-top:2rem;">
       <h2 class="section-title">My Deals</h2>
-      <p class="section-sub">Track offers, upload deliverables, and mark payments. Use the same email from the invite or campaign.</p>
+      <p class="section-sub">Live status for brand, creator &amp; Connectly. Pay via UPI to Connectly — after approval, Connectly pays the creator.</p>
       <div class="card" style="max-width:520px;margin-bottom:1.25rem;">
         <div class="card-body">
           <div class="form-group" style="margin-bottom:0.75rem;">
             <label>Your email</label>
-            <input type="email" id="dealsEmail" placeholder="you@email.com">
+            <input type="email" id="dealsEmail" placeholder="brand or creator email">
           </div>
           <button type="button" class="btn btn-primary" id="dealsLoadBtn">Load my deals</button>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin:0.65rem 0 0;">Use brand email for Approve &amp; pay · creator email for submit · Connectly ops email for payout.</p>
         </div>
       </div>
       <div id="dealsList"></div>
     </section>
   </div>
+
 
   <div class="page" id="page-contact">
     <section class="section">
@@ -3083,6 +3148,77 @@
     loadLiveData(false);
 
     // ---------- My Deals ----------
+    const CONNECTLY_UPI_FALLBACK = "connectly@upi";
+    const CONNECTLY_PHONE_FALLBACK = "9999999999";
+
+    function parseDealHistory(raw) {
+      const lines = String(raw || "").split(/\n/).map(x => x.trim()).filter(Boolean);
+      return lines.map(line => {
+        // stamp | TYPE | role | actor | text [| url]
+        const parts = line.split(" | ");
+        if (parts.length >= 5) {
+          return {
+            time: parts[0],
+            type: (parts[1] || "").toUpperCase(),
+            role: (parts[2] || "").toLowerCase(),
+            actor: parts[3] || "",
+            text: parts[4] || "",
+            url: parts.length >= 6 ? parts.slice(5).join(" | ") : ""
+          };
+        }
+        // legacy: stamp · Submitted · url
+        const leg = line.split(" · ");
+        if (leg.length >= 3) {
+          return { time: leg[0], type: "FILE", role: "creator", actor: "", text: leg[1] || "update", url: leg.slice(2).join(" · ") };
+        }
+        return { time: "", type: "STATUS", role: "", actor: "", text: line, url: "" };
+      }).reverse(); // newest first
+    }
+
+    function dealTimelineHTML(d) {
+      const items = parseDealHistory(d.history);
+      if (!items.length) {
+        return `<div class="timeline"><div class="tl-item"><div class="tl-body" style="color:var(--text-muted);">No activity yet — accept the deal to start.</div></div></div>`;
+      }
+      return `<div class="timeline">` + items.map(it => {
+        const cls = it.type === "PAY" ? "pay" : (it.type === "FILE" ? "file" : (it.type === "MSG" ? "msg" : ""));
+        const whoCls = it.role === "brand" ? "brand" : (it.role === "creator" ? "creator" : (it.role === "connectly" || it.role === "ops" ? "connectly" : ""));
+        const who = it.actor ? `${esc(it.actor)} · ${esc(it.role || "")}` : esc(it.role || "system");
+        let body = esc(it.text);
+        if (it.url && /^https?:\/\//i.test(it.url)) {
+          body += ` · <a href="${esc(it.url)}" target="_blank" rel="noopener">Open file</a>`;
+        } else if (it.url) {
+          body += ` · ${esc(it.url)}`;
+        }
+        return `<div class="tl-item ${cls}">
+          <div class="tl-time">${esc(it.time)}</div>
+          <div class="tl-who ${whoCls}">${who}</div>
+          <div class="tl-body">${body}</div>
+        </div>`;
+      }).join("") + `</div>`;
+    }
+
+    function payRailHTML(d) {
+      const plat = String(d.platformPaid || "");
+      const out = String(d.creatorPaidOut || "");
+      const st = d.status || "";
+      const upi = d.connectlyUpi || CONNECTLY_UPI_FALLBACK;
+      const phone = d.connectlyPhone || CONNECTLY_PHONE_FALLBACK;
+      const step1 = /yes/i.test(plat) || st === "BrandPaidPlatform" || st === "PlatformReceived" || st === "Approved" || st === "Paid";
+      const step2 = st === "PlatformReceived" || st === "Approved" || st === "Paid" || /yes/i.test(plat) && st === "Approved";
+      const step3 = st === "Approved" || st === "Paid";
+      const step4 = st === "Paid" || /yes/i.test(out);
+      return `<div class="pay-rail">
+        <h4>Payment protection</h4>
+        <div class="pay-steps">
+          <div class="${step1 ? "on" : "wait"}">1. Brand pays Connectly (UPI: <strong style="color:#e8e4f0">${esc(upi)}</strong>)</div>
+          <div class="${step1 ? "on" : "wait"}">2. Connectly holds until work is approved</div>
+          <div class="${step3 ? "on" : "wait"}">3. Brand approves deliverable</div>
+          <div class="${step4 ? "on" : "wait"}">4. Connectly pays creator${phone ? " · WhatsApp " + esc(phone) : ""}</div>
+        </div>
+      </div>`;
+    }
+
     async function loadMyDeals() {
       const email = (document.getElementById("dealsEmail")?.value || "").trim();
       const box = document.getElementById("dealsList");
@@ -3103,118 +3239,182 @@
         const data = await res.json();
         const deals = (data && data.deals) || [];
         if (!deals.length) {
-          box.innerHTML = '<p class="section-sub">No deals for this email yet. Brand must send a Request with price + deliverable first.</p>';
+          box.innerHTML = '<p class="section-sub">No deals for this email yet.</p>';
           return;
         }
+        window.__lastDealsEmail = email;
         box.innerHTML = deals.map(dealCardHTML).join("");
         box.querySelectorAll("[data-deal-action]").forEach(btn => {
           btn.addEventListener("click", () => runDealAction(btn));
         });
+        box.querySelectorAll("[data-deal-send-msg]").forEach(btn => {
+          btn.addEventListener("click", () => sendDealMessage(btn));
+        });
+        box.querySelectorAll("[data-deal-save-edit]").forEach(btn => {
+          btn.addEventListener("click", () => saveDealEdit(btn));
+        });
       } catch (err) {
         console.error(err);
-        box.innerHTML = '<p class="section-sub">Could not load deals. Redeploy Apps Script with Deals support, then try again.</p>';
+        box.innerHTML = '<p class="section-sub">Could not load deals. Redeploy Apps Script, then try again.</p>';
       }
     }
 
     function dealCardHTML(d) {
-      const st = esc(d.status || "");
+      const st = d.status || "";
       const role = d.role || "";
       const isCreator = role === "creator" || role === "both";
       const isBrand = role === "brand" || role === "both";
+      const isOps = role === "ops" || role === "both";
       let actions = "";
-      if (isCreator) {
-        if (st === "Proposed") {
-          actions += `<button type="button" class="btn btn-creator btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}">Accept deal</button> `;
-          actions += `<button type="button" class="btn btn-outline btn-sm" data-deal-action="Rejected" data-deal-id="${esc(d.dealId)}">Decline</button>`;
-        }
-        if (st === "Accepted" || st === "AdvancePaid") {
-          // empty input on revision (no current URL); keep placeholder for new link
-          actions += `<div class="form-group" style="margin-top:0.75rem;"><label>New deliverable link (Drive / Reel URL)</label>
-            <input type="url" id="url_${esc(d.dealId)}" placeholder="https://drive.google.com/..." value="">
-            </div>
-            <button type="button" class="btn btn-creator btn-sm" data-deal-action="Submitted" data-deal-id="${esc(d.dealId)}" data-needs-url="1">Submit deliverable</button>`;
-        }
+
+      if (isCreator && st === "Proposed") {
+        actions += `<button type="button" class="btn btn-creator btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}" data-actor-role="creator">Accept deal</button>`;
+        actions += `<button type="button" class="btn btn-outline btn-sm" data-deal-action="Rejected" data-deal-id="${esc(d.dealId)}" data-actor-role="creator">Decline</button>`;
       }
-      if (isBrand) {
-        if (st === "Accepted" || st === "AdvancePaid") {
-          if (String(d.advancePaid || "").toLowerCase() !== "yes") {
-            actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="AdvancePaid" data-deal-id="${esc(d.dealId)}" data-advance="Yes">Mark 50% advance paid</button> `;
-          }
-        }
-        if (st === "Submitted") {
-          actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="Approved" data-deal-id="${esc(d.dealId)}">Approve work</button> `;
-          actions += `<button type="button" class="btn btn-outline btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}" data-revision="1">Request revision</button>`;
-        }
-        if (st === "Approved") {
-          actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="Paid" data-deal-id="${esc(d.dealId)}" data-final="Yes">Mark final payment done</button>`;
-        }
+      if (isCreator && (st === "Accepted" || st === "AdvancePaid" || st === "BrandPaidPlatform" || st === "PlatformReceived")) {
+        actions += `<div class="form-group deal-msg-box" style="width:100%;"><label>Deliverable link</label>
+          <input type="url" id="url_${esc(d.dealId)}" placeholder="https://drive.google.com/..." value=""></div>`;
+        actions += `<button type="button" class="btn btn-creator btn-sm" data-deal-action="Submitted" data-deal-id="${esc(d.dealId)}" data-needs-url="1" data-actor-role="creator">Submit deliverable</button>`;
       }
-      const histLines = String(d.history || "").split(/\n/).map(x => x.trim()).filter(Boolean);
-      const timeline = histLines.length
-        ? `<div style="margin-top:0.75rem;padding:0.65rem 0.75rem;border-radius:12px;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);">
-            <div style="font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.4rem;">Work history</div>
-            ${histLines.map(line => {
-              const parts = line.split(" · ");
-              const url = parts.length >= 3 ? parts.slice(2).join(" · ") : "";
-              const meta = parts.slice(0, 2).join(" · ");
-              return `<div style="font-size:0.82rem;color:var(--text-muted);margin:0.25rem 0;">
-                <span>${esc(meta || line)}</span>
-                ${url ? ` · <a href="${esc(url)}" target="_blank" rel="noopener">previous file</a>` : ""}
-              </div>`;
-            }).join("")}
-          </div>`
-        : "";
-      const roleLabel = role === "both" ? "creator + brand (same email)" : role;
-      return `<div class="card" style="margin-bottom:1rem;">
-        <div class="card-body">
-          <div class="card-name">${esc(d.brandName || "Brand")} ↔ ${esc(d.creatorName || "Creator")}</div>
-          <div class="card-niche">Status: <strong>${st}</strong> · You: ${esc(roleLabel)}</div>
-          <div class="card-meta" style="margin-top:0.5rem;">
-            <span>₹ ${esc(d.price || "—")}</span>
-            <span>${esc(d.deliverable || "—")}</span>
-            <span>Due ${esc(d.deadline || "—")}</span>
-          </div>
-          <p style="color:var(--text-muted);font-size:0.88rem;margin:0.6rem 0;">${esc(d.brief || "")}</p>
-          ${d.deliverableUrl ? `<p style="font-size:0.88rem;"><a href="${esc(d.deliverableUrl)}" target="_blank" rel="noopener">Open current deliverable</a></p>` : ""}
-          ${timeline}
-          <p style="font-size:0.8rem;color:var(--text-muted);">Advance: ${esc(d.advancePaid || "No")} · Final: ${esc(d.finalPaid || "No")} · ID ${esc(d.dealId || "")}</p>
-          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.75rem;">${actions}</div>
-        </div>
+      if (isBrand && (st === "Accepted" || st === "AdvancePaid" || st === "Submitted" || st === "Approved") && !/yes/i.test(String(d.platformPaid || ""))) {
+        actions += `<div class="form-group deal-msg-box" style="width:100%;"><label>UPI payment ref (after paying Connectly)</label>
+          <input type="text" id="payref_${esc(d.dealId)}" placeholder="UPI ref / last 6 digits"></div>`;
+        actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="BrandPaidPlatform" data-deal-id="${esc(d.dealId)}" data-platform-paid="1" data-actor-role="brand">I paid Connectly</button>`;
+      }
+      if (isBrand && st === "Submitted") {
+        actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="Approved" data-deal-id="${esc(d.dealId)}" data-actor-role="brand">Approve work</button>`;
+        actions += `<button type="button" class="btn btn-outline btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}" data-revision="1" data-actor-role="brand">Request revision</button>`;
+      }
+      if ((isOps || isBrand) && (st === "BrandPaidPlatform")) {
+        actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="PlatformReceived" data-deal-id="${esc(d.dealId)}" data-actor-role="connectly">Confirm Connectly received</button>`;
+      }
+      if (isOps && (st === "Approved" || st === "PlatformReceived") && !/yes/i.test(String(d.creatorPaidOut || ""))) {
+        actions += `<div class="form-group deal-msg-box" style="width:100%;"><label>Creator payout UPI ref</label>
+          <input type="text" id="payout_${esc(d.dealId)}" placeholder="UPI ref to creator"></div>`;
+        actions += `<button type="button" class="btn btn-creator btn-sm" data-deal-action="Paid" data-deal-id="${esc(d.dealId)}" data-creator-paid="1" data-actor-role="connectly">Mark creator paid by Connectly</button>`;
+      }
+
+      // Messages + edit
+      let extra = `<div class="deal-msg-box"><label>Message on timeline</label>
+        <textarea id="msg_${esc(d.dealId)}" placeholder="${isBrand ? "Revision notes for creator…" : "What you changed in this version…"}"></textarea>
+        <button type="button" class="btn btn-outline btn-sm" style="margin-top:0.4rem;" data-deal-send-msg="${esc(d.dealId)}" data-actor-role="${esc(role === "both" ? "creator" : role)}">Post to timeline</button>
       </div>`;
+      if (isBrand || isOps) {
+        extra += `<details style="margin-top:0.75rem;"><summary style="cursor:pointer;color:var(--text-muted);font-size:0.85rem;">Edit deal terms</summary>
+          <div class="deal-edit-grid">
+            <div class="form-group"><label>Price</label><input id="edit_price_${esc(d.dealId)}" value="${esc(d.price || "")}"></div>
+            <div class="form-group"><label>Deadline</label><input id="edit_deadline_${esc(d.dealId)}" value="${esc(d.deadline || "")}"></div>
+            <div class="form-group" style="grid-column:1/-1;"><label>Deliverable</label><input id="edit_deliv_${esc(d.dealId)}" value="${esc(d.deliverable || "")}"></div>
+            <div class="form-group" style="grid-column:1/-1;"><label>Brief</label><textarea id="edit_brief_${esc(d.dealId)}">${esc(d.brief || "")}</textarea></div>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" data-deal-save-edit="${esc(d.dealId)}" data-actor-role="brand">Save changes</button>
+        </details>`;
+      }
+
+      const roleLabel = role === "both" ? "creator + brand" : (role === "ops" ? "Connectly ops" : role);
+      return `<div class="deal-card">
+        <div class="deal-card-head">
+          <div class="deal-parties"><span class="bn">${esc(d.brandName || "Brand")}</span> ↔ <span class="cn">${esc(d.creatorName || "Creator")}</span></div>
+          <span class="deal-status-pill s-${esc(st)}">${esc(st || "—")}</span>
+        </div>
+        <div class="deal-meta-row">
+          <span class="deal-chip">₹ <strong>${esc(d.price || "—")}</strong></span>
+          <span class="deal-chip">${esc(d.deliverable || "—")}</span>
+          <span class="deal-chip">Due <strong>${esc(d.deadline || "—")}</strong></span>
+          <span class="deal-chip">You: ${esc(roleLabel)}</span>
+        </div>
+        <p style="color:var(--text-muted);font-size:0.88rem;margin:0.4rem 0 0.2rem;">${esc(d.brief || "")}</p>
+        ${d.deliverableUrl ? `<p style="font-size:0.88rem;margin:0.35rem 0;"><a href="${esc(d.deliverableUrl)}" target="_blank" rel="noopener">Current deliverable ↗</a></p>` : ""}
+        ${payRailHTML(d)}
+        <div style="font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin:0.85rem 0 0.35rem;">Timeline</div>
+        ${dealTimelineHTML(d)}
+        <div class="deal-actions">${actions}</div>
+        ${extra}
+        <p style="font-size:0.72rem;color:var(--text-muted);margin:0.75rem 0 0;">ID ${esc(d.dealId || "")}</p>
+      </div>`;
+    }
+
+    async function postDeal(payload) {
+      const base = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+      payload.action = payload.action || "deal_update";
+      payload.token = SITE_TOKEN;
+      payload.actorName = (window.__lastDealsEmail || "").split("@")[0] || "User";
+      await fetch(base, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
     }
 
     async function runDealAction(btn) {
       const dealId = btn.getAttribute("data-deal-id");
       const status = btn.getAttribute("data-deal-action");
       const payload = {
-        action: "deal_update",
-        token: SITE_TOKEN,
-        dealId: dealId,
-        status: status
+        dealId,
+        status,
+        actorRole: btn.getAttribute("data-actor-role") || ""
       };
-      if (btn.getAttribute("data-advance")) payload.advancePaid = "Yes";
-      if (btn.getAttribute("data-final")) payload.finalPaid = "Yes";
-      if (btn.getAttribute("data-revision")) payload.clearDeliverableUrl = true;
+      if (btn.getAttribute("data-revision")) {
+        payload.clearDeliverableUrl = true;
+        const msg = (document.getElementById("msg_" + dealId)?.value || "").trim();
+        if (msg) payload.messageText = msg;
+        else payload.messageText = "Please revise the deliverable.";
+      }
+      if (btn.getAttribute("data-platform-paid")) {
+        payload.platformPaid = "Yes";
+        payload.paymentRef = (document.getElementById("payref_" + dealId)?.value || "").trim();
+        payload.status = "BrandPaidPlatform";
+      }
+      if (btn.getAttribute("data-creator-paid")) {
+        payload.creatorPaidOut = "Yes";
+        payload.payoutRef = (document.getElementById("payout_" + dealId)?.value || "").trim();
+        payload.status = "Paid";
+      }
       if (btn.getAttribute("data-needs-url")) {
         const inp = document.getElementById("url_" + dealId);
         const url = (inp && inp.value || "").trim();
         if (!url) { alert("Paste the Drive / reel link first"); return; }
         payload.deliverableUrl = url;
+        const msg = (document.getElementById("msg_" + dealId)?.value || "").trim();
+        if (msg) payload.messageText = msg;
       }
       btn.disabled = true;
-      const base = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
       try {
-        await fetch(base, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(payload)
-        });
-        setTimeout(loadMyDeals, 1200);
+        await postDeal(payload);
+        setTimeout(loadMyDeals, 1400);
       } catch (err) {
         alert("Update failed");
         btn.disabled = false;
       }
+    }
+
+    async function sendDealMessage(btn) {
+      const dealId = btn.getAttribute("data-deal-send-msg");
+      const text = (document.getElementById("msg_" + dealId)?.value || "").trim();
+      if (!text) { alert("Write a message first"); return; }
+      btn.disabled = true;
+      await postDeal({
+        dealId,
+        messageText: text,
+        actorRole: btn.getAttribute("data-actor-role") || "user"
+      });
+      setTimeout(loadMyDeals, 1200);
+    }
+
+    async function saveDealEdit(btn) {
+      const dealId = btn.getAttribute("data-deal-save-edit");
+      btn.disabled = true;
+      await postDeal({
+        dealId,
+        price: document.getElementById("edit_price_" + dealId)?.value || "",
+        deadline: document.getElementById("edit_deadline_" + dealId)?.value || "",
+        deliverable: document.getElementById("edit_deliv_" + dealId)?.value || "",
+        brief: document.getElementById("edit_brief_" + dealId)?.value || "",
+        editNote: "Updated deal terms",
+        actorRole: "brand"
+      });
+      setTimeout(loadMyDeals, 1200);
     }
 
     document.getElementById("dealsLoadBtn")?.addEventListener("click", loadMyDeals);
