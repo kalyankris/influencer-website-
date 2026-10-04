@@ -1239,6 +1239,34 @@
     }
     .deal-pay-box { border-color: rgba(196,181,253,0.28); }
 
+  
+    .deal-ops-action {
+      border-color: rgba(52,211,153,0.5) !important;
+      background: linear-gradient(165deg, rgba(52,211,153,0.14), rgba(52,211,153,0.04)) !important;
+      box-shadow: 0 0 24px rgba(52,211,153,0.12);
+    }
+    .deal-ops-action .deal-upload-title {
+      color: #6ee7b7;
+      font-size: 1.05rem;
+    }
+    .deal-status-pill.s-BrandPaidPlatform {
+      background: rgba(52,211,153,0.15) !important;
+      color: #6ee7b7 !important;
+      border-color: rgba(52,211,153,0.4) !important;
+      animation: pillGlow 2s ease-in-out infinite;
+    }
+    @keyframes pillGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+      50% { box-shadow: 0 0 12px 2px rgba(52,211,153,0.35); }
+    }
+    .deal-card {
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .deal-card:hover {
+      border-color: rgba(247,243,234,0.18);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    }
+
   </style>
 </head>
 <body>
@@ -3521,16 +3549,29 @@
       }
     }
 
-    function statusLabel(st, role) {
-      // Role-aware labels so brand sees "Please pay", not "Waiting for brand"
+    function statusLabel(st, role, d) {
+      const paid = d && /yes/i.test(String(d.platformPaid || ""));
+      const confirmed = d && (
+        ["PlatformReceived","Approved","Paid"].includes(st) ||
+        /Payment confirmed by Connectly/i.test(String(d.history || ""))
+      );
+      const isOpsView = role === "ops";
+
+      // Ops: highlight when action needed
+      if (isOpsView && paid && !confirmed) {
+        return "⚡ Confirm brand payment";
+      }
       if (st === "Submitted") {
-        if (role === "brand" || role === "both") return "Please pay Connectly";
+        if (role === "brand" || role === "both") {
+          return paid ? (confirmed ? "Review creator work" : "Please pay Connectly") : "Please pay Connectly";
+        }
         if (role === "creator") return "Sent — waiting for brand";
+        if (isOpsView) return paid ? "⚡ Confirm brand payment" : "Work submitted";
         return "Work submitted";
       }
       if (st === "BrandPaidPlatform") {
-        if (role === "brand") return "Payment sent — waiting confirmation";
-        if (role === "ops") return "Confirm payment received";
+        if (role === "brand") return "Payment sent — waiting for Connectly";
+        if (isOpsView) return "⚡ Confirm brand payment";
         return "Brand paid — pending confirmation";
       }
       const map = {
@@ -3549,7 +3590,9 @@
       const role = d.role || "";
       const isCreator = role === "creator" || role === "both";
       const isBrand = role === "brand" || role === "both";
-      const isOps = (role === "ops") && ((window.__lastDealsEmail || "").toLowerCase() === "kalyankris92@gmail.com");
+      const opsEmail = "kalyankris92@gmail.com";
+      const myEmail = (window.__lastDealsEmail || "").toLowerCase().trim();
+      const isOps = role === "ops" || myEmail === opsEmail;
       let actions = "";
 
       if (isCreator && st === "Proposed") {
@@ -3599,11 +3642,17 @@
           </div>
         </div>`;
       }
-      if (isOps && st === "BrandPaidPlatform") {
-        actions += `<div class="deal-upload-box">
-          <div class="deal-upload-title">Payment from brand</div>
-          <p class="deal-upload-hint">Confirm only after you have received the money in your UPI.</p>
-          <button type="button" class="btn btn-primary btn-sm" data-deal-action="PlatformReceived" data-deal-id="${esc(d.dealId)}" data-actor-role="connectly">Payment confirmed by Connectly</button>
+      // Show confirm button whenever brand marked paid but Connectly has NOT confirmed yet
+      // (status may be BrandPaidPlatform OR Submitted/Accepted if creator acted after pay)
+      const needsPayConfirm = isOps && /yes/i.test(String(d.platformPaid || "")) &&
+        !["PlatformReceived","Approved","Paid"].includes(st) &&
+        !/Payment confirmed by Connectly/i.test(String(d.history || ""));
+      if (needsPayConfirm || (isOps && st === "BrandPaidPlatform")) {
+        const pref = String(d.platformPaid || "").replace(/^yes\s*·?\s*/i, "").trim();
+        actions += `<div class="deal-upload-box deal-ops-action">
+          <div class="deal-upload-title">⚡ Brand payment — verify now</div>
+          <p class="deal-upload-hint">Brand says they paid Connectly${pref && pref.toLowerCase() !== "yes" ? " (ref: " + esc(pref) + ")" : ""}. Check your UPI, then confirm.</p>
+          <button type="button" class="btn btn-primary" style="width:100%;margin-top:0.35rem;" data-deal-action="PlatformReceived" data-deal-id="${esc(d.dealId)}" data-actor-role="connectly">✓ Payment confirmed by Connectly</button>
         </div>`;
       }
       if (isOps && st === "PlatformReceived" && !/yes/i.test(String(d.creatorPaidOut || ""))) {
@@ -3654,7 +3703,7 @@
             <span class="deal-arrow">↔</span>
             <span class="cn">${esc(d.creatorName || "Creator")}</span>
           </div>
-          <span class="deal-status-pill s-${esc(st)}">${esc(statusLabel(st, role))}</span>
+          <span class="deal-status-pill s-${esc(st)}${(isOps && /yes/i.test(String(d.platformPaid||"")) && !["PlatformReceived","Approved","Paid"].includes(st) && !/Payment confirmed by Connectly/i.test(String(d.history||""))) ? " s-BrandPaidPlatform" : ""}">${esc(statusLabel(st, role, d))}</span>
         </div>
         <div class="deal-meta-row">
           <span class="deal-chip">₹ <strong>${esc(d.price || "—")}</strong></span>
