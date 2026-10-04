@@ -3325,31 +3325,73 @@
 
     function parseDealHistory(raw) {
       const lines = String(raw || "").split(/\n/).map(x => x.trim()).filter(Boolean);
-      return lines.map(line => {
+      const out = [];
+      for (const line of lines) {
+        // Skip garbage / system noise
+        if (/creator initial/i.test(line)) continue;
+        if (/GMT\+0?530|India Standard Time/i.test(line) && line.indexOf(" | ") < 0) continue;
+        if (/^Sun |^Mon |^Tue |^Wed |^Thu |^Fri |^Sat /.test(line) && line.indexOf(" | ") < 0) continue;
+
         const parts = line.split(" | ");
         if (parts.length >= 5) {
-          return {
+          out.push({
             time: niceIndianDate(parts[0]),
             type: (parts[1] || "").toUpperCase(),
             role: (parts[2] || "").toLowerCase(),
             actor: parts[3] || "",
             text: parts[4] || "",
             url: parts.length >= 6 ? parts.slice(5).join(" | ") : ""
-          };
+          });
+          continue;
         }
         const leg = line.split(" · ");
-        if (leg.length >= 3) {
-          return { time: niceIndianDate(leg[0]), type: "FILE", role: "creator", actor: "", text: leg[1] || "update", url: leg.slice(2).join(" · ") };
+        if (leg.length >= 3 && /http/i.test(leg.slice(2).join(" · "))) {
+          out.push({ time: niceIndianDate(leg[0]), type: "FILE", role: "creator", actor: "", text: leg[1] || "update", url: leg.slice(2).join(" · ") });
+          continue;
         }
-        return { time: "", type: "STATUS", role: "", actor: "", text: line, url: "" };
-      }).reverse();
+        // Skip unparseable noise
+        if (line.length > 120 && /202[0-9]-/.test(line)) continue;
+        out.push({ time: "", type: "STATUS", role: "", actor: "", text: line, url: "" });
+      }
+      return out.reverse();
     }
 
     function dealTimelineHTML(d) {
-      const items = parseDealHistory(d.history);
-      if (!items.length) {
-        return `<div class="timeline"><div class="tl-item"><div class="tl-body" style="color:var(--text-muted);">No activity yet — accept the deal to start.</div></div></div>`;
+      const role = d.role || "";
+      const isCreator = role === "creator" || role === "both";
+      const isBrand = role === "brand" || role === "both";
+      const isOps = role === "ops";
+      const st = d.status || "";
+      const paidOk = /yes/i.test(String(d.platformPaid || "")) ||
+        ["BrandPaidPlatform","PlatformReceived","Approved","Paid"].includes(st);
+
+      // CRITICAL: brand must NOT see video/work link until Connectly has payment
+      const brandCanSeeWork = isOps || isCreator || (isBrand && paidOk);
+      // Creator must NOT see payment reference numbers
+      const canSeePayRef = isOps || isBrand;
+
+      let items = parseDealHistory(d.history);
+
+      // If no history but deal has brief, show brand request
+      if (!items.length && (d.brief || d.price || d.deliverable)) {
+        const bits = [];
+        if (d.price) bits.push("₹" + d.price);
+        if (d.deliverable) bits.push(d.deliverable);
+        if (d.brief) bits.push(d.brief);
+        items = [{
+          time: "",
+          type: "MSG",
+          role: "brand",
+          actor: d.brandName || "Brand",
+          text: "sent collaboration request · " + bits.join(" · "),
+          url: ""
+        }];
       }
+
+      if (!items.length) {
+        return `<div class="timeline"><div class="tl-item"><div class="tl-body" style="color:var(--text-muted);">No activity yet.</div></div></div>`;
+      }
+
       return `<div class="timeline">` + items.map(it => {
         const cls = it.type === "PAY" ? "pay" : (it.type === "FILE" ? "file" : (it.type === "MSG" ? "msg" : ""));
         let roleLabel = "";
@@ -3358,18 +3400,31 @@
         else if (it.role === "creator") { roleLabel = "Creator"; whoCls = "creator"; }
         else if (it.role === "connectly" || it.role === "ops") { roleLabel = "Connectly"; whoCls = "connectly"; }
         else { roleLabel = it.role || ""; }
-        // Prefer clean role label; only show actor name if it adds value and is not the ops email handle
+
         const actorClean = (it.actor || "").replace(/@.*/g,"").trim();
-        const who = (actorClean && roleLabel && actorClean.toLowerCase() !== "kalyankris92")
+        const who = (actorClean && roleLabel && actorClean.toLowerCase() !== "kalyankris92" && actorClean.toLowerCase() !== "connectly")
           ? (esc(actorClean) + " · " + esc(roleLabel))
           : esc(roleLabel || "Update");
-        let body = esc(it.text);
-        // Show clean link only for real file submissions (brand + creator need it)
-        if (it.url && /^https?:\/\//i.test(it.url)) {
-          body += ` · <a href="${esc(it.url)}" target="_blank" rel="noopener" class="tl-file-link">View work ↗</a>`;
-        } else if (it.url && it.url.length < 80) {
-          body += ` · ${esc(it.url)}`;
+
+        let text = String(it.text || "");
+        // Hide payment reference from creator
+        if (!canSeePayRef && /ref\s/i.test(text)) {
+          text = text.replace(/\s*·\s*ref\s+\S+/gi, "").replace(/\s*ref\s+\S+/gi, "");
         }
+
+        let body = esc(text);
+
+        // FILE / video link visibility
+        if (it.url && /^https?:\/\//i.test(it.url)) {
+          if (brandCanSeeWork) {
+            body += ` · <a href="${esc(it.url)}" target="_blank" rel="noopener" class="tl-file-link">View work ↗</a>`;
+          } else if (isBrand) {
+            // Brand sees that work was sent, but NOT the link until paid
+            body += ` · <span style="color:var(--text-muted);font-size:0.82rem;">(link unlocks after payment to Connectly)</span>`;
+          }
+          // creator and ops already covered by brandCanSeeWork
+        }
+
         return `<div class="tl-item ${cls}">
           <div class="tl-time">${esc(it.time)}</div>
           <div class="tl-who ${whoCls}">${who}</div>
@@ -3558,7 +3613,12 @@
           <span class="deal-chip">You: ${esc(roleLabel)}</span>
         </div>
         <p style="color:var(--text-muted);font-size:0.88rem;margin:0.4rem 0 0.2rem;">${esc(d.brief || "")}</p>
-        ${d.deliverableUrl ? `<p style="font-size:0.88rem;margin:0.35rem 0;"><a href="${esc(d.deliverableUrl)}" target="_blank" rel="noopener">Current deliverable ↗</a></p>` : ""}
+        ${(() => {
+          const paidOk = /yes/i.test(String(d.platformPaid || "")) || ["BrandPaidPlatform","PlatformReceived","Approved","Paid"].includes(st);
+          const canSee = (role === "creator" || role === "both" || role === "ops") || (role === "brand" && paidOk);
+          if (!d.deliverableUrl || !canSee) return "";
+          return `<p style="font-size:0.88rem;margin:0.35rem 0;"><a href="${esc(d.deliverableUrl)}" target="_blank" rel="noopener">Current deliverable ↗</a></p>`;
+        })()}
         ${payRailHTML(d)}
         <div style="font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin:0.85rem 0 0.35rem;">Timeline</div>
         ${dealTimelineHTML(d)}
