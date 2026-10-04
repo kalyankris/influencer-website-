@@ -1175,6 +1175,46 @@
     .pay-steps .on { color: #86efac; }
     .pay-steps .wait { color: #78716c; }
 
+  
+    .deal-parties .bn {
+      color: #c4b5fd;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+    .deal-parties .cn {
+      color: #fdba74;
+      font-weight: 650;
+    }
+    .deal-arrow {
+      color: var(--text-dim);
+      margin: 0 0.35rem;
+      font-weight: 400;
+    }
+    .deal-upi-card {
+      background: rgba(124,108,246,0.12);
+      border: 1px solid rgba(196,181,253,0.35);
+      border-radius: 14px;
+      padding: 0.75rem 0.9rem;
+      margin: 0.5rem 0 0.65rem;
+    }
+    .deal-upi-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.28rem 0;
+      font-size: 0.9rem;
+    }
+    .deal-upi-row span { color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .deal-upi-row strong { color: #f5f3ff; font-weight: 650; word-break: break-all; text-align: right; }
+    .tl-file-link {
+      color: #93c5fd !important;
+      font-weight: 600;
+      text-decoration: none !important;
+      border-bottom: 1px solid rgba(147,197,253,0.4);
+    }
+    .deal-pay-box { border-color: rgba(196,181,253,0.28); }
+
   </style>
 </head>
 <body>
@@ -3324,9 +3364,10 @@
           ? (esc(actorClean) + " · " + esc(roleLabel))
           : esc(roleLabel || "Update");
         let body = esc(it.text);
+        // Show clean link only for real file submissions (brand + creator need it)
         if (it.url && /^https?:\/\//i.test(it.url)) {
-          body += ` · <a href="${esc(it.url)}" target="_blank" rel="noopener">Open file</a>`;
-        } else if (it.url) {
+          body += ` · <a href="${esc(it.url)}" target="_blank" rel="noopener" class="tl-file-link">View work ↗</a>`;
+        } else if (it.url && it.url.length < 80) {
           body += ` · ${esc(it.url)}`;
         }
         return `<div class="tl-item ${cls}">
@@ -3396,6 +3437,20 @@
       }
     }
 
+    function statusLabel(st) {
+      const map = {
+        "Proposed": "New offer",
+        "Accepted": "In progress",
+        "Submitted": "Waiting for brand",
+        "BrandPaidPlatform": "Brand paid",
+        "PlatformReceived": "Payment with Connectly",
+        "Approved": "Approved",
+        "Paid": "Creator paid",
+        "Rejected": "Declined"
+      };
+      return map[st] || st || "—";
+    }
+
     function dealCardHTML(d) {
       const st = d.status || "";
       const role = d.role || "";
@@ -3411,30 +3466,50 @@
         </div>`;
       }
       if (isCreator && (st === "Accepted" || st === "AdvancePaid" || st === "BrandPaidPlatform" || st === "PlatformReceived")) {
+        const isResubmit = /revision|requested revision|ask for changes/i.test(String(d.history || ""));
+        const title = isResubmit ? "Resubmit your work" : "Upload your work";
+        const btnText = isResubmit ? "Resubmit to brand" : "Send to brand";
+        const hint = isResubmit
+          ? "Brand asked for changes. Upload the new Drive / reel link and a short note about what you fixed."
+          : "Paste your Google Drive or Instagram reel link. Add a short note if needed.";
         actions += `<div class="deal-upload-box">
-          <div class="deal-upload-title">Upload your work</div>
-          <p class="deal-upload-hint">Paste your Google Drive / Instagram reel link below. You can also add a short note for the brand.</p>
+          <div class="deal-upload-title">${title}</div>
+          <p class="deal-upload-hint">${hint}</p>
           <input type="url" id="url_${esc(d.dealId)}" class="deal-upload-input" placeholder="https://drive.google.com/file/..." value="">
-          <textarea id="msg_${esc(d.dealId)}" class="deal-upload-note" placeholder="Optional note for brand (e.g. Caption used, changes made)"></textarea>
-          <button type="button" class="btn btn-creator btn-sm" style="margin-top:0.55rem;" data-deal-action="Submitted" data-deal-id="${esc(d.dealId)}" data-needs-url="1" data-actor-role="creator">Send to brand</button>
+          <textarea id="msg_${esc(d.dealId)}" class="deal-upload-note" placeholder="${isResubmit ? "What did you change?" : "Optional note for brand"}"></textarea>
+          <button type="button" class="btn btn-creator btn-sm" style="margin-top:0.55rem;" data-deal-action="Submitted" data-deal-id="${esc(d.dealId)}" data-needs-url="1" data-actor-role="creator">${btnText}</button>
         </div>`;
       }
       if (isBrand && (st === "Accepted" || st === "AdvancePaid" || st === "Submitted" || st === "Approved") && !/yes/i.test(String(d.platformPaid || ""))) {
-        actions += `<div class="deal-upload-box">
+        const upiShow = esc(d.connectlyUpi || window.__lastDealsUpi || "kalyankris92-4@oksbi");
+        const phoneShow = esc(d.connectlyPhone || "9177791543");
+        actions += `<div class="deal-upload-box deal-pay-box">
           <div class="deal-upload-title">Pay Connectly</div>
-          <p class="deal-upload-hint">Pay via UPI, then paste the reference number here.</p>
+          <div class="deal-upi-card">
+            <div class="deal-upi-row"><span>UPI ID</span><strong id="upi_copy_${esc(d.dealId)}">${upiShow}</strong></div>
+            <div class="deal-upi-row"><span>Phone</span><strong>${phoneShow}</strong></div>
+          </div>
+          <p class="deal-upload-hint">Pay the deal amount to the UPI above, then paste the UPI reference below.</p>
           <input type="text" id="payref_${esc(d.dealId)}" class="deal-upload-input" placeholder="UPI reference / last 6 digits">
           <button type="button" class="btn btn-primary btn-sm" style="margin-top:0.55rem;" data-deal-action="BrandPaidPlatform" data-deal-id="${esc(d.dealId)}" data-platform-paid="1" data-actor-role="brand">I have paid</button>
         </div>`;
       }
       if (isBrand && st === "Submitted") {
-        actions += `<div class="deal-actions-row">
-          <button type="button" class="btn btn-primary btn-sm" data-deal-action="Approved" data-deal-id="${esc(d.dealId)}" data-actor-role="brand">Approve work</button>
-          <button type="button" class="btn btn-outline btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}" data-revision="1" data-actor-role="brand">Ask for changes</button>
+        actions += `<div class="deal-upload-box">
+          <div class="deal-upload-title">Review creator work</div>
+          <p class="deal-upload-hint">Open the link in the timeline above. If it looks good, approve. If not, ask for changes.</p>
+          <div class="deal-actions-row">
+            <button type="button" class="btn btn-primary btn-sm" data-deal-action="Approved" data-deal-id="${esc(d.dealId)}" data-actor-role="brand">Looks good — Approve</button>
+            <button type="button" class="btn btn-outline btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}" data-revision="1" data-actor-role="brand">Ask for changes</button>
+          </div>
         </div>`;
       }
       if (isOps && st === "BrandPaidPlatform") {
-        actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="PlatformReceived" data-deal-id="${esc(d.dealId)}" data-actor-role="connectly">Confirm payment received</button>`;
+        actions += `<div class="deal-upload-box">
+          <div class="deal-upload-title">Payment from brand</div>
+          <p class="deal-upload-hint">Confirm only after you have received the money in your UPI.</p>
+          <button type="button" class="btn btn-primary btn-sm" data-deal-action="PlatformReceived" data-deal-id="${esc(d.dealId)}" data-actor-role="connectly">Connectly has the payment</button>
+        </div>`;
       }
       if (isOps && (st === "Approved" || st === "PlatformReceived") && !/yes/i.test(String(d.creatorPaidOut || ""))) {
         actions += `<div class="deal-upload-box">
@@ -3469,8 +3544,12 @@
       const roleLabel = role === "both" ? "creator + brand" : (role === "ops" ? "Connectly" : role);
       return `<div class="deal-card">
         <div class="deal-card-head">
-          <div class="deal-parties"><span class="bn">${esc(d.brandName || "Brand")}</span> ↔ <span class="cn">${esc(d.creatorName || "Creator")}</span></div>
-          <span class="deal-status-pill s-${esc(st)}">${esc(st || "—")}</span>
+          <div class="deal-parties">
+            <span class="bn">${esc(d.brandName || "Brand")}</span>
+            <span class="deal-arrow">↔</span>
+            <span class="cn">${esc(d.creatorName || "Creator")}</span>
+          </div>
+          <span class="deal-status-pill s-${esc(st)}">${esc(statusLabel(st))}</span>
         </div>
         <div class="deal-meta-row">
           <span class="deal-chip">₹ <strong>${esc(d.price || "—")}</strong></span>
@@ -3517,10 +3596,9 @@
         else payload.messageText = "Please revise the deliverable.";
       }
       if (btn.getAttribute("data-platform-paid")) {
-        const upi = (window.__lastDealsUpi || "kalyankris92-4@oksbi");
         const ref = (document.getElementById("payref_" + dealId)?.value || "").trim();
         if (!ref) {
-          alert("Pay to UPI: " + upi + "\n\nThen paste the UPI reference / last 6 digits in the box and click again.");
+          alert("Paste the UPI reference number after you pay, then click again.");
           btn.disabled = false;
           return;
         }
