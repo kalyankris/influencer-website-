@@ -1103,6 +1103,78 @@
     .deal-edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.55rem; margin-top:0.55rem; }
     @media (max-width:560px) { .deal-edit-grid { grid-template-columns:1fr; } }
 
+  
+    .deal-upload-box {
+      width: 100%;
+      margin-top: 0.75rem;
+      padding: 1rem 1.05rem;
+      border-radius: 16px;
+      border: 1px solid rgba(247,243,234,0.12);
+      background: rgba(247,243,234,0.04);
+    }
+    .deal-upload-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 650;
+      color: #f7f3ea;
+      margin-bottom: 0.25rem;
+    }
+    .deal-upload-hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin: 0 0 0.65rem;
+      line-height: 1.45;
+    }
+    .deal-upload-input {
+      width: 100%;
+      padding: 0.72rem 0.9rem;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: white;
+      font-size: 0.92rem;
+      outline: none;
+      margin-bottom: 0.5rem;
+    }
+    .deal-upload-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+    }
+    .deal-upload-note {
+      width: 100%;
+      min-height: 72px;
+      padding: 0.72rem 0.9rem;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: white;
+      font-size: 0.92rem;
+      outline: none;
+      resize: vertical;
+      font-family: inherit;
+    }
+    .deal-upload-note:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+    }
+    .deal-actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+    }
+    .pay-rail h4 {
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.45rem;
+      font-weight: 600;
+    }
+    .pay-steps { display: grid; gap: 0.35rem; font-size: 0.86rem; color: #d4d0dc; }
+    .pay-steps .on { color: #86efac; }
+    .pay-steps .wait { color: #78716c; }
+
   </style>
 </head>
 <body>
@@ -1622,7 +1694,7 @@
             <input type="email" id="dealsEmail" placeholder="brand or creator email">
           </div>
           <button type="button" class="btn btn-primary" id="dealsLoadBtn">Load my deals</button>
-          <p style="font-size:0.78rem;color:var(--text-muted);margin:0.65rem 0 0;">Use brand email for Approve &amp; pay · creator email for submit · Connectly ops email for payout.</p>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin:0.65rem 0 0;">Enter the email you used on Connectly (brand or creator).</p>
         </div>
       </div>
       <div id="dealsList"></div>
@@ -3240,8 +3312,17 @@
       }
       return `<div class="timeline">` + items.map(it => {
         const cls = it.type === "PAY" ? "pay" : (it.type === "FILE" ? "file" : (it.type === "MSG" ? "msg" : ""));
-        const whoCls = it.role === "brand" ? "brand" : (it.role === "creator" ? "creator" : (it.role === "connectly" || it.role === "ops" ? "connectly" : ""));
-        const who = it.actor ? `${esc(it.actor)} · ${esc(it.role || "")}` : esc(it.role || "system");
+        let roleLabel = "";
+        let whoCls = "";
+        if (it.role === "brand") { roleLabel = "Brand"; whoCls = "brand"; }
+        else if (it.role === "creator") { roleLabel = "Creator"; whoCls = "creator"; }
+        else if (it.role === "connectly" || it.role === "ops") { roleLabel = "Connectly"; whoCls = "connectly"; }
+        else { roleLabel = it.role || ""; }
+        // Prefer clean role label; only show actor name if it adds value and is not the ops email handle
+        const actorClean = (it.actor || "").replace(/@.*/g,"").trim();
+        const who = (actorClean && roleLabel && actorClean.toLowerCase() !== "kalyankris92")
+          ? (esc(actorClean) + " · " + esc(roleLabel))
+          : esc(roleLabel || "Update");
         let body = esc(it.text);
         if (it.url && /^https?:\/\//i.test(it.url)) {
           body += ` · <a href="${esc(it.url)}" target="_blank" rel="noopener">Open file</a>`;
@@ -3263,13 +3344,12 @@
       const step1 = /yes/i.test(plat) || ["BrandPaidPlatform","PlatformReceived","Approved","Paid"].includes(st);
       const step3 = ["Approved","Paid"].includes(st);
       const step4 = st === "Paid" || /yes/i.test(out);
-      // Never show real UPI publicly — only reveal when brand is about to pay (via alert)
       return `<div class="pay-rail">
-        <h4>Payment protection</h4>
+        <h4>How payment works</h4>
         <div class="pay-steps">
-          <div class="${step1 ? "on" : "wait"}">1. Brand pays Connectly (safe UPI escrow)</div>
-          <div class="${step1 ? "on" : "wait"}">2. Connectly holds money until work is approved</div>
-          <div class="${step3 ? "on" : "wait"}">3. Brand approves the deliverable</div>
+          <div class="${step1 ? "on" : "wait"}">1. Brand pays Connectly</div>
+          <div class="${step1 ? "on" : "wait"}">2. Connectly holds the money safely</div>
+          <div class="${step3 ? "on" : "wait"}">3. Brand approves your work</div>
           <div class="${step4 ? "on" : "wait"}">4. Connectly pays the creator</div>
         </div>
       </div>`;
@@ -3325,38 +3405,55 @@
       let actions = "";
 
       if (isCreator && st === "Proposed") {
-        actions += `<button type="button" class="btn btn-creator btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}" data-actor-role="creator">Accept deal</button>`;
-        actions += `<button type="button" class="btn btn-outline btn-sm" data-deal-action="Rejected" data-deal-id="${esc(d.dealId)}" data-actor-role="creator">Decline</button>`;
+        actions += `<div class="deal-actions-row">
+          <button type="button" class="btn btn-creator btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}" data-actor-role="creator">Accept</button>
+          <button type="button" class="btn btn-outline btn-sm" data-deal-action="Rejected" data-deal-id="${esc(d.dealId)}" data-actor-role="creator">Decline</button>
+        </div>`;
       }
       if (isCreator && (st === "Accepted" || st === "AdvancePaid" || st === "BrandPaidPlatform" || st === "PlatformReceived")) {
-        actions += `<div class="form-group deal-msg-box" style="width:100%;"><label>Deliverable link</label>
-          <input type="url" id="url_${esc(d.dealId)}" placeholder="https://drive.google.com/..." value=""></div>`;
-        actions += `<button type="button" class="btn btn-creator btn-sm" data-deal-action="Submitted" data-deal-id="${esc(d.dealId)}" data-needs-url="1" data-actor-role="creator">Submit deliverable</button>`;
+        actions += `<div class="deal-upload-box">
+          <div class="deal-upload-title">Upload your work</div>
+          <p class="deal-upload-hint">Paste your Google Drive / Instagram reel link below. You can also add a short note for the brand.</p>
+          <input type="url" id="url_${esc(d.dealId)}" class="deal-upload-input" placeholder="https://drive.google.com/file/..." value="">
+          <textarea id="msg_${esc(d.dealId)}" class="deal-upload-note" placeholder="Optional note for brand (e.g. Caption used, changes made)"></textarea>
+          <button type="button" class="btn btn-creator btn-sm" style="margin-top:0.55rem;" data-deal-action="Submitted" data-deal-id="${esc(d.dealId)}" data-needs-url="1" data-actor-role="creator">Send to brand</button>
+        </div>`;
       }
       if (isBrand && (st === "Accepted" || st === "AdvancePaid" || st === "Submitted" || st === "Approved") && !/yes/i.test(String(d.platformPaid || ""))) {
-        actions += `<div class="form-group deal-msg-box" style="width:100%;"><label>UPI payment ref (after paying Connectly)</label>
-          <input type="text" id="payref_${esc(d.dealId)}" placeholder="UPI ref / last 6 digits"></div>`;
-        actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="BrandPaidPlatform" data-deal-id="${esc(d.dealId)}" data-platform-paid="1" data-actor-role="brand">I paid Connectly</button>`;
+        actions += `<div class="deal-upload-box">
+          <div class="deal-upload-title">Pay Connectly</div>
+          <p class="deal-upload-hint">Pay via UPI, then paste the reference number here.</p>
+          <input type="text" id="payref_${esc(d.dealId)}" class="deal-upload-input" placeholder="UPI reference / last 6 digits">
+          <button type="button" class="btn btn-primary btn-sm" style="margin-top:0.55rem;" data-deal-action="BrandPaidPlatform" data-deal-id="${esc(d.dealId)}" data-platform-paid="1" data-actor-role="brand">I have paid</button>
+        </div>`;
       }
       if (isBrand && st === "Submitted") {
-        actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="Approved" data-deal-id="${esc(d.dealId)}" data-actor-role="brand">Approve work</button>`;
-        actions += `<button type="button" class="btn btn-outline btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}" data-revision="1" data-actor-role="brand">Request revision</button>`;
+        actions += `<div class="deal-actions-row">
+          <button type="button" class="btn btn-primary btn-sm" data-deal-action="Approved" data-deal-id="${esc(d.dealId)}" data-actor-role="brand">Approve work</button>
+          <button type="button" class="btn btn-outline btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}" data-revision="1" data-actor-role="brand">Ask for changes</button>
+        </div>`;
       }
-      if ((isOps || isBrand) && (st === "BrandPaidPlatform")) {
-        actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="PlatformReceived" data-deal-id="${esc(d.dealId)}" data-actor-role="connectly">Confirm Connectly received</button>`;
+      if (isOps && st === "BrandPaidPlatform") {
+        actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="PlatformReceived" data-deal-id="${esc(d.dealId)}" data-actor-role="connectly">Confirm payment received</button>`;
       }
       if (isOps && (st === "Approved" || st === "PlatformReceived") && !/yes/i.test(String(d.creatorPaidOut || ""))) {
-        actions += `<div class="form-group deal-msg-box" style="width:100%;"><label>Creator payout UPI ref</label>
-          <input type="text" id="payout_${esc(d.dealId)}" placeholder="UPI ref to creator"></div>`;
-        actions += `<button type="button" class="btn btn-creator btn-sm" data-deal-action="Paid" data-deal-id="${esc(d.dealId)}" data-creator-paid="1" data-actor-role="connectly">Mark creator paid by Connectly</button>`;
+        actions += `<div class="deal-upload-box">
+          <div class="deal-upload-title">Pay creator</div>
+          <input type="text" id="payout_${esc(d.dealId)}" class="deal-upload-input" placeholder="UPI reference of payout">
+          <button type="button" class="btn btn-creator btn-sm" style="margin-top:0.55rem;" data-deal-action="Paid" data-deal-id="${esc(d.dealId)}" data-creator-paid="1" data-actor-role="connectly">Mark as paid to creator</button>
+        </div>`;
       }
 
-      // Notes (visible to both) + edit
-      let extra = `<div class="deal-msg-box">
-        <label>Write a note (visible to both sides)</label>
-        <textarea id="msg_${esc(d.dealId)}" placeholder="${isBrand ? "Example: Please change the caption / add logo" : "Example: Uploaded new version with your feedback"}"></textarea>
-        <button type="button" class="btn btn-outline btn-sm" style="margin-top:0.5rem;" data-deal-send-msg="${esc(d.dealId)}" data-actor-role="${esc(role === "both" ? "creator" : role)}">Send note</button>
-      </div>`;
+      // Notes (visible to both) — skip when creator already has upload box with note field
+      const creatorCanSubmit = isCreator && (st === "Accepted" || st === "AdvancePaid" || st === "BrandPaidPlatform" || st === "PlatformReceived");
+      let extra = "";
+      if (!creatorCanSubmit) {
+        extra = `<div class="deal-msg-box">
+          <label>Write a note (visible to both sides)</label>
+          <textarea id="msg_${esc(d.dealId)}" placeholder="${isBrand ? "Example: Please change the caption / add logo" : "Example: Uploaded new version with your feedback"}"></textarea>
+          <button type="button" class="btn btn-outline btn-sm" style="margin-top:0.5rem;" data-deal-send-msg="${esc(d.dealId)}" data-actor-role="${esc(role === "both" ? "creator" : role)}">Send note</button>
+        </div>`;
+      }
       if (isBrand || isOps) {
         extra += `<details style="margin-top:0.75rem;"><summary style="cursor:pointer;color:var(--text-muted);font-size:0.85rem;">Edit deal terms</summary>
           <div class="deal-edit-grid">
@@ -3369,7 +3466,7 @@
         </details>`;
       }
 
-      const roleLabel = role === "both" ? "creator + brand" : (role === "ops" ? "Connectly ops" : role);
+      const roleLabel = role === "both" ? "creator + brand" : (role === "ops" ? "Connectly" : role);
       return `<div class="deal-card">
         <div class="deal-card-head">
           <div class="deal-parties"><span class="bn">${esc(d.brandName || "Brand")}</span> ↔ <span class="cn">${esc(d.creatorName || "Creator")}</span></div>
