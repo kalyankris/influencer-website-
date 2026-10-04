@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1665,10 +1664,10 @@
       }
       if (!name) name = "Anonymous Creator";
 
-      const followersRaw = get("followers", "Total Instagram");
+      const followersRaw = get("followers", "Total Instagram", "follower");
       const followersNum = parseFollowers(followersRaw);
-      const skill = get("skill", "Professional") || "Content Creator";
-      const city = get("city", "from which") || "India";
+      const skill = get("skill", "niche", "category", "Professional") || "Content Creator";
+      const city = get("city", "location", "from which") || "India";
       return {
         name,
         niche: cleanNiche(skill),
@@ -1894,7 +1893,6 @@
               try { localStorage.setItem("cnt_inf_cache_v2", JSON.stringify({ ts: Date.now(), rows: live })); } catch (_) {}
               finishLoad();
               hideProgress();
-              return;
             }
           }
         } catch (_) {}
@@ -1970,7 +1968,10 @@
     }
 
     function applyFilters() {
-      if (!activeFilters.search || activeFilters.search.trim() === "") {
+      const q = (activeFilters.search || "").trim().toLowerCase();
+      const hasFilter = !!(activeFilters.niche || activeFilters.location);
+
+      if (!q && !hasFilter) {
         filtered = [];
         renderGrid();
         renderChips();
@@ -1980,13 +1981,14 @@
       }
 
       let list = [...allInfluencers];
-      const q = activeFilters.search.toLowerCase();
 
-      list = list.filter(i =>
-        (i.name && i.name.toLowerCase().includes(q)) ||
-        (i.niche && i.niche.toLowerCase().includes(q)) ||
-        (i.location && i.location.toLowerCase().includes(q))
-      );
+      if (q) {
+        list = list.filter(i =>
+          (i.name && i.name.toLowerCase().includes(q)) ||
+          (i.niche && i.niche.toLowerCase().includes(q)) ||
+          (i.location && i.location.toLowerCase().includes(q))
+        );
+      }
 
       if (activeFilters.niche) list = list.filter(i => i.niche === activeFilters.niche);
       if (activeFilters.location) list = list.filter(i => i.location === activeFilters.location);
