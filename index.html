@@ -1,6 +1,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -835,6 +836,37 @@
     }
 
     /* ========== MOBILE ========== */
+    /* ===== FORCE SAME MENU ON DESKTOP + MOBILE ===== */
+    .desk-bar { display: none !important; }
+    .menu-toggle { display: flex !important; }
+    .menu-acc { display: block !important; margin: 0.35rem 0; }
+    #navLinks {
+      display: flex !important;
+      flex-direction: column;
+      position: fixed;
+      inset: 0;
+      width: 100%; height: 100%;
+      height: 100dvh;
+      margin: 0;
+      background-color: #0c0b0a;
+      background-image: radial-gradient(rgba(247,243,234,0.18) 1.1px, transparent 1.3px);
+      background-size: 22px 22px;
+      padding: calc(var(--nav-h) + 2rem) 1.4rem 2.5rem;
+      gap: 0.15rem;
+      overflow-y: auto;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(-24px);
+      transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s;
+    }
+    #navLinks.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: all;
+      transform: translateY(0);
+    }
     @media (max-width: 860px) {
       .desk-bar { display: none; }
       #navLinks {
@@ -1035,29 +1067,40 @@
     .pay-steps .on { color:#6ee7b7; }
     .pay-steps .wait { color:#fdba74; }
     .timeline {
-      margin:1rem 0 0.5rem; padding:0.2rem 0 0.2rem 0.15rem;
-      border-left:2px solid rgba(124,108,246,0.35);
+      margin:1rem 0 0.6rem; padding:0.15rem 0 0.15rem 0.9rem;
+      border-left:2px solid rgba(124,108,246,0.4);
     }
-    .tl-item { position:relative; padding:0 0 1rem 1.1rem; }
-    .tl-item:last-child { padding-bottom:0.2rem; }
+    .tl-item { position:relative; padding:0 0 1.05rem 1rem; }
+    .tl-item:last-child { padding-bottom:0.15rem; }
     .tl-item::before {
-      content:""; position:absolute; left:-5px; top:0.35rem; width:8px; height:8px; border-radius:50%;
-      background:#7c6cf6; box-shadow:0 0 0 3px rgba(124,108,246,0.25);
+      content:""; position:absolute; left:-5px; top:0.4rem; width:9px; height:9px; border-radius:50%;
+      background:#7c6cf6; box-shadow:0 0 0 3px rgba(124,108,246,0.28);
     }
-    .tl-item.pay::before { background:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,0.25); }
-    .tl-item.file::before { background:#38bdf8; box-shadow:0 0 0 3px rgba(56,189,248,0.25); }
-    .tl-item.msg::before { background:#fb923c; box-shadow:0 0 0 3px rgba(251,146,60,0.25); }
-    .tl-time { font-size:0.72rem; color:var(--text-muted); margin-bottom:0.15rem; }
-    .tl-who { font-size:0.8rem; font-weight:600; margin-bottom:0.15rem; }
+    .tl-item.pay::before { background:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,0.28); }
+    .tl-item.file::before { background:#38bdf8; box-shadow:0 0 0 3px rgba(56,189,248,0.28); }
+    .tl-item.msg::before { background:#fb923c; box-shadow:0 0 0 3px rgba(251,146,60,0.28); }
+    .tl-time { font-size:0.74rem; color:#a8a29a; margin-bottom:0.18rem; letter-spacing:0.01em; }
+    .tl-who { font-size:0.82rem; font-weight:650; margin-bottom:0.18rem; }
     .tl-who.brand { color:#c4b5fd; }
     .tl-who.creator { color:#fb923c; }
     .tl-who.connectly { color:#6ee7b7; }
-    .tl-body { font-size:0.88rem; color:#d4d0dc; line-height:1.45; }
+    .tl-body { font-size:0.9rem; color:#e7e2d9; line-height:1.5; }
     .tl-body a { color:#93c5fd; text-decoration:underline; text-underline-offset:2px; }
-    .deal-actions { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.9rem; }
-    .deal-msg-box { margin-top:0.75rem; }
-    .deal-msg-box textarea { min-height:72px; }
-    .deal-edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-top:0.5rem; }
+    .deal-actions { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.95rem; }
+    .deal-msg-box { margin-top:0.85rem; }
+    .deal-msg-box label { display:block; font-size:0.84rem; font-weight:500; color:var(--text-muted); margin-bottom:0.35rem; }
+    .deal-msg-box textarea {
+      width:100%; min-height:88px; padding:0.85rem 1rem;
+      background:rgba(0,0,0,0.35); border:1px solid var(--border);
+      border-radius:14px; color:white; font-size:0.94rem;
+      outline:none; font-family:inherit; resize:vertical;
+      transition:border-color 0.2s, box-shadow 0.2s;
+    }
+    .deal-msg-box textarea:focus {
+      border-color:var(--primary);
+      box-shadow:0 0 0 3px rgba(99,102,241,0.18);
+    }
+    .deal-edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.55rem; margin-top:0.55rem; }
     @media (max-width:560px) { .deal-edit-grid { grid-template-columns:1fr; } }
 
   </style>
@@ -3151,14 +3194,30 @@
     const CONNECTLY_UPI_FALLBACK = "connectly@upi";
     const CONNECTLY_PHONE_FALLBACK = "9999999999";
 
+    function niceIndianDate(raw) {
+      if (!raw) return "";
+      // already nice format from Apps Script (e.g. "4 Oct, 9:36 pm")
+      if (/^\d{1,2}\s+[A-Za-z]{3}/.test(String(raw).trim())) return String(raw).trim();
+      try {
+        const d = new Date(raw);
+        if (isNaN(d.getTime())) return String(raw);
+        const day = d.getDate();
+        const suffix = (day % 10 === 1 && day !== 11) ? "st" :
+                       (day % 10 === 2 && day !== 12) ? "nd" :
+                       (day % 10 === 3 && day !== 13) ? "rd" : "th";
+        const month = d.toLocaleString("en-IN", { month: "short" });
+        const time = d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true });
+        return day + suffix + " " + month + ", " + time;
+      } catch (_) { return String(raw); }
+    }
+
     function parseDealHistory(raw) {
       const lines = String(raw || "").split(/\n/).map(x => x.trim()).filter(Boolean);
       return lines.map(line => {
-        // stamp | TYPE | role | actor | text [| url]
         const parts = line.split(" | ");
         if (parts.length >= 5) {
           return {
-            time: parts[0],
+            time: niceIndianDate(parts[0]),
             type: (parts[1] || "").toUpperCase(),
             role: (parts[2] || "").toLowerCase(),
             actor: parts[3] || "",
@@ -3166,13 +3225,12 @@
             url: parts.length >= 6 ? parts.slice(5).join(" | ") : ""
           };
         }
-        // legacy: stamp · Submitted · url
         const leg = line.split(" · ");
         if (leg.length >= 3) {
-          return { time: leg[0], type: "FILE", role: "creator", actor: "", text: leg[1] || "update", url: leg.slice(2).join(" · ") };
+          return { time: niceIndianDate(leg[0]), type: "FILE", role: "creator", actor: "", text: leg[1] || "update", url: leg.slice(2).join(" · ") };
         }
         return { time: "", type: "STATUS", role: "", actor: "", text: line, url: "" };
-      }).reverse(); // newest first
+      }).reverse();
     }
 
     function dealTimelineHTML(d) {
@@ -3202,19 +3260,17 @@
       const plat = String(d.platformPaid || "");
       const out = String(d.creatorPaidOut || "");
       const st = d.status || "";
-      const upi = d.connectlyUpi || CONNECTLY_UPI_FALLBACK;
-      const phone = d.connectlyPhone || CONNECTLY_PHONE_FALLBACK;
-      const step1 = /yes/i.test(plat) || st === "BrandPaidPlatform" || st === "PlatformReceived" || st === "Approved" || st === "Paid";
-      const step2 = st === "PlatformReceived" || st === "Approved" || st === "Paid" || /yes/i.test(plat) && st === "Approved";
-      const step3 = st === "Approved" || st === "Paid";
+      const step1 = /yes/i.test(plat) || ["BrandPaidPlatform","PlatformReceived","Approved","Paid"].includes(st);
+      const step3 = ["Approved","Paid"].includes(st);
       const step4 = st === "Paid" || /yes/i.test(out);
+      // Never show real UPI publicly — only reveal when brand is about to pay (via alert)
       return `<div class="pay-rail">
         <h4>Payment protection</h4>
         <div class="pay-steps">
-          <div class="${step1 ? "on" : "wait"}">1. Brand pays Connectly (UPI: <strong style="color:#e8e4f0">${esc(upi)}</strong>)</div>
-          <div class="${step1 ? "on" : "wait"}">2. Connectly holds until work is approved</div>
-          <div class="${step3 ? "on" : "wait"}">3. Brand approves deliverable</div>
-          <div class="${step4 ? "on" : "wait"}">4. Connectly pays creator${phone ? " · WhatsApp " + esc(phone) : ""}</div>
+          <div class="${step1 ? "on" : "wait"}">1. Brand pays Connectly (safe UPI escrow)</div>
+          <div class="${step1 ? "on" : "wait"}">2. Connectly holds money until work is approved</div>
+          <div class="${step3 ? "on" : "wait"}">3. Brand approves the deliverable</div>
+          <div class="${step4 ? "on" : "wait"}">4. Connectly pays the creator</div>
         </div>
       </div>`;
     }
@@ -3243,6 +3299,7 @@
           return;
         }
         window.__lastDealsEmail = email;
+        if (deals[0] && deals[0].connectlyUpi) window.__lastDealsUpi = deals[0].connectlyUpi;
         box.innerHTML = deals.map(dealCardHTML).join("");
         box.querySelectorAll("[data-deal-action]").forEach(btn => {
           btn.addEventListener("click", () => runDealAction(btn));
@@ -3264,7 +3321,7 @@
       const role = d.role || "";
       const isCreator = role === "creator" || role === "both";
       const isBrand = role === "brand" || role === "both";
-      const isOps = role === "ops" || role === "both";
+      const isOps = (role === "ops") && ((window.__lastDealsEmail || "").toLowerCase() === "kalyankris92@gmail.com");
       let actions = "";
 
       if (isCreator && st === "Proposed") {
@@ -3294,10 +3351,11 @@
         actions += `<button type="button" class="btn btn-creator btn-sm" data-deal-action="Paid" data-deal-id="${esc(d.dealId)}" data-creator-paid="1" data-actor-role="connectly">Mark creator paid by Connectly</button>`;
       }
 
-      // Messages + edit
-      let extra = `<div class="deal-msg-box"><label>Message on timeline</label>
-        <textarea id="msg_${esc(d.dealId)}" placeholder="${isBrand ? "Revision notes for creator…" : "What you changed in this version…"}"></textarea>
-        <button type="button" class="btn btn-outline btn-sm" style="margin-top:0.4rem;" data-deal-send-msg="${esc(d.dealId)}" data-actor-role="${esc(role === "both" ? "creator" : role)}">Post to timeline</button>
+      // Notes (visible to both) + edit
+      let extra = `<div class="deal-msg-box">
+        <label>Write a note (visible to both sides)</label>
+        <textarea id="msg_${esc(d.dealId)}" placeholder="${isBrand ? "Example: Please change the caption / add logo" : "Example: Uploaded new version with your feedback"}"></textarea>
+        <button type="button" class="btn btn-outline btn-sm" style="margin-top:0.5rem;" data-deal-send-msg="${esc(d.dealId)}" data-actor-role="${esc(role === "both" ? "creator" : role)}">Send note</button>
       </div>`;
       if (isBrand || isOps) {
         extra += `<details style="margin-top:0.75rem;"><summary style="cursor:pointer;color:var(--text-muted);font-size:0.85rem;">Edit deal terms</summary>
@@ -3362,8 +3420,15 @@
         else payload.messageText = "Please revise the deliverable.";
       }
       if (btn.getAttribute("data-platform-paid")) {
+        const upi = (window.__lastDealsUpi || "kalyankris92-4@oksbi");
+        const ref = (document.getElementById("payref_" + dealId)?.value || "").trim();
+        if (!ref) {
+          alert("Pay to UPI: " + upi + "\n\nThen paste the UPI reference / last 6 digits in the box and click again.");
+          btn.disabled = false;
+          return;
+        }
         payload.platformPaid = "Yes";
-        payload.paymentRef = (document.getElementById("payref_" + dealId)?.value || "").trim();
+        payload.paymentRef = ref;
         payload.status = "BrandPaidPlatform";
       }
       if (btn.getAttribute("data-creator-paid")) {
