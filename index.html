@@ -1267,6 +1267,37 @@
       box-shadow: 0 12px 40px rgba(0,0,0,0.35);
     }
 
+  
+    .tl-work-btn-wrap { margin-top: 0.45rem; }
+    .tl-work-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      background: linear-gradient(165deg, rgba(56,189,248,0.25), rgba(14,165,233,0.15));
+      border: 1px solid rgba(125,211,252,0.45);
+      color: #e0f2fe !important;
+      font-weight: 650;
+      font-size: 0.88rem;
+      text-decoration: none !important;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .tl-work-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(14,165,233,0.25);
+      color: #fff !important;
+    }
+    .tl-locked {
+      margin-top: 0.4rem;
+      font-size: 0.82rem;
+      color: #a8a29a;
+      padding: 0.35rem 0.65rem;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.25);
+      display: inline-block;
+    }
+
   </style>
 </head>
 <body>
@@ -3441,6 +3472,21 @@
         }];
       }
 
+      // Ensure latest deliverable appears in timeline if stored on deal but missing from history parse
+      if (d.deliverableUrl && /^https?:\/\//i.test(String(d.deliverableUrl).trim())) {
+        const already = items.some(it => it.url && it.url.indexOf(String(d.deliverableUrl).slice(0, 30)) >= 0);
+        if (!already) {
+          items.unshift({
+            time: "",
+            type: "FILE",
+            role: "creator",
+            actor: d.creatorName || "Creator",
+            text: "sent work to brand",
+            url: String(d.deliverableUrl).trim()
+          });
+        }
+      }
+
       if (!items.length) {
         return `<div class="timeline"><div class="tl-item"><div class="tl-body" style="color:var(--text-muted);">No activity yet.</div></div></div>`;
       }
@@ -3467,15 +3513,17 @@
 
         let body = esc(text);
 
-        // FILE / video link visibility
-        if (it.url && /^https?:\/\//i.test(it.url)) {
+        // FILE / video — single clean button in timeline only
+        let fileUrl = (it.url || "").trim();
+        if (fileUrl && !/^https?:\/\//i.test(fileUrl) && /drive\.google|instagram|youtu|http/i.test(fileUrl)) {
+          fileUrl = "https://" + fileUrl.replace(/^\/\//, "");
+        }
+        if (fileUrl && /^https?:\/\//i.test(fileUrl)) {
           if (brandCanSeeWork) {
-            body += ` · <a href="${esc(it.url)}" target="_blank" rel="noopener" class="tl-file-link">View work ↗</a>`;
+            body += `<div class="tl-work-btn-wrap"><a href="${esc(fileUrl)}" target="_blank" rel="noopener noreferrer" class="tl-work-btn">▶ View work</a></div>`;
           } else if (isBrand) {
-            // Brand sees that work was sent, but NOT the link until paid
-            body += ` · <span style="color:var(--text-muted);font-size:0.82rem;">(link unlocks after Connectly confirms payment)</span>`;
+            body += `<div class="tl-locked">🔒 Unlocks after Connectly confirms payment</div>`;
           }
-          // creator and ops already covered by brandCanSeeWork
         }
 
         return { cls, whoCls, who, body, time: it.time };
@@ -3556,21 +3604,27 @@
         /Payment confirmed by Connectly/i.test(String(d.history || ""))
       );
       const isOpsView = role === "ops";
+      const hasWork = d && (d.deliverableUrl || /sent work|resubmitted work|FILE/i.test(String(d.history || "")));
 
-      // Ops: highlight when action needed
-      if (isOpsView && paid && !confirmed) {
-        return "⚡ Confirm brand payment";
-      }
-      if (st === "Submitted") {
-        if (role === "brand" || role === "both") {
-          return paid ? (confirmed ? "Review creator work" : "Please pay Connectly") : "Please pay Connectly";
+      // Ops: confirm payment first
+      if (isOpsView && paid && !confirmed) return "⚡ Confirm brand payment";
+
+      // Brand: NEVER show "Please pay" if already paid
+      if (role === "brand" || role === "both") {
+        if (paid && !confirmed) return "Payment sent — waiting for Connectly";
+        if (confirmed && (st === "Submitted" || st === "PlatformReceived" || hasWork) && st !== "Approved" && st !== "Paid") {
+          return "Review creator work";
         }
+        if (!paid && (st === "Submitted" || st === "Accepted" || st === "Approved")) return "Please pay Connectly";
+        if (st === "BrandPaidPlatform") return "Payment sent — waiting for Connectly";
+      }
+
+      if (st === "Submitted") {
         if (role === "creator") return "Sent — waiting for brand";
-        if (isOpsView) return paid ? "⚡ Confirm brand payment" : "Work submitted";
+        if (isOpsView) return paid ? (confirmed ? "Waiting for brand review" : "⚡ Confirm brand payment") : "Work submitted";
         return "Work submitted";
       }
       if (st === "BrandPaidPlatform") {
-        if (role === "brand") return "Payment sent — waiting for Connectly";
         if (isOpsView) return "⚡ Confirm brand payment";
         return "Brand paid — pending confirmation";
       }
@@ -3616,18 +3670,25 @@
           <button type="button" class="btn btn-creator btn-sm" style="margin-top:0.55rem;" data-deal-action="Submitted" data-deal-id="${esc(d.dealId)}" data-needs-url="1" data-actor-role="creator">${btnText}</button>
         </div>`;
       }
-      if (isBrand && (st === "Accepted" || st === "AdvancePaid" || st === "Submitted" || st === "Approved") && !/yes/i.test(String(d.platformPaid || ""))) {
+      const paymentRejected = /payment rejected|pay again|retry payment/i.test(String(d.history || ""));
+      const needsToPay = isBrand && !/yes/i.test(String(d.platformPaid || "")) &&
+        (st === "Accepted" || st === "AdvancePaid" || st === "Submitted" || st === "Approved" || paymentRejected);
+      if (needsToPay) {
         const upiShow = esc(d.connectlyUpi || window.__lastDealsUpi || "kalyankris92-4@oksbi");
         const phoneShow = esc(d.connectlyPhone || "9177791543");
-        actions += `<div class="deal-upload-box deal-pay-box">
-          <div class="deal-upload-title">Pay Connectly</div>
+        const payTitle = paymentRejected ? "Payment rejected — pay again" : "Pay Connectly";
+        const payHint = paymentRejected
+          ? "Connectly could not verify the previous payment. Pay again using the UPI below, then paste the new reference."
+          : "Pay the deal amount to the UPI above, then paste the UPI reference below.";
+        actions += `<div class="deal-upload-box deal-pay-box${paymentRejected ? " deal-warn-box" : ""}">
+          <div class="deal-upload-title">${payTitle}</div>
           <div class="deal-upi-card">
-            <div class="deal-upi-row"><span>UPI ID</span><strong id="upi_copy_${esc(d.dealId)}">${upiShow}</strong></div>
+            <div class="deal-upi-row"><span>UPI ID</span><strong>${upiShow}</strong></div>
             <div class="deal-upi-row"><span>Phone</span><strong>${phoneShow}</strong></div>
           </div>
-          <p class="deal-upload-hint">Pay the deal amount to the UPI above, then paste the UPI reference below.</p>
+          <p class="deal-upload-hint">${payHint}</p>
           <input type="text" id="payref_${esc(d.dealId)}" class="deal-upload-input" placeholder="UPI reference / last 6 digits">
-          <button type="button" class="btn btn-primary btn-sm" style="margin-top:0.55rem;" data-deal-action="BrandPaidPlatform" data-deal-id="${esc(d.dealId)}" data-platform-paid="1" data-actor-role="brand">I have paid</button>
+          <button type="button" class="btn btn-primary btn-sm" style="margin-top:0.55rem;" data-deal-action="BrandPaidPlatform" data-deal-id="${esc(d.dealId)}" data-platform-paid="1" data-actor-role="brand">${paymentRejected ? "I paid again" : "I have paid"}</button>
         </div>`;
       }
       const payConfirmed = ["PlatformReceived","Approved","Paid"].includes(st) ||
@@ -3651,8 +3712,9 @@
         const pref = String(d.platformPaid || "").replace(/^yes\s*·?\s*/i, "").trim();
         actions += `<div class="deal-upload-box deal-ops-action">
           <div class="deal-upload-title">⚡ Brand payment — verify now</div>
-          <p class="deal-upload-hint">Brand says they paid Connectly${pref && pref.toLowerCase() !== "yes" ? " (ref: " + esc(pref) + ")" : ""}. Check your UPI, then confirm.</p>
-          <button type="button" class="btn btn-primary" style="width:100%;margin-top:0.35rem;" data-deal-action="PlatformReceived" data-deal-id="${esc(d.dealId)}" data-actor-role="connectly">✓ Payment confirmed by Connectly</button>
+          <p class="deal-upload-hint">Brand says they paid Connectly${pref && pref.toLowerCase() !== "yes" ? " (ref: " + esc(pref) + ")" : ""}. Check your UPI.</p>
+          <button type="button" class="btn btn-primary" style="width:100%;margin-top:0.45rem;" data-deal-action="PlatformReceived" data-deal-id="${esc(d.dealId)}" data-actor-role="connectly">✓ Payment confirmed by Connectly</button>
+          <button type="button" class="btn btn-outline btn-sm" style="width:100%;margin-top:0.45rem;border-color:rgba(248,113,113,0.4);color:#fca5a5;" data-deal-action="PaymentRejected" data-deal-id="${esc(d.dealId)}" data-actor-role="connectly" data-reject-pay="1">✕ Payment not received — ask brand to retry</button>
         </div>`;
       }
       if (isOps && st === "PlatformReceived" && !/yes/i.test(String(d.creatorPaidOut || ""))) {
@@ -3712,14 +3774,7 @@
           <span class="deal-chip">You: ${esc(roleLabel)}</span>
         </div>
         <p style="color:var(--text-muted);font-size:0.88rem;margin:0.4rem 0 0.2rem;">${esc(d.brief || "")}</p>
-        ${(() => {
-          const connectlyConfirmed =
-            ["PlatformReceived","Approved","Paid"].includes(st) ||
-            /Payment confirmed by Connectly/i.test(String(d.history || ""));
-          const canSee = (role === "creator" || role === "both" || role === "ops") || (role === "brand" && connectlyConfirmed);
-          if (!d.deliverableUrl || !canSee) return "";
-          return `<p style="font-size:0.88rem;margin:0.35rem 0;"><a href="${esc(d.deliverableUrl)}" target="_blank" rel="noopener">Current deliverable ↗</a></p>`;
-        })()}
+        ${"" /* work link only in timeline — avoids broken / duplicate links */}
         ${payRailHTML(d)}
         <div style="font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin:0.85rem 0 0.35rem;">Timeline</div>
         ${dealTimelineHTML(d)}
@@ -3755,6 +3810,13 @@
         const msg = (document.getElementById("msg_" + dealId)?.value || "").trim();
         if (msg) payload.messageText = msg;
         else payload.messageText = "Please revise the deliverable.";
+      }
+      if (btn.getAttribute("data-reject-pay")) {
+        payload.status = "Accepted";
+        payload.platformPaid = "No";
+        payload.clearPlatformPaid = true;
+        payload.messageText = "Payment not received — please pay again";
+        payload.rejectPayment = true;
       }
       if (btn.getAttribute("data-platform-paid")) {
         const ref = (document.getElementById("payref_" + dealId)?.value || "").trim();
