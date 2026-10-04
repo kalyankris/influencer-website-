@@ -2249,6 +2249,12 @@
       const toggle = document.getElementById("menuToggle");
       if (toggle) toggle.setAttribute("aria-expanded", "false");
       if (pageId === "campaigns") loadLiveCampaigns(false);
+      if (pageId === "deals") {
+        const em = document.getElementById("dealsEmail");
+        if (em) em.value = "";
+        const box = document.getElementById("dealsList");
+        if (box) box.innerHTML = "";
+      }
       currentPageId = pageId;
       if (!fromHistory) {
         try { history.pushState({ page: pageId }, "", "#" + pageId); } catch (_) {}
@@ -3113,42 +3119,64 @@
     function dealCardHTML(d) {
       const st = esc(d.status || "");
       const role = d.role || "";
+      const isCreator = role === "creator" || role === "both";
+      const isBrand = role === "brand" || role === "both";
       let actions = "";
-      if (role === "creator") {
+      if (isCreator) {
         if (st === "Proposed") {
           actions += `<button type="button" class="btn btn-creator btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}">Accept deal</button> `;
           actions += `<button type="button" class="btn btn-outline btn-sm" data-deal-action="Rejected" data-deal-id="${esc(d.dealId)}">Decline</button>`;
         }
         if (st === "Accepted" || st === "AdvancePaid") {
-          actions += `<div class="form-group" style="margin-top:0.75rem;"><label>Deliverable link (Drive / Reel URL)</label>
-            <input type="url" id="url_${esc(d.dealId)}" placeholder="https://drive.google.com/..." value="${esc(d.deliverableUrl || "")}">
+          // empty input on revision (no current URL); keep placeholder for new link
+          actions += `<div class="form-group" style="margin-top:0.75rem;"><label>New deliverable link (Drive / Reel URL)</label>
+            <input type="url" id="url_${esc(d.dealId)}" placeholder="https://drive.google.com/..." value="">
             </div>
             <button type="button" class="btn btn-creator btn-sm" data-deal-action="Submitted" data-deal-id="${esc(d.dealId)}" data-needs-url="1">Submit deliverable</button>`;
         }
       }
-      if (role === "brand") {
-        if (st === "Accepted") {
-          actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="AdvancePaid" data-deal-id="${esc(d.dealId)}" data-advance="Yes">Mark 50% advance paid</button> `;
+      if (isBrand) {
+        if (st === "Accepted" || st === "AdvancePaid") {
+          if (String(d.advancePaid || "").toLowerCase() !== "yes") {
+            actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="AdvancePaid" data-deal-id="${esc(d.dealId)}" data-advance="Yes">Mark 50% advance paid</button> `;
+          }
         }
         if (st === "Submitted") {
           actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="Approved" data-deal-id="${esc(d.dealId)}">Approve work</button> `;
-          actions += `<button type="button" class="btn btn-outline btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}">Request revision</button>`;
+          actions += `<button type="button" class="btn btn-outline btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}" data-revision="1">Request revision</button>`;
         }
         if (st === "Approved") {
           actions += `<button type="button" class="btn btn-primary btn-sm" data-deal-action="Paid" data-deal-id="${esc(d.dealId)}" data-final="Yes">Mark final payment done</button>`;
         }
       }
+      const histLines = String(d.history || "").split(/\n/).map(x => x.trim()).filter(Boolean);
+      const timeline = histLines.length
+        ? `<div style="margin-top:0.75rem;padding:0.65rem 0.75rem;border-radius:12px;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.4rem;">Work history</div>
+            ${histLines.map(line => {
+              const parts = line.split(" · ");
+              const url = parts.length >= 3 ? parts.slice(2).join(" · ") : "";
+              const meta = parts.slice(0, 2).join(" · ");
+              return `<div style="font-size:0.82rem;color:var(--text-muted);margin:0.25rem 0;">
+                <span>${esc(meta || line)}</span>
+                ${url ? ` · <a href="${esc(url)}" target="_blank" rel="noopener">previous file</a>` : ""}
+              </div>`;
+            }).join("")}
+          </div>`
+        : "";
+      const roleLabel = role === "both" ? "creator + brand (same email)" : role;
       return `<div class="card" style="margin-bottom:1rem;">
         <div class="card-body">
           <div class="card-name">${esc(d.brandName || "Brand")} ↔ ${esc(d.creatorName || "Creator")}</div>
-          <div class="card-niche">Status: <strong>${st}</strong> · You: ${esc(role)}</div>
+          <div class="card-niche">Status: <strong>${st}</strong> · You: ${esc(roleLabel)}</div>
           <div class="card-meta" style="margin-top:0.5rem;">
             <span>₹ ${esc(d.price || "—")}</span>
             <span>${esc(d.deliverable || "—")}</span>
             <span>Due ${esc(d.deadline || "—")}</span>
           </div>
           <p style="color:var(--text-muted);font-size:0.88rem;margin:0.6rem 0;">${esc(d.brief || "")}</p>
-          ${d.deliverableUrl ? `<p style="font-size:0.88rem;"><a href="${esc(d.deliverableUrl)}" target="_blank" rel="noopener">Open deliverable</a></p>` : ""}
+          ${d.deliverableUrl ? `<p style="font-size:0.88rem;"><a href="${esc(d.deliverableUrl)}" target="_blank" rel="noopener">Open current deliverable</a></p>` : ""}
+          ${timeline}
           <p style="font-size:0.8rem;color:var(--text-muted);">Advance: ${esc(d.advancePaid || "No")} · Final: ${esc(d.finalPaid || "No")} · ID ${esc(d.dealId || "")}</p>
           <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.75rem;">${actions}</div>
         </div>
@@ -3166,6 +3194,7 @@
       };
       if (btn.getAttribute("data-advance")) payload.advancePaid = "Yes";
       if (btn.getAttribute("data-final")) payload.finalPaid = "Yes";
+      if (btn.getAttribute("data-revision")) payload.clearDeliverableUrl = true;
       if (btn.getAttribute("data-needs-url")) {
         const inp = document.getElementById("url_" + dealId);
         const url = (inp && inp.value || "").trim();
