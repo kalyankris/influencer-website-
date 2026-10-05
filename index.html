@@ -1690,6 +1690,77 @@
       padding: 0.55rem 0.75rem; border-radius: 10px;
       background: rgba(232,195,154,0.08); border: 1px solid rgba(232,195,154,0.2);
     }
+
+    .camp-details {
+      display: flex; flex-direction: column; gap: 0.45rem;
+      margin: 0.75rem 0 0.65rem;
+      padding: 0.75rem 0.85rem;
+      border-radius: 12px;
+      background: rgba(247,243,234,0.04);
+      border: 1px solid rgba(247,243,234,0.08);
+    }
+    .camp-detail {
+      display: grid; grid-template-columns: 100px 1fr; gap: 0.4rem;
+      font-size: 0.84rem; line-height: 1.4;
+    }
+    .camp-k { color: #a8a29a; font-weight: 550; }
+    .camp-v { color: #f0ebe3; word-break: break-word; }
+    .campaign-card .card-name { font-size: 1.08rem; margin-bottom: 0.2rem; }
+    .campaign-card .card-brand { color: #e8c39a; font-size: 0.86rem; margin-bottom: 0.15rem; }
+
+    .dash-card {
+      position: relative; overflow: hidden;
+      text-align: center;
+      background: linear-gradient(145deg, rgba(40,36,32,0.92), rgba(22,20,18,0.88));
+      border: 1px solid rgba(232,195,154,0.16);
+      border-radius: 16px;
+      padding: 1.15rem 1rem;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .dash-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(232,195,154,0.32);
+    }
+    .dash-card::after {
+      content: "";
+      position: absolute; top: -30%; right: -20%;
+      width: 90px; height: 90px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(232,195,154,0.14), transparent 70%);
+      pointer-events: none;
+    }
+    .dash-num {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em;
+      background: linear-gradient(120deg, #f7f3ea, #e8c39a);
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent;
+      line-height: 1.15;
+    }
+    .dash-label {
+      color: #a8a29a; font-size: 0.78rem; margin-top: 0.25rem; letter-spacing: 0.02em;
+    }
+
+    .menu-parent {
+      border-radius: 12px !important;
+      border: 1px solid rgba(247,243,234,0.08) !important;
+      background: rgba(247,243,234,0.04) !important;
+    }
+    .menu-acc.open .menu-parent.creator {
+      background: rgba(249,115,22,0.18) !important;
+      border-color: rgba(249,115,22,0.35) !important;
+    }
+    .menu-acc.open .menu-parent.brand {
+      background: rgba(124,108,246,0.18) !important;
+      border-color: rgba(124,108,246,0.35) !important;
+    }
+    .menu-sub .nav-btn {
+      border-radius: 10px !important;
+      margin: 0.15rem 0 !important;
+      padding-left: 0.85rem !important;
+    }
+    .menu-sub .nav-btn:hover {
+      background: rgba(232,195,154,0.1) !important;
+    }
   </style>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -1716,20 +1787,20 @@
     <div class="menu-acc creator-acc">
       <button type="button" class="menu-parent creator">Influencers <span>▾</span></button>
       <div class="menu-sub">
-        <button type="button" class="nav-btn" data-page="creators">Influencer home</button>
-        <button type="button" class="nav-btn" data-page="join" id="menuJoinBtn">Join / Register</button>
-        <button type="button" class="nav-btn" data-page="campaigns">Open Campaigns</button>
-        <button type="button" class="nav-btn" data-page="deals">My Deals</button>
+        <button type="button" class="nav-btn" data-page="creators">🏠 Creator hub</button>
+        <button type="button" class="nav-btn" data-page="join" id="menuJoinBtn">✨ My profile</button>
+        <button type="button" class="nav-btn" data-page="campaigns">📣 Open campaigns</button>
+        <button type="button" class="nav-btn" data-page="deals">🤝 My deals</button>
       </div>
     </div>
     <div class="menu-acc brand-acc">
       <button type="button" class="menu-parent brand">Brands <span>▾</span></button>
       <div class="menu-sub">
-        <button type="button" class="nav-btn" data-page="brandhome">Brand home</button>
-        <button type="button" class="nav-btn" data-page="discover">Find Creators</button>
-        <button type="button" class="nav-btn" data-page="brands">Post a Campaign</button>
-        <button type="button" class="nav-btn" data-page="campaigns">See Open Campaigns</button>
-        <button type="button" class="nav-btn" data-page="deals">My Deals</button>
+        <button type="button" class="nav-btn" data-page="brandhome">🏠 Brand hub</button>
+        <button type="button" class="nav-btn" data-page="discover">🔍 Find creators</button>
+        <button type="button" class="nav-btn" data-page="brands">📢 Post campaign</button>
+        <button type="button" class="nav-btn" data-page="campaigns">📣 Open campaigns</button>
+        <button type="button" class="nav-btn" data-page="deals">🤝 My deals</button>
       </div>
     </div>
     <button type="button" class="nav-btn" data-page="admin" id="navAdminLink" style="display:none;">Admin panel</button>
@@ -1798,8 +1869,8 @@
   <div class="page" id="page-brandhome">
     <section class="section" style="padding-top:2rem;max-width:720px;">
       <div style="text-align:center;margin-bottom:1.5rem;">
-        <h2 class="section-title">Brand home</h2>
-        <p class="section-sub" style="margin-bottom:0;">Find creators, run campaigns, manage deals</p>
+        <h2 class="section-title">Brand command center 🚀</h2>
+        <p class="section-sub" style="margin-bottom:0;">Find creators, launch campaigns, close deals</p>
       </div>
       <div class="dash-grid" id="brandDashStats">
         <div class="dash-card"><div class="dash-num" id="dashBrandCreators">—</div><div class="dash-label">Creators available</div></div>
@@ -2087,8 +2158,8 @@
         <h2 class="section-title" style="text-align:center;">Sign in</h2>
         <p class="section-sub" style="text-align:center;">Existing accounts only · Google</p>
         <p style="text-align:center;font-size:0.84rem;color:var(--text-muted);margin:0 0 1.15rem;line-height:1.5;">
-          Sign in with the Google account you used at sign up.<br>
-          New here? Use <strong style="color:#e8c39a;">Sign up</strong> below.
+          Tap the button and <strong style="color:#e8c39a;">choose your Google account</strong>.<br>
+          We never auto-pick an account. New here? Use <strong style="color:#e8c39a;">Sign up</strong> below.
         </p>
         <input type="hidden" id="loginIntent" value="">
         <input type="hidden" id="authMode" value="signin">
@@ -2730,7 +2801,24 @@
         phone: get("Contact number", "phone", "mobile"),
         gender: get("Gender"),
         charges: get("charges", "Please mention"),
-        age: get("age")
+        age: (function () {
+          // Exact header first — never miss Age column
+          const keys = Object.keys(row || {});
+          for (const h of keys) {
+            if (String(h).toLowerCase().trim() === "age") {
+              const v = row[h];
+              if (v != null && String(v).trim() !== "") return String(v).trim();
+            }
+          }
+          for (const h of keys) {
+            const hl = String(h).toLowerCase();
+            if (hl === "age (years)" || hl === "your age" || /(^|\s)age(\s|$)/.test(hl)) {
+              const v = row[h];
+              if (v != null && String(v).trim() !== "") return String(v).trim();
+            }
+          }
+          return get("age") || "";
+        })()
       };
     }
 
@@ -3986,7 +4074,7 @@ if (pageId === "login") {
               charges: su.charges || "",
               bio: su.bio || "",
               website: su.website || "",
-              age: su.age || (s._user && s._user.age) || ""
+              age: (su.age != null && String(su.age).trim() !== "") ? String(su.age).trim() : ((s._user && s._user.age) || "")
             };
             setSession({
               email: s.email,
@@ -4046,7 +4134,8 @@ if (pageId === "login") {
         set("instagram", u.instagram || "");
         set("city", u.city || "");
         set("gender", u.gender || "");
-        if (u.age) set("age", u.age);
+        if (u.age != null && String(u.age).trim() !== "") set("age", String(u.age).trim());
+        else if (sess.age) set("age", String(sess.age).trim());
         if (u.followers) set("followers", u.followers);
         if (u.niche) {
           const skill = form.elements.namedItem("skill");
@@ -4394,8 +4483,12 @@ if (pageId === "login") {
           client_id: GOOGLE_CLIENT_ID,
           callback: handleGoogleCredential,
           auto_select: false,
-          cancel_on_tap_outside: true
+          cancel_on_tap_outside: true,
+          use_fedcm_for_prompt: false,
+          itp_support: true
         });
+        try { google.accounts.id.disableAutoSelect(); } catch (_) {}
+        // Never call prompt() — button only, user chooses account each time
         const parentIn = document.querySelector("#googleBtnWrap .g_id_signin") || document.querySelector(".g_id_signin");
         const parentUp = document.querySelector(".g_id_signin_signup");
         if (isSignup === true) {
@@ -4969,16 +5062,24 @@ if (pageId === "login") {
         if (c.deadline) tags.push(`<span class="campaign-tag">⏰ ${esc(c.deadline)}</span>`);
         if (c.location) tags.push(`<span class="campaign-tag">📍 ${esc(c.location)}</span>`);
 
+        const rows = [];
+        if (c.brief) rows.push(`<div class="camp-detail"><span class="camp-k">Brief</span><span class="camp-v">${esc(c.brief)}</span></div>`);
+        if (c.budget) rows.push(`<div class="camp-detail"><span class="camp-k">Budget</span><span class="camp-v">${esc(c.budget)}</span></div>`);
+        if (c.deliverables) rows.push(`<div class="camp-detail"><span class="camp-k">Deliverables</span><span class="camp-v">${esc(c.deliverables)}</span></div>`);
+        if (c.deadline) rows.push(`<div class="camp-detail"><span class="camp-k">Deadline</span><span class="camp-v">${esc(c.deadline)}</span></div>`);
+        if (c.location) rows.push(`<div class="camp-detail"><span class="camp-k">Location</span><span class="camp-v">${esc(c.location)}</span></div>`);
+        if (c.niche) rows.push(`<div class="camp-detail"><span class="camp-k">Niche</span><span class="camp-v">${esc(c.niche)}</span></div>`);
+        if (c.platform) rows.push(`<div class="camp-detail"><span class="camp-k">Platform</span><span class="camp-v">${esc(c.platform)}</span></div>`);
+
         return `
           <div class="card campaign-card" data-campaign-id="${esc(c.id)}">
             <div class="card-body">
-              <div class="card-name">${esc(c.title)}</div>
-              <div class="card-brand">${esc(c.brandName)}</div>
-              <div class="card-brief">${esc(c.brief)}</div>
+              <div class="card-name">${esc(c.title || "Campaign")}</div>
+              <div class="card-brand">by ${esc(c.brandName || "Brand")}</div>
+              <div class="camp-details">${rows.join("")}</div>
               <div class="campaign-meta">${tags.join("")}</div>
               <div class="card-footer">
-                <span style="font-size:0.78rem;color:var(--text-muted);">${c.deliverables ? esc(c.deliverables) : "See brief"}</span>
-                <button type="button" class="btn btn-creator btn-sm apply-btn" data-apply-id="${esc(c.id)}">Apply</button>
+                <button type="button" class="btn btn-creator btn-sm apply-btn" data-apply-id="${esc(c.id)}" style="width:100%;">Apply now →</button>
               </div>
             </div>
           </div>`;
