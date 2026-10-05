@@ -1612,28 +1612,29 @@
       position: fixed; inset: 0; z-index: 10000;
       display: none; align-items: center; justify-content: center;
       flex-direction: column; gap: 1.15rem;
-      /* Opaque frosted glass — solid base, not a cheap transparent wash */
-      background: rgba(10, 9, 8, 0.88);
-      backdrop-filter: blur(22px) saturate(1.1);
-      -webkit-backdrop-filter: blur(22px) saturate(1.1);
+      /* Tinted glass — user-requested 0.6 opacity */
+      background: rgba(12, 11, 10, 0.6);
+      backdrop-filter: blur(20px) saturate(1.15);
+      -webkit-backdrop-filter: blur(20px) saturate(1.15);
     }
     .auth-loading-overlay::before {
       content: "";
       position: absolute; inset: 0; pointer-events: none;
       background:
-        radial-gradient(ellipse 55% 40% at 50% 42%, rgba(232,195,154,0.14), transparent 70%);
+        radial-gradient(ellipse 60% 45% at 50% 40%, rgba(232,195,154,0.16), transparent 72%);
     }
     .auth-loading-overlay.show { display: flex; }
     .auth-loading-card {
       position: relative; z-index: 1;
       display: flex; flex-direction: column; align-items: center; gap: 1rem;
       padding: 2rem 2.25rem; border-radius: 22px;
-      background: rgba(28, 25, 22, 0.92);
-      border: 1px solid rgba(247,243,234,0.14);
+      background: rgba(22, 20, 18, 0.75);
+      border: 1px solid rgba(247,243,234,0.16);
       box-shadow:
-        0 28px 80px rgba(0,0,0,0.55),
-        0 0 0 1px rgba(0,0,0,0.35),
-        inset 0 1px 0 rgba(255,255,255,0.08);
+        0 24px 64px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       min-width: min(300px, 88vw);
     }
     .auth-loading-overlay p, .auth-loading-card p {
@@ -1647,9 +1648,9 @@
       position: absolute; inset: 0; z-index: 8;
       display: none; align-items: center; justify-content: center;
       flex-direction: column; gap: 0.95rem;
-      background: rgba(12, 11, 10, 0.9);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      background: rgba(12, 11, 10, 0.6);
+      backdrop-filter: blur(18px) saturate(1.1);
+      -webkit-backdrop-filter: blur(18px) saturate(1.1);
       border-radius: inherit;
       border: 1px solid rgba(247,243,234,0.1);
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
@@ -2032,41 +2033,54 @@
 
 
   <!-- ADMIN PANEL (Connectly ops only) -->
-  <div class="page" id="page-admin">
-    <section class="section" style="padding-top:2rem;max-width:720px;">
+    <div class="page" id="page-admin">
+    <section class="section" style="padding-top:2rem;max-width:820px;">
       <h2 class="section-title" style="text-align:center;">Connectly Admin</h2>
-      <p class="section-sub" style="text-align:center;">Full access for testing every flow · <span id="adminEmailLabel"></span></p>
+      <p class="section-sub" style="text-align:center;">Combined brand + creator control · <span id="adminEmailLabel"></span></p>
       <div class="dash-grid" style="margin-bottom:1.25rem;">
         <div class="dash-card"><div class="dash-num" id="adminInfCount">—</div><div class="dash-label">Creators</div></div>
         <div class="dash-card"><div class="dash-num" id="adminCampCount">—</div><div class="dash-label">Campaigns</div></div>
         <div class="dash-card"><div class="dash-num" id="adminViewMode">ops</div><div class="dash-label">View mode</div></div>
       </div>
       <div class="auth-card" style="max-width:100%;">
-        <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.85rem;"><strong style="color:#e9e5ff;">Test as role</strong> — switches how deals behave without logging out</p>
+        <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.85rem;"><strong style="color:#e9e5ff;">Test as role</strong> — switches deal behaviour without signing out</p>
         <div class="role-pick" style="grid-template-columns:1fr 1fr 1fr;">
           <button type="button" class="role-brand" data-admin-view="ops"><strong>Ops</strong><span>Confirm pay · payout</span></button>
           <button type="button" class="role-creator" data-admin-view="creator"><strong>Creator</strong><span>Accept · upload</span></button>
           <button type="button" class="role-brand" data-admin-view="brand"><strong>Brand</strong><span>Pay · review · deals</span></button>
         </div>
-        <p style="font-size:0.8rem;color:var(--text-dim);margin:1rem 0 0.75rem;">Quick links</p>
+
+        <p style="font-size:0.8rem;color:var(--text-dim);margin:1.15rem 0 0.55rem;letter-spacing:0.04em;text-transform:uppercase;">Brand tools</p>
         <div class="hub-actions" style="max-width:100%;margin:0;">
-          <button type="button" class="btn btn-primary" data-page="deals">My Deals (all deals)</button>
-          <button type="button" class="btn btn-outline" data-page="discover">Find creators</button>
-          <button type="button" class="btn btn-outline" data-page="campaigns">Open campaigns</button>
+          <button type="button" class="btn btn-primary" data-page="discover">Find creators</button>
           <button type="button" class="btn btn-outline" data-page="brands">Post campaign</button>
-          <button type="button" class="btn btn-outline" data-page="join">Creator join form</button>
-          <button type="button" class="btn btn-outline" data-page="brand-profile">Brand profile form</button>
-          <button type="button" class="btn btn-outline" data-page="creator-profile">Creator profile form</button>
+          <button type="button" class="btn btn-outline" data-page="brandhome">Brand home</button>
+          <button type="button" class="btn btn-outline" data-page="brand-profile">Brand profile</button>
         </div>
-        <button type="button" class="btn btn-outline" style="width:100%;margin-top:1rem;" id="adminLogoutBtn">Sign out</button>
-        <div class="hub-tip" style="max-width:100%;margin-top:1.25rem;">
-          <strong>Dummy test path:</strong> View as Brand → invite a creator → View as Creator (same email sees all deals as ops when email is admin) → confirm payments as Ops. Load My Deals with <em>kalyankris92@gmail.com</em> to see every deal and ops buttons.
+
+        <p style="font-size:0.8rem;color:var(--text-dim);margin:1.15rem 0 0.55rem;letter-spacing:0.04em;text-transform:uppercase;">Creator tools</p>
+        <div class="hub-actions" style="max-width:100%;margin:0;">
+          <button type="button" class="btn btn-creator" data-page="campaigns">Open campaigns</button>
+          <button type="button" class="btn btn-outline" data-page="join">Creator profile / join</button>
+          <button type="button" class="btn btn-outline" data-page="creators">Creator home</button>
+          <button type="button" class="btn btn-outline" data-page="deals">My Deals</button>
         </div>
+
+        <p style="font-size:0.8rem;color:var(--text-dim);margin:1.15rem 0 0.55rem;letter-spacing:0.04em;text-transform:uppercase;">Shared</p>
+        <div class="hub-actions" style="max-width:100%;margin:0;">
+          <button type="button" class="btn btn-outline" data-page="deals">All deals (ops email)</button>
+          <button type="button" class="btn btn-outline" data-page="home">Landing page</button>
+        </div>
+
+        <button type="button" class="btn btn-outline" style="width:100%;margin-top:1.15rem;" id="adminLogoutBtn">Sign out</button>
+        <p style="font-size:0.78rem;color:var(--text-dim);margin-top:1rem;line-height:1.5;">
+          <strong>Tip:</strong> Use Brand view to invite creators, Creator view to accept/upload, Ops to confirm payments. Creator directory is brand-side only for normal users — admin can always open Find creators.
+        </p>
       </div>
     </section>
   </div>
 
-  <!-- SIGN IN — existing accounts, Google only -->
+
   <div class="page" id="page-login">
     <section class="section" style="padding-top:2rem;">
       <div class="auth-card">
@@ -2909,11 +2923,15 @@
         status.textContent = "";
         status.removeAttribute("style");
       }
-      // Prevent flashing old/wrong totals while refreshing
-      if (!isSilent) __infCountReady = false;
+      // Count stays hidden until ONE final source is chosen (no 590→634 flash)
+      if (!isSilent) {
+        __infCountReady = false;
+        try { updateDashboardStats(); } catch (_) {}
+      }
 
       let hadCache = false;
       let cacheAge = 1e12;
+      let cacheRows = null;
       try {
         const raw = localStorage.getItem("cnt_inf_cache_v2") || sessionStorage.getItem("cnt_inf_cache");
         if (raw) {
@@ -2921,8 +2939,9 @@
           const rows = Array.isArray(parsed) ? parsed : parsed.rows;
           cacheAge = parsed && parsed.ts ? (Date.now() - parsed.ts) : 0;
           if (Array.isArray(rows) && rows.length) {
+            cacheRows = rows;
             allInfluencers = prepare(rows);
-            // Cache may be stale (e.g. 590) — never show count until live fetch confirms
+            // Grid can use cache; count waits for live settle
             __infCountReady = false;
             finishLoad();
             hadCache = true;
@@ -2944,54 +2963,67 @@
       const fetchUrl = base ? base + "token=" + encodeURIComponent(SITE_TOKEN) + "&t=" + Date.now() : "";
 
       (async () => {
+        let bestRows = null;
+        let bestLen = 0;
+
+        // Source A: static JSON (often incomplete)
         try {
           const jr = await fetch(CREATORS_JSON_URL + "?t=" + Date.now(), { cache: "no-store" });
           if (jr.ok) {
             const j = await jr.json();
             const rows = Array.isArray(j) ? j : (j.rows || []);
             const live = rows.map(normalizeRow).filter(i => i && String(i.name || "").trim());
-            if (live.length) {
-              allInfluencers = prepare(live);
-              __infCountReady = true;
-              try { localStorage.setItem("cnt_inf_cache_v2", JSON.stringify({ ts: Date.now(), rows: live })); } catch (_) {}
-              finishLoad();
-              hideProgress();
+            if (live.length > bestLen) {
+              bestRows = live;
+              bestLen = live.length;
             }
           }
         } catch (_) {}
-        if (!fetchUrl) { hideProgress(); return; }
-        let lastErr = null;
-        for (let attempt = 0; attempt < 4; attempt++) {
-          try {
-            const text = await fetchCsvText(fetchUrl);
-            const trimmed = String(text || "").trim();
-            if (!trimmed || trimmed.startsWith("{") || trimmed.startsWith("<")) {
-              lastErr = new Error("bad payload");
-            } else {
-              const live = parseCsvRows(trimmed)
-                .map(normalizeRow)
-                .filter(i => i && String(i.name || "").trim().length > 0);
-              if (live.length > 0) {
-                allInfluencers = prepare(live);
-                __infCountReady = true;
-                try {
-                  localStorage.setItem("cnt_inf_cache_v2", JSON.stringify({ ts: Date.now(), rows: live }));
-                } catch (_) {}
-                finishLoad();
-                hideProgress();
-                return;
+
+        // Source B: Apps Script CSV (authoritative sheet) — prefer this when longer
+        if (fetchUrl) {
+          let lastErr = null;
+          for (let attempt = 0; attempt < 4; attempt++) {
+            try {
+              const text = await fetchCsvText(fetchUrl);
+              const trimmed = String(text || "").trim();
+              if (!trimmed || trimmed.startsWith("{") || trimmed.startsWith("<")) {
+                lastErr = new Error("bad payload");
+              } else {
+                const live = parseCsvRows(trimmed)
+                  .map(normalizeRow)
+                  .filter(i => i && String(i.name || "").trim().length > 0);
+                if (live.length > bestLen) {
+                  bestRows = live;
+                  bestLen = live.length;
+                }
+                if (live.length > 0) break; // got sheet data — stop retrying
+                lastErr = new Error("empty csv");
               }
-              lastErr = new Error("empty csv");
+            } catch (err) {
+              lastErr = err;
             }
-          } catch (err) {
-            lastErr = err;
+            await new Promise(r => setTimeout(r, 1200 * (attempt + 1)));
           }
-          await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+          if (lastErr && !bestRows) console.warn("Live fetch failed:", lastErr);
         }
-        console.warn("Live fetch failed:", lastErr);
-        if (!hadCache) {
+
+        // ONE final apply — never intermediate counts
+        if (bestRows && bestRows.length) {
+          allInfluencers = prepare(bestRows);
+          __infCountReady = true;
+          try {
+            localStorage.setItem("cnt_inf_cache_v2", JSON.stringify({ ts: Date.now(), rows: bestRows }));
+          } catch (_) {}
+          finishLoad();
+        } else if (cacheRows && cacheRows.length) {
+          // Live failed — use cache for grid, still hide unreliable count if tiny
+          allInfluencers = prepare(cacheRows);
+          __infCountReady = cacheRows.length >= 100;
+          finishLoad();
+        } else if (!hadCache) {
           allInfluencers = prepare(FALLBACK_DATA);
-          __infCountReady = false; // don't flash tiny sample count
+          __infCountReady = false;
           finishLoad();
         }
         hideProgress();
@@ -3238,8 +3270,8 @@
           if (pageId !== need && pageId !== "login" && pageId !== "home") pageId = need;
         }
       }
-      // Creators cannot browse the creator directory — brands only
-      if (pageId === "discover" && s && s.role === "creator" && !isAdminEmail(s.email)) {
+      // Creators cannot browse the creator directory — brands + admin only
+      if (pageId === "discover" && s && s.role === "creator" && !(typeof isAdminEmail === "function" && isAdminEmail(s.email))) {
         pageId = "campaigns";
         try { showToast("For brands only", "Creator directory is for brands. Explore open campaigns instead."); } catch (_) {}
       }
@@ -3605,8 +3637,13 @@ if (pageId === "login") {
       if (av) av.textContent = getAdminViewMode();
       const nInf = (allInfluencers && allInfluencers.length) || 0;
       const nCamp = (typeof getCampaignList === "function" ? getCampaignList() : (allCampaigns || [])).length;
-      const ai = document.getElementById("adminInfCount"); if (ai) ai.textContent = nInf || "0";
-      const ac = document.getElementById("adminCampCount"); if (ac) ac.textContent = nCamp || "0";
+      if (__infCountReady) {
+        animateCountTo(document.getElementById("adminInfCount"), nInf || 0, { duration: 1000 });
+      } else {
+        const ai = document.getElementById("adminInfCount");
+        if (ai) { ai.textContent = "…"; ai.dataset.countVal = "0"; }
+      }
+      animateCountTo(document.getElementById("adminCampCount"), nCamp || 0, { duration: 700 });
     }
 
     async function apiPostOnce(payload, timeoutMs) {
