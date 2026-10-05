@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1620,12 +1621,14 @@
       <button type="button" class="btn btn-creator btn-sm desk-only" data-page="creators">Influencers</button>
       <button type="button" class="btn btn-primary btn-sm desk-only" data-page="brandhome">Brands</button>
     </div>
-    <button type="button" class="auth-user-chip" id="navAccountBtn" data-page="login" style="margin-left:0.15rem;margin-right:0.4rem;">Sign in</button>
-    <button class="menu-toggle" type="button" id="menuToggle" aria-label="Menu" aria-expanded="false">
-      <span class="bar"></span>
-      <span class="bar"></span>
-      <span class="bar"></span>
-    </button>
+    <div class="nav-right" style="display:flex;align-items:center;gap:0.3rem;flex-shrink:0;">
+      <button type="button" class="auth-user-chip" id="navAccountBtn" data-page="login">Sign in</button>
+      <button class="menu-toggle" type="button" id="menuToggle" aria-label="Menu" aria-expanded="false">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+    </div>
   </nav>
   <div class="nav-links" id="navLinks">
     <button type="button" class="btn btn-outline" id="menuCloseBtn" style="width:100%;margin-bottom:1rem;">Close menu</button>
@@ -2000,61 +2003,89 @@
     </section>
   </div>
 
-  <!-- LOGIN (after role pick) -->
+  <!-- SIGN IN — existing accounts, Google only -->
   <div class="page" id="page-login">
     <section class="section" style="padding-top:2rem;">
       <div class="auth-card">
-        <p id="loginRoleBadge" style="text-align:center;margin:0 0 0.5rem;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;color:#e8c39a;font-weight:700;"></p>
-        <h2 class="section-title" id="loginTitle" style="text-align:center;">Sign in</h2>
-        <p class="section-sub" id="loginSubText" style="text-align:center;">Sign in with Google to open your existing profile</p>
-        <div id="loginNewHint" style="display:none;margin:0 0 1rem;padding:0.85rem 1rem;border-radius:14px;border:1px solid rgba(232,195,154,0.35);background:rgba(232,195,154,0.1);font-size:0.86rem;color:#f5e6d3;line-height:1.45;text-align:center;">
-          <strong style="color:#fff7ed;">New here?</strong> Sign in with Google first, then we’ll ask you to create your profile (one form). After that you can edit anytime from <em>My profile</em>.
-        </div>
-
+        <h2 class="section-title" style="text-align:center;">Sign in</h2>
+        <p class="section-sub" style="text-align:center;">Existing accounts only · Google</p>
+        <p style="text-align:center;font-size:0.84rem;color:var(--text-muted);margin:0 0 1.15rem;line-height:1.5;">
+          Sign in with the Google account you used at sign up.<br>
+          New here? Use <strong style="color:#e8c39a;">Sign up</strong> below.
+        </p>
+        <input type="hidden" id="loginIntent" value="">
+        <input type="hidden" id="authMode" value="signin">
         <div id="googleBtnWrap" style="display:flex;justify-content:center;min-height:44px;margin-bottom:0.75rem;">
-          <div id="g_id_onload" data-context="signin" data-ux_mode="popup" data-auto_prompt="false"></div>
           <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left" data-width="320"></div>
         </div>
         <p id="googleHint" style="display:none;font-size:0.78rem;color:var(--text-dim);text-align:center;margin-bottom:0.75rem;"></p>
-
-        <div class="auth-divider"><span>or email (existing account)</span></div>
-
-        <div class="form-group">
-          <label>Gmail / Email *</label>
-          <input type="email" id="loginEmail" placeholder="you@gmail.com" autocomplete="email">
-        </div>
-        <div class="form-group">
-          <label>Your name</label>
-          <input type="text" id="loginName" placeholder="Your name">
-        </div>
-        <input type="hidden" id="loginIntent" value="">
-        <button type="button" class="btn btn-primary" style="width:100%;" id="loginContinueBtn">Continue</button>
-        <p id="loginError" style="display:none;color:#fca5a5;font-size:0.85rem;margin-top:0.75rem;text-align:center;"></p>
-        <p style="font-size:0.78rem;color:var(--text-dim);margin-top:1rem;text-align:center;line-height:1.45;">
-          Same login for everyone — your role (Creator or Brand) was chosen on the previous step.
-        </p>
+        <p id="loginError" style="display:none;color:#fca5a5;font-size:0.9rem;margin-top:0.9rem;text-align:center;line-height:1.5;"></p>
         <div id="loginSignedIn" style="display:none;text-align:center;margin-top:1.15rem;padding-top:1rem;border-top:1px solid var(--border);">
           <p style="color:var(--text-muted);margin-bottom:0.75rem;">Signed in as <strong id="loginSignedEmail"></strong></p>
           <button type="button" class="btn btn-outline btn-sm" id="loginLogoutBtn">Sign out</button>
+        </div>
+        <div style="margin-top:1.4rem;padding-top:1.15rem;border-top:1px solid var(--border);text-align:center;">
+          <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:0.65rem;">Don&apos;t have an account?</p>
+          <button type="button" class="btn btn-creator" style="width:100%;" data-page="signup">Sign up — Creator or Brand</button>
         </div>
         <button type="button" class="btn btn-outline btn-sm" style="width:100%;margin-top:0.85rem;" data-page="home">← Back</button>
       </div>
     </section>
   </div>
 
-  <!-- CHOOSE ROLE -->
+  <!-- SIGN UP — pick role -->
+  <div class="page" id="page-signup">
+    <section class="section" style="padding-top:2rem;">
+      <div class="auth-card">
+        <h2 class="section-title" style="text-align:center;">Sign up</h2>
+        <p class="section-sub" style="text-align:center;">New to Connectly? Choose one — you can only pick once</p>
+        <div class="role-pick">
+          <button type="button" class="role-creator" id="signupCreatorBtn">
+            <strong>I&apos;m a Creator</strong>
+            <span>Get brand deals &amp; campaigns</span>
+          </button>
+          <button type="button" class="role-brand" id="signupBrandBtn">
+            <strong>I&apos;m a Brand</strong>
+            <span>Find influencers &amp; hire</span>
+          </button>
+        </div>
+        <div style="margin-top:1.25rem;text-align:center;">
+          <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:0.5rem;">Already registered?</p>
+          <button type="button" class="btn btn-outline btn-sm" data-page="login">Sign in with Google</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- SIGN UP Google -->
+  <div class="page" id="page-signup-google">
+    <section class="section" style="padding-top:2rem;">
+      <div class="auth-card">
+        <p id="signupRoleBadge" style="text-align:center;margin:0 0 0.5rem;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;color:#e8c39a;font-weight:700;"></p>
+        <h2 class="section-title" style="text-align:center;">Create your account</h2>
+        <p class="section-sub" id="signupGoogleSub" style="text-align:center;">Continue with Google to finish sign up</p>
+        <div id="googleSignupBtnWrap" style="display:flex;justify-content:center;min-height:44px;margin-bottom:0.75rem;">
+          <div class="g_id_signin_signup"></div>
+        </div>
+        <p id="signupError" style="display:none;color:#fca5a5;font-size:0.9rem;margin-top:0.9rem;text-align:center;line-height:1.5;"></p>
+        <button type="button" class="btn btn-outline btn-sm" style="width:100%;margin-top:1rem;" data-page="signup">← Change Creator / Brand</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Legacy role page → mirrors signup -->
   <div class="page" id="page-role">
     <section class="section" style="padding-top:2rem;">
       <div class="auth-card">
-        <h2 class="section-title">How will you use Connectly?</h2>
-        <p class="section-sub">You can only pick once — choose carefully</p>
+        <h2 class="section-title" style="text-align:center;">Sign up</h2>
+        <p class="section-sub" style="text-align:center;">Choose Creator or Brand</p>
         <div class="role-pick">
           <button type="button" class="role-creator" id="pickCreatorBtn">
-            <strong>I'm a Creator</strong>
+            <strong>I&apos;m a Creator</strong>
             <span>Get brand deals &amp; campaigns</span>
           </button>
           <button type="button" class="role-brand" id="pickBrandBtn">
-            <strong>I'm a Brand</strong>
+            <strong>I&apos;m a Brand</strong>
             <span>Find influencers &amp; hire</span>
           </button>
         </div>
@@ -3099,7 +3130,7 @@
       if (!document.getElementById("page-" + pageId)) pageId = "home";
 
       // Public pages only before login
-      const PUBLIC = { home:1, login:1, how:1, contact:1, join:1 };
+      const PUBLIC = { home:1, login:1, signup:1, 'signup-google':1, role:1, how:1, contact:1, join:1 };
       const s = (typeof getSession === "function") ? getSession() : null;
       if (!s && !PUBLIC[pageId]) {
         try { sessionStorage.setItem("cnt_after_login", pageId); } catch(_){}
@@ -3135,27 +3166,20 @@
       if (pageId === "creator-profile") setTimeout(prefillCreatorProfile, 40);
       if (pageId === "join") setTimeout(prefillJoinFromSession, 40);
       if (pageId === "brand-profile") setTimeout(prefillBrandProfile, 40);
-      if (pageId === "login") {
-        const intent = sessionStorage.getItem("cnt_intent") || "";
-        const hi = document.getElementById("loginIntent");
-        if (hi && intent) hi.value = intent;
-        const badge = document.getElementById("loginRoleBadge");
-        if (badge) badge.textContent = intent === "brand" ? "Brand account" : (intent === "creator" ? "Creator account" : "Connectly");
-        const titleEl = document.getElementById("loginTitle");
-        if (titleEl) titleEl.textContent = intent === "brand" ? "Sign in as Brand" : (intent === "creator" ? "Sign in as Creator" : "Sign in");
-        const newHint = document.getElementById("loginNewHint");
-        if (newHint) {
-          if (intent === "brand" || intent === "creator") {
-            newHint.style.display = "block";
-            newHint.innerHTML = intent === "brand"
-              ? '<strong style="color:#fff7ed;">New brand?</strong> Sign in with Google first, then complete your brand profile.'
-              : '<strong style="color:#fff7ed;">New creator?</strong> Sign in with Google first, then complete the join form to get listed.';
-          } else {
-            newHint.style.display = "block";
-            newHint.innerHTML = '<strong style="color:#fff7ed;">First time?</strong> Choose <em>I’m a Creator</em> or <em>I’m a Brand</em> on the home page, then sign in with Google and create your profile.';
-          }
-        }
-        setTimeout(initGoogleSignIn, 200);
+if (pageId === "login") {
+        sessionStorage.setItem("cnt_auth_mode", "signin");
+        const modeEl = document.getElementById("authMode");
+        if (modeEl) modeEl.value = "signin";
+        const err = document.getElementById("loginError");
+        if (err) { err.style.display = "none"; err.textContent = ""; }
+        setTimeout(() => initGoogleSignIn(false), 200);
+      }
+      if (pageId === "signup-google") {
+        sessionStorage.setItem("cnt_auth_mode", "signup");
+        setTimeout(() => initGoogleSignIn(true), 200);
+      }
+      if (pageId === "signup") {
+        sessionStorage.setItem("cnt_auth_mode", "signup");
       }
       // hide nav tools when logged out
       document.body.classList.toggle("authed", !!s);
@@ -3453,103 +3477,165 @@
         showPage("admin");
         return;
       }
-      // Keep Google picture if server user has none
-      if (user.picture && !user._user) {
-        user._user = user._user || {};
-      }
       setSession(user);
       try { loadServerShortlist(); } catch (_) {}
-      if (!user.role) {
-        showPage("role");
-      } else if (!user.profileComplete) {
-        if (user.role === "creator") {
-          showToast("Create your profile", "New creators must complete the join form to appear in the directory.");
+      const role = String(user.role || "").toLowerCase();
+      if (role !== "creator" && role !== "brand") {
+        try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
+        showToast("Sign up required", "Choose Creator or Brand to create your account.", "error");
+        showPage("signup");
+        return;
+      }
+      if (!user.profileComplete) {
+        if (role === "creator") {
+          showToast("Complete your profile", "Fill the join form once to appear in the directory.");
           showPage("join");
         } else {
-          showToast("Complete brand profile", "Add your brand details to start finding creators.", "brand");
+          showToast("Complete brand profile", "Add your brand details to continue.", "brand");
           showPage("brand-profile");
         }
-      } else {
-        showToast("Welcome back", (user.displayName || user.brandName || "You're") + " signed in.");
-        showPage(user.role === "brand" ? "brandhome" : "creators");
+        return;
       }
+      showToast("Welcome back", (user.displayName || user.brandName || "You're") + " signed in.");
+      showPage(role === "brand" ? "brandhome" : "creators");
     }
 
     async function finishAuth(email, name, opts) {
       opts = opts || {};
       email = String(email || "").trim().toLowerCase();
       name = String(name || "").trim();
-      const intent = opts.intent || (document.getElementById("loginIntent")?.value || "") || (sessionStorage.getItem("cnt_intent") || "");
-      const err = document.getElementById("loginError");
-      if (err) { err.style.display = "none"; err.textContent = ""; }
+      const mode = String(opts.mode || sessionStorage.getItem("cnt_auth_mode") || "signin").toLowerCase();
+      const role = String(opts.role || opts.intent || sessionStorage.getItem("cnt_intent") || "").toLowerCase();
+
+      const errLogin = document.getElementById("loginError");
+      const errSignup = document.getElementById("signupError");
+      if (errLogin) { errLogin.style.display = "none"; errLogin.textContent = ""; }
+      if (errSignup) { errSignup.style.display = "none"; errSignup.textContent = ""; }
+
       if (!email || email.indexOf("@") < 0) {
-        if (err) { err.textContent = "Enter a valid email"; err.style.display = "block"; }
+        const msg = "Google sign-in failed. Try again.";
+        if (mode === "signup" && errSignup) { errSignup.textContent = msg; errSignup.style.display = "block"; }
+        else if (errLogin) { errLogin.textContent = msg; errLogin.style.display = "block"; }
         return false;
       }
-      const btn = document.getElementById("loginContinueBtn");
-      if (btn) { btn.disabled = true; btn.textContent = "Signing in…"; }
 
-      let user = {
-        email,
-        displayName: name,
-        role: intent || "",
-        profileComplete: false,
-        picture: opts.picture || ""
-      };
-
-      // Always set local session first so UI never sticks
-      if (intent) user.role = intent;
+      if (typeof isAdminEmail === "function" && isAdminEmail(email)) {
+        routeAfterAuth({ email, displayName: name, role: "ops", profileComplete: true, picture: opts.picture || "" });
+        return true;
+      }
 
       try {
-        const data = await apiPost({
+        const payload = {
           action: "auth_login",
+          mode: mode === "signup" ? "signup" : "signin",
           email,
           name,
           picture: opts.picture || "",
           googleCredential: opts.credential || ""
-        }, 10000);
-        if (data && data.user) {
-          const pic = user.picture;
-          user = Object.assign(user, data.user);
-          if (intent && !user.role) user.role = intent;
-          if (pic && !user.picture) user.picture = pic;
+        };
+        if (mode === "signup") {
+          if (role !== "creator" && role !== "brand") {
+            if (errSignup) { errSignup.textContent = "Choose Creator or Brand first."; errSignup.style.display = "block"; }
+            showPage("signup");
+            return false;
+          }
+          payload.role = role;
         }
-      } catch (_) {}
 
-      if (intent && user.role !== intent && !isAdminEmail(email)) {
-        user.role = intent;
+        const data = await apiPost(payload, 12000);
+
+        if (mode !== "signup") {
+          // SIGN IN — reject new / incomplete
+          if (!data || data.ok === false || data.needSignup || data.error === "new_user") {
+            try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
+            const msg = (data && data.message) || "No account for this Google login. Please Sign up first.";
+            if (errLogin) { errLogin.textContent = msg; errLogin.style.display = "block"; }
+            showToast("New login", "Please Sign up as Creator or Brand first.", "error");
+            setTimeout(() => showPage("signup"), 500);
+            return false;
+          }
+          const user = Object.assign({}, data.user || {}, {
+            email,
+            picture: (data.user && data.user.picture) || opts.picture || "",
+            displayName: (data.user && data.user.displayName) || name
+          });
+          if (!user.role || (user.role !== "creator" && user.role !== "brand" && user.role !== "ops")) {
+            if (errLogin) { errLogin.textContent = "Account incomplete. Please Sign up."; errLogin.style.display = "block"; }
+            showPage("signup");
+            return false;
+          }
+          routeAfterAuth(user);
+          return true;
+        }
+
+        // SIGN UP
+        if (!data || data.ok === false) {
+          if (data && data.needSignin) {
+            const msg = data.message || "Account already exists. Please Sign in.";
+            if (errSignup) { errSignup.textContent = msg; errSignup.style.display = "block"; }
+            showToast("Already registered", "Please Sign in with Google.", "error");
+            setTimeout(() => showPage("login"), 600);
+            return false;
+          }
+          const msg = (data && (data.message || data.error)) || "Sign up failed.";
+          if (errSignup) { errSignup.textContent = msg; errSignup.style.display = "block"; }
+          showToast("Sign up failed", String(msg), "error");
+          return false;
+        }
+
+        const user = Object.assign({}, data.user || {}, {
+          email,
+          role: role,
+          picture: (data.user && data.user.picture) || opts.picture || "",
+          displayName: (data.user && data.user.displayName) || name,
+          profileComplete: !!(data.user && data.user.profileComplete)
+        });
+        if (!user.role) user.role = role;
         try {
-          await apiPost({ action: "auth_profile", email, role: intent, displayName: name || user.displayName }, 8000);
+          await apiPost({ action: "auth_profile", email, role: user.role, displayName: user.displayName, picture: user.picture }, 8000);
         } catch (_) {}
+        routeAfterAuth(user);
+        return true;
+      } catch (e) {
+        console.error(e);
+        const msg = "Network error. Try again.";
+        if (mode === "signup" && errSignup) { errSignup.textContent = msg; errSignup.style.display = "block"; }
+        else if (errLogin) { errLogin.textContent = msg; errLogin.style.display = "block"; }
+        return false;
       }
-
-      if (btn) { btn.disabled = false; btn.textContent = "Continue"; }
-      routeAfterAuth(user);
-      return true;
     }
+
 
     function goLoginWithIntent(role) {
-      sessionStorage.setItem("cnt_intent", role);
-      const hi = document.getElementById("loginIntent");
-      if (hi) hi.value = role;
-      const badge = document.getElementById("loginRoleBadge");
-      if (badge) badge.textContent = role === "brand" ? "Brand account" : "Creator account";
-      const title = document.getElementById("loginTitle");
-      if (title) title.textContent = role === "brand" ? "Sign in as Brand" : "Sign in as Creator";
-      const sub = document.getElementById("loginSubText");
-      if (sub) sub.textContent = role === "brand"
-        ? "Sign in with Google if you already have a brand profile"
-        : "Sign in with Google if you already have a creator profile";
-      const hint = document.getElementById("loginNewHint");
-      if (hint) {
-        hint.style.display = "block";
-        hint.innerHTML = role === "brand"
-          ? '<strong style="color:#fff7ed;">New brand?</strong> Sign in with Google first, then complete your brand profile on the next step.'
-          : '<strong style="color:#fff7ed;">New creator?</strong> Sign in with Google first, then fill the join form once to appear in the directory. You can edit it later from My profile.';
-      }
-      showPage("login");
-      setTimeout(initGoogleSignIn, 300);
+      openSignupGoogle(role);
     }
+
+    function openSignupGoogle(role) {
+      sessionStorage.setItem("cnt_intent", role);
+      sessionStorage.setItem("cnt_auth_mode", "signup");
+      const badge = document.getElementById("signupRoleBadge");
+      if (badge) badge.textContent = role === "brand" ? "Brand account" : "Creator account";
+      const sub = document.getElementById("signupGoogleSub");
+      if (sub) sub.textContent = role === "brand"
+        ? "Continue with Google to create your brand account"
+        : "Continue with Google to create your creator account";
+      const err = document.getElementById("signupError");
+      if (err) { err.style.display = "none"; err.textContent = ""; }
+      showPage("signup-google");
+      setTimeout(() => initGoogleSignIn(true), 200);
+    }
+
+    function openSignIn() {
+      sessionStorage.removeItem("cnt_intent");
+      sessionStorage.setItem("cnt_auth_mode", "signin");
+      const modeEl = document.getElementById("authMode");
+      if (modeEl) modeEl.value = "signin";
+      const err = document.getElementById("loginError");
+      if (err) { err.style.display = "none"; err.textContent = ""; }
+      showPage("login");
+      setTimeout(() => initGoogleSignIn(false), 200);
+    }
+
 
 
 
@@ -3718,32 +3804,33 @@
       try {
         const cred = response && response.credential;
         if (!cred) return;
-        // Decode JWT payload (middle part)
         const payload = JSON.parse(atob(cred.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
         const email = payload.email || "";
         const name = payload.name || payload.given_name || "";
         const picture = payload.picture || "";
-        finishAuth(email, name, { picture, credential: cred, intent: sessionStorage.getItem("cnt_intent") || "" });
+        const mode = sessionStorage.getItem("cnt_auth_mode") || "signin";
+        const role = sessionStorage.getItem("cnt_intent") || "";
+        finishAuth(email, name, { picture, credential: cred, mode, role, intent: role });
       } catch (e) {
         console.error(e);
-        const err = document.getElementById("loginError");
-        if (err) { err.textContent = "Google sign-in failed. Use email below."; err.style.display = "block"; }
+        const mode = sessionStorage.getItem("cnt_auth_mode") || "signin";
+        const err = document.getElementById(mode === "signup" ? "signupError" : "loginError");
+        if (err) { err.textContent = "Google sign-in failed. Please try again."; err.style.display = "block"; }
       }
     }
 
-    function initGoogleSignIn() {
+    function initGoogleSignIn(isSignup) {
       const hint = document.getElementById("googleHint");
-      const wrap = document.getElementById("googleBtnWrap");
       if (!GOOGLE_CLIENT_ID) {
         if (hint) {
           hint.style.display = "block";
-          hint.textContent = "Google one-tap: add GOOGLE_CLIENT_ID in the site config. Email login works now.";
+          hint.textContent = "Add GOOGLE_CLIENT_ID in site config to enable Google sign-in.";
         }
         return;
       }
       if (typeof google === "undefined" || !google.accounts || !google.accounts.id) {
         if (hint) { hint.style.display = "block"; hint.textContent = "Loading Google… refresh if button missing."; }
-        setTimeout(initGoogleSignIn, 800);
+        setTimeout(() => initGoogleSignIn(isSignup), 800);
         return;
       }
       if (hint) hint.style.display = "none";
@@ -3754,39 +3841,47 @@
           auto_select: false,
           cancel_on_tap_outside: true
         });
-        const parent = document.querySelector(".g_id_signin");
-        if (parent) {
-          parent.innerHTML = "";
-          google.accounts.id.renderButton(parent, {
-            type: "standard", theme: "outline", size: "large", width: 320, text: "signin_with"
-          });
+        const parentIn = document.querySelector("#googleBtnWrap .g_id_signin") || document.querySelector(".g_id_signin");
+        const parentUp = document.querySelector(".g_id_signin_signup");
+        if (isSignup === true) {
+          if (parentUp) {
+            parentUp.innerHTML = "";
+            google.accounts.id.renderButton(parentUp, {
+              type: "standard", theme: "outline", size: "large", width: 320, text: "signup_with"
+            });
+          }
+        } else if (isSignup === false) {
+          if (parentIn) {
+            parentIn.innerHTML = "";
+            google.accounts.id.renderButton(parentIn, {
+              type: "standard", theme: "outline", size: "large", width: 320, text: "signin_with"
+            });
+          }
+        } else {
+          if (parentIn) {
+            parentIn.innerHTML = "";
+            google.accounts.id.renderButton(parentIn, {
+              type: "standard", theme: "outline", size: "large", width: 320, text: "signin_with"
+            });
+          }
+          if (parentUp) {
+            parentUp.innerHTML = "";
+            google.accounts.id.renderButton(parentUp, {
+              type: "standard", theme: "outline", size: "large", width: 320, text: "signup_with"
+            });
+          }
         }
       } catch (e) {
         console.warn(e);
-        if (hint) { hint.style.display = "block"; hint.textContent = "Google button error — use email login."; }
+        if (hint) { hint.style.display = "block"; hint.textContent = "Google button error — refresh the page."; }
       }
     }
 
-    async function landLogin() {
-      const email = (document.getElementById("loginEmail")?.value || "").trim();
-      const name = (document.getElementById("loginName")?.value || "").trim();
-      await finishAuth(email, name, { intent: sessionStorage.getItem("cnt_intent") || document.getElementById("loginIntent")?.value || "" });
-    }
-
-    async function authContinue() {
-      await landLogin();
-    }
-
     async function saveRole(role) {
-      const s = getSession();
-      if (!s) { showPage("login"); return; }
-      s.role = role;
-      setSession(s);
-      try {
-        await apiPost({ action: "auth_profile", email: s.email, role, displayName: s.displayName });
-      } catch (_) {}
-      showPage(role === "brand" ? "brand-profile" : "join");
+      openSignupGoogle(role);
     }
+
+
 
     async function submitBrandProfile(e) {
       e.preventDefault();
@@ -5454,9 +5549,10 @@
       });
     });
 
-    document.getElementById("loginContinueBtn")?.addEventListener("click", () => landLogin());
     document.getElementById("landPickCreator")?.addEventListener("click", () => goLoginWithIntent("creator"));
     document.getElementById("landPickBrand")?.addEventListener("click", () => goLoginWithIntent("brand"));
+    document.getElementById("signupCreatorBtn")?.addEventListener("click", () => openSignupGoogle("creator"));
+    document.getElementById("signupBrandBtn")?.addEventListener("click", () => openSignupGoogle("brand"));
     // Logout from nav chip long-press not needed — account page has logout
 
     document.getElementById("loginLogoutBtn")?.addEventListener("click", doLogout);
@@ -5464,8 +5560,8 @@
     document.getElementById("menuLogoutBtn")?.addEventListener("click", () => {
       doLogout();
     });
-    document.getElementById("pickCreatorBtn")?.addEventListener("click", () => saveRole("creator"));
-    document.getElementById("pickBrandBtn")?.addEventListener("click", () => saveRole("brand"));
+    document.getElementById("pickCreatorBtn")?.addEventListener("click", () => openSignupGoogle("creator"));
+    document.getElementById("pickBrandBtn")?.addEventListener("click", () => openSignupGoogle("brand"));
     document.getElementById("brandProfileForm")?.addEventListener("submit", submitBrandProfile);
     document.getElementById("creatorProfileForm")?.addEventListener("submit", submitCreatorProfile);
     refreshAuthUI();
