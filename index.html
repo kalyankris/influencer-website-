@@ -1534,27 +1534,55 @@
 
     /* Connectly toast */
     .cnt-toast {
-      position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px);
-      z-index: 9999; max-width: min(420px, calc(100vw - 32px));
-      padding: 1rem 1.25rem; border-radius: 16px;
-      background: linear-gradient(165deg, rgba(30,28,26,0.98), rgba(20,18,16,0.98));
-      border: 1px solid rgba(247,243,234,0.16);
-      box-shadow: 0 16px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
-      color: var(--text); font-size: 0.92rem; line-height: 1.45;
+      position: fixed; left: 50%; bottom: max(28px, env(safe-area-inset-bottom));
+      transform: translateX(-50%) translateY(24px);
+      z-index: 9999; max-width: min(440px, calc(100vw - 28px));
+      padding: 1.1rem 1.3rem; border-radius: 18px;
+      background: linear-gradient(165deg, rgba(32,30,28,0.98), rgba(18,16,14,0.99));
+      border: 1px solid rgba(247,243,234,0.18);
+      box-shadow: 0 20px 56px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+      color: var(--text); font-size: 0.94rem; line-height: 1.5;
       opacity: 0; pointer-events: none;
-      transition: opacity 0.28s var(--ease), transform 0.28s var(--ease);
-      display: flex; align-items: flex-start; gap: 0.75rem;
+      transition: opacity 0.32s var(--ease), transform 0.32s var(--ease);
+      display: flex; align-items: flex-start; gap: 0.85rem;
     }
     .cnt-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
     .cnt-toast .toast-icon {
-      flex-shrink: 0; width: 36px; height: 36px; border-radius: 12px;
+      flex-shrink: 0; width: 40px; height: 40px; border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
-      background: rgba(34,197,94,0.15); color: #4ade80; font-size: 1.1rem;
+      background: rgba(34,197,94,0.18); color: #4ade80; font-size: 1.2rem; font-weight: 700;
     }
-    .cnt-toast.toast-brand .toast-icon { background: rgba(124,108,246,0.18); color: #c4b5fd; }
-    .cnt-toast .toast-body strong { display: block; font-size: 0.95rem; margin-bottom: 0.15rem; color: #fff7ed; }
-    .cnt-toast .toast-body span { color: var(--text-muted); font-size: 0.82rem; }
+    .cnt-toast.toast-brand .toast-icon { background: rgba(124,108,246,0.2); color: #c4b5fd; }
+    .cnt-toast.toast-error .toast-icon { background: rgba(248,113,113,0.18); color: #fca5a5; }
+    .cnt-toast .toast-body strong { display: block; font-size: 1rem; margin-bottom: 0.2rem; color: #fff7ed; font-weight: 650; }
+    .cnt-toast .toast-body span { color: var(--text-muted); font-size: 0.84rem; display: block; }
     .menu-logout-btn:hover { background: rgba(248,113,113,0.12) !important; color: #fecaca !important; }
+
+    /* Deals status tabs */
+    .deals-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1rem; }
+    .deals-tab {
+      padding: 0.45rem 0.9rem; border-radius: 999px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04); color: var(--text-muted); font-size: 0.8rem;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .deals-tab.active { background: rgba(124,108,246,0.18); border-color: rgba(124,108,246,0.4); color: #e9e5ff; }
+    .deals-status-bar {
+      display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;
+      font-size: 0.82rem; color: var(--text-muted);
+    }
+    .deals-status-bar .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim);
+    }
+    .deals-status-bar.loading .dot { background: #fbbf24; box-shadow: 0 0 0 3px rgba(251,191,36,0.25); animation: pulse 1s infinite; }
+    .deals-status-bar.ready .dot { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
+    @keyframes pulse { 50% { opacity: 0.45; } }
+    .deals-email-locked {
+      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+      padding: 0.75rem 1rem; border-radius: 14px; margin-bottom: 1rem;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      font-size: 0.88rem; color: var(--text-muted);
+    }
+    .deals-email-locked strong { color: var(--text); }
 
   </style>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1599,9 +1627,9 @@
     </div>
     <button type="button" class="nav-btn" data-page="admin" id="navAdminLink" style="display:none;">Admin panel</button>
     <button type="button" class="nav-btn" data-page="login" id="menuAccountBtn">Sign in / Account</button>
-    <button type="button" class="nav-btn menu-logout-btn" id="menuLogoutBtn" style="display:none;color:#fca5a5;">Sign out</button>
     <button type="button" class="nav-btn" data-page="how">How it Works</button>
     <button type="button" class="nav-btn" data-page="contact">Contact</button>
+    <button type="button" class="nav-btn menu-logout-btn" id="menuLogoutBtn" style="display:none;color:#fca5a5;margin-top:0.5rem;border-top:1px solid var(--border);border-radius:0;padding-top:1rem;">Sign out</button>
   </div>
 
   <!-- HOME = public landing (login required for rest) -->
@@ -1952,9 +1980,9 @@
   <div class="page" id="page-login">
     <section class="section" style="padding-top:2rem;">
       <div class="auth-card">
-        <p id="loginRoleBadge" style="text-align:center;margin:0 0 0.75rem;font-size:0.85rem;color:#e8c39a;font-weight:600;"></p>
-        <h2 class="section-title">Sign in</h2>
-        <p class="section-sub" id="loginSubText">Use Google for a secure one-tap login</p>
+        <p id="loginRoleBadge" style="text-align:center;margin:0 0 0.5rem;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;color:#e8c39a;font-weight:700;"></p>
+        <h2 class="section-title" id="loginTitle" style="text-align:center;">Sign in</h2>
+        <p class="section-sub" id="loginSubText" style="text-align:center;">Use Google for a secure one-tap login</p>
 
         <div id="googleBtnWrap" style="display:flex;justify-content:center;min-height:44px;margin-bottom:0.75rem;">
           <div id="g_id_onload" data-context="signin" data-ux_mode="popup" data-auto_prompt="false"></div>
@@ -2020,22 +2048,37 @@
           <div class="form-group"><label>Instagram</label><input name="instagram" placeholder="@yourbrand or full URL"></div>
           <div class="form-group"><label>Phone / WhatsApp *</label><input name="phone" required placeholder="10-digit mobile"></div>
           <div class="form-group"><label>City</label><input name="city" placeholder="Hyderabad / Mumbai / Pan-India"></div>
-          <div class="form-group"><label>Industry / Domain</label>
-            <select name="niche">
+          <div class="form-group"><label>Industry</label>
+            <select name="niche" id="brandIndustry">
               <option value="">Select industry</option>
-              <option>Fashion &amp; Apparel</option>
-              <option>Beauty &amp; Personal Care</option>
-              <option>Food &amp; Beverage</option>
-              <option>Health &amp; Fitness</option>
-              <option>Tech &amp; Gadgets</option>
-              <option>Travel &amp; Hospitality</option>
-              <option>Education &amp; EdTech</option>
-              <option>Finance &amp; Fintech</option>
-              <option>Home &amp; Lifestyle</option>
-              <option>D2C / E-commerce</option>
-              <option>Entertainment &amp; Media</option>
+              <option>Fashion</option>
+              <option>Apparel</option>
+              <option>Beauty</option>
+              <option>Personal Care</option>
+              <option>Food</option>
+              <option>Beverage</option>
+              <option>Health</option>
+              <option>Fitness</option>
+              <option>Tech</option>
+              <option>Gadgets</option>
+              <option>Travel</option>
+              <option>Hospitality</option>
+              <option>Education</option>
+              <option>EdTech</option>
+              <option>Finance</option>
+              <option>Fintech</option>
+              <option>Home</option>
+              <option>Lifestyle</option>
+              <option>D2C</option>
+              <option>E-commerce</option>
+              <option>Entertainment</option>
+              <option>Media</option>
               <option>Other</option>
             </select>
+          </div>
+          <div class="form-group" id="brandIndustryOtherWrap" style="display:none;">
+            <label>Specify industry *</label>
+            <input type="text" name="nicheOther" id="brandIndustryOther" placeholder="e.g. Pet products, Real estate" maxlength="60">
           </div>
           <div class="form-group"><label>About the brand</label><textarea name="bio" rows="3" placeholder="What you sell, who you want to reach…"></textarea></div>
           <button type="submit" class="btn btn-primary" style="width:100%;">Save brand profile</button>
@@ -2056,12 +2099,17 @@
           <div class="form-group"><label>Phone / WhatsApp *</label><input name="phone" required placeholder="10-digit mobile"></div>
           <div class="form-group"><label>City *</label><input name="city" required placeholder="Hyderabad"></div>
           <div class="form-group"><label>Niche *</label>
-            <select name="niche" required>
+            <select name="niche" id="creatorNiche" required>
               <option value="">Select niche</option>
               <option>Fashion</option><option>Beauty</option><option>Lifestyle</option>
               <option>Food</option><option>Fitness</option><option>Tech</option>
-              <option>Travel</option><option>Parenting</option><option>Education</option><option>Other</option>
+              <option>Travel</option><option>Parenting</option><option>Education</option>
+              <option>Comedy</option><option>Gaming</option><option>UGC</option><option>Other</option>
             </select>
+          </div>
+          <div class="form-group" id="creatorNicheOtherWrap" style="display:none;">
+            <label>Your niche *</label>
+            <input type="text" name="nicheOther" id="creatorNicheOther" placeholder="Type your niche" maxlength="60">
           </div>
           <div class="form-group"><label>Followers (approx)</label><input name="followers" placeholder="e.g. 15000"></div>
           <div class="form-group"><label>Gender</label>
@@ -2164,7 +2212,7 @@
           </div>
           <div class="form-group">
             <label>Niche / skills *</label>
-            <select name="skill" required>
+            <select name="skill" id="joinSkill" required>
               <option value="">Select niche</option>
               <option>Fashion</option>
               <option>Beauty</option>
@@ -2187,7 +2235,12 @@
               <option>UGC</option>
               <option>Video Editing</option>
               <option>Lifestyle</option>
+              <option>Other</option>
             </select>
+          </div>
+          <div class="form-group" id="joinSkillOtherWrap" style="display:none;">
+            <label>Your niche *</label>
+            <input type="text" name="skillOther" id="joinSkillOther" placeholder="e.g. Pet care, Finance tips, Vlogging" maxlength="60">
           </div>
           <div class="form-group">
             <label>Monthly income (INR)</label>
@@ -2264,40 +2317,53 @@
   <div class="page" id="page-deals">
     <section class="section" style="padding-top:2rem;">
       <h2 class="section-title">My Deals</h2>
-      <p class="section-sub">Live status for brand, creator &amp; Connectly. Pay via UPI to Connectly — after approval, Connectly pays the creator.</p>
-      <div class="card" style="max-width:520px;margin-bottom:1.25rem;">
-        <div class="card-body">
-          <div class="form-group" style="margin-bottom:0.75rem;">
-            <label>Your email</label>
-            <input type="email" id="dealsEmail" placeholder="brand or creator email">
-          </div>
-          <button type="button" class="btn btn-primary" id="dealsLoadBtn">Load my deals</button>
-          <p style="font-size:0.78rem;color:var(--text-muted);margin:0.65rem 0 0;">Enter the email you used on Connectly (brand or creator).</p>
-        </div>
+      <p class="section-sub">Live collaboration status · Pay Connectly via UPI · Connectly pays the creator after approval.</p>
+      <div class="deals-email-locked" id="dealsEmailBar">
+        <span>Signed in as</span> <strong id="dealsEmailLabel">—</strong>
+        <button type="button" class="btn btn-outline btn-sm" id="dealsRefreshBtn" style="margin-left:auto;">Refresh</button>
       </div>
+      <div class="deals-status-bar" id="dealsStatusBar"><span class="dot"></span><span id="dealsStatusText">Ready</span></div>
+      <div class="deals-tabs" id="dealsTabs">
+        <button type="button" class="deals-tab active" data-deal-filter="all">All</button>
+        <button type="button" class="deals-tab" data-deal-filter="pending">Pending</button>
+        <button type="button" class="deals-tab" data-deal-filter="active">Active</button>
+        <button type="button" class="deals-tab" data-deal-filter="payment">Payment</button>
+        <button type="button" class="deals-tab" data-deal-filter="closed">Closed</button>
+      </div>
+      <!-- Hidden email field kept for admin/ops override -->
+      <input type="hidden" id="dealsEmail" value="">
       <div id="dealsList"></div>
     </section>
   </div>
 
 
   <div class="page" id="page-contact">
-    <section class="section">
-      <h2 class="section-title">Contact Us</h2>
-      <p class="section-sub">Have questions? Reach out anytime.</p>
-      <div class="form-card">
-        <div class="form-group">
-          <label>Name</label>
-          <input type="text" placeholder="Your name">
+    <section class="section" style="padding-top:2rem;">
+      <div style="max-width:640px;margin:0 auto;">
+        <h2 class="section-title" style="text-align:center;">Contact Connectly</h2>
+        <p class="section-sub" style="text-align:center;">Questions about deals, payments, or joining? We reply within 24 hours.</p>
+        <div class="form-card" style="margin-bottom:1.5rem;">
+          <div style="display:grid;gap:0.75rem;margin-bottom:1.25rem;font-size:0.9rem;color:var(--text-muted);">
+            <div><strong style="color:var(--text);">About Connectly</strong><br>India’s influencer–brand marketplace. Brands find creators, run safe deals, and pay via Connectly UPI so both sides stay protected.</div>
+            <div><strong style="color:var(--text);">Email</strong><br>kalyankris92@gmail.com</div>
+            <div><strong style="color:var(--text);">WhatsApp</strong><br>+91 91777 91543</div>
+          </div>
+          <form id="contactForm">
+            <div class="form-group">
+              <label>Name *</label>
+              <input type="text" name="name" required placeholder="Your name" autocomplete="name">
+            </div>
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" name="email" required placeholder="you@example.com" autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label>Message *</label>
+              <textarea name="message" required rows="4" placeholder="How can we help?"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" id="contactSubmitBtn" style="width:100%;">Send message</button>
+          </form>
         </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" placeholder="you@example.com">
-        </div>
-        <div class="form-group">
-          <label>Message</label>
-          <textarea placeholder="How can we help?"></textarea>
-        </div>
-        <button type="button" class="btn btn-primary" style="width:100%;" onclick="alert('Message sent! (demo)')">Send Message</button>
       </div>
     </section>
   </div>
@@ -3002,7 +3068,7 @@
       if (!document.getElementById("page-" + pageId)) pageId = "home";
 
       // Public pages only before login
-      const PUBLIC = { home:1, login:1, how:1, contact:1 };
+      const PUBLIC = { home:1, login:1, how:1, contact:1, join:1 };
       const s = (typeof getSession === "function") ? getSession() : null;
       if (!s && !PUBLIC[pageId]) {
         try { sessionStorage.setItem("cnt_after_login", pageId); } catch(_){}
@@ -3016,9 +3082,9 @@
           // Already chose role — never show "I'm a Creator / Brand" again
           pageId = s.profileComplete
             ? (s.role === "brand" ? "brandhome" : "creators")
-            : (s.role === "brand" ? "brand-profile" : "creator-profile");
+            : (s.role === "brand" ? "brand-profile" : "join");
         } else if (s.role && !s.profileComplete) {
-          const need = s.role === "brand" ? "brand-profile" : "creator-profile";
+          const need = s.role === "brand" ? "brand-profile" : "join";
           if (pageId !== need && pageId !== "login" && pageId !== "home") pageId = need;
         }
       }
@@ -3029,16 +3095,23 @@
       if (pageId === "creators" || pageId === "brandhome" || pageId === "home") setTimeout(updateDashboardStats, 60);
       if (pageId === "deals") {
         const de = document.getElementById("dealsEmail");
-        if (s && de && !de.value) de.value = s.email;
-        if (s && isAdminEmail(s.email) && de) de.value = ADMIN_EMAIL;
+        if (s && de) {
+          de.value = isAdminEmail(s.email) ? (de.value || ADMIN_EMAIL) : s.email;
+        }
+        setTimeout(() => loadMyDeals({ silent: false }), 80);
       }
       if (pageId === "login" || pageId === "admin" || pageId === "home") refreshAuthUI();
+      if (pageId === "creator-profile") setTimeout(prefillCreatorProfile, 40);
+      if (pageId === "join") setTimeout(prefillJoinFromSession, 40);
+      if (pageId === "brand-profile") setTimeout(prefillBrandProfile, 40);
       if (pageId === "login") {
         const intent = sessionStorage.getItem("cnt_intent") || "";
         const hi = document.getElementById("loginIntent");
         if (hi && intent) hi.value = intent;
         const badge = document.getElementById("loginRoleBadge");
-        if (badge) badge.textContent = intent === "brand" ? "Signing in as Brand" : (intent === "creator" ? "Signing in as Creator" : "Sign in to Connectly");
+        if (badge) badge.textContent = intent === "brand" ? "Brand account" : (intent === "creator" ? "Creator account" : "Connectly");
+        const titleEl = document.getElementById("loginTitle");
+        if (titleEl) titleEl.textContent = intent === "brand" ? "Sign in as Brand" : (intent === "creator" ? "Sign in as Creator" : "Sign in");
         setTimeout(initGoogleSignIn, 200);
       }
       // hide nav tools when logged out
@@ -3213,14 +3286,26 @@
         refreshAuthUI();
         return;
       }
-      localStorage.setItem(SESSION_KEY, JSON.stringify({
+      const payload = {
         email: String(user.email).toLowerCase(),
         role: user.role || "",
         displayName: user.displayName || user.name || "",
         brandName: user.brandName || "",
         picture: user.picture || "",
-        profileComplete: !!user.profileComplete
-      }));
+        profileComplete: !!user.profileComplete,
+        _user: {
+          instagram: user.instagram || "",
+          phone: user.phone || "",
+          city: user.city || "",
+          niche: user.niche || "",
+          followers: user.followers || "",
+          gender: user.gender || "",
+          charges: user.charges || "",
+          bio: user.bio || "",
+          website: user.website || ""
+        }
+      };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
       refreshAuthUI();
     }
     function refreshAuthUI() {
@@ -3235,9 +3320,20 @@
       if (menuLogout) menuLogout.style.display = s ? "block" : "none";
       if (menuAccount) {
         if (s) {
-          menuAccount.textContent = "Account · " + (s.brandName || s.displayName || s.email.split("@")[0]);
+          const nm = s.brandName || s.displayName || s.email.split("@")[0];
+          menuAccount.textContent = "My profile · " + nm;
+          if (isAdminEmail(s.email)) {
+            menuAccount.setAttribute("data-page", "admin");
+          } else if (s.role === "brand") {
+            menuAccount.setAttribute("data-page", "brand-profile");
+          } else if (s.role === "creator") {
+            menuAccount.setAttribute("data-page", "join");
+          } else {
+            menuAccount.setAttribute("data-page", "role");
+          }
         } else {
-          menuAccount.textContent = "Sign in / Account";
+          menuAccount.textContent = "Sign in";
+          menuAccount.setAttribute("data-page", "login");
         }
       }
       if (adminLink) adminLink.style.display = (s && isAdminEmail(s.email)) ? "block" : "none";
@@ -3249,8 +3345,12 @@
           btn.innerHTML = (s.picture ? `<img src="${esc(s.picture)}" alt="">` : "") + esc(label);
           if (isAdminEmail(s.email)) {
             btn.setAttribute("data-page", "admin");
+          } else if (!s.role) {
+            btn.setAttribute("data-page", "role");
+          } else if (s.role === "brand") {
+            btn.setAttribute("data-page", "brand-profile");
           } else {
-            btn.setAttribute("data-page", s.profileComplete ? (s.role === "brand" ? "brandhome" : "creators") : (s.role ? (s.role === "brand" ? "brand-profile" : "creator-profile") : "role"));
+            btn.setAttribute("data-page", "join");
           }
         } else {
           btn.textContent = "Sign in";
@@ -3313,7 +3413,7 @@
       setSession(user);
       try { loadServerShortlist(); } catch (_) {}
       if (!user.role) showPage("role");
-      else if (!user.profileComplete) showPage(user.role === "brand" ? "brand-profile" : "creator-profile");
+      else if (!user.profileComplete) showPage(user.role === "brand" ? "brand-profile" : "join");
       else showPage(user.role === "brand" ? "brandhome" : "creators");
     }
 
@@ -3373,13 +3473,109 @@
       const hi = document.getElementById("loginIntent");
       if (hi) hi.value = role;
       const badge = document.getElementById("loginRoleBadge");
-      if (badge) badge.textContent = role === "brand" ? "Signing in as Brand" : "Signing in as Creator";
+      if (badge) badge.textContent = role === "brand" ? "Brand account" : "Creator account";
+      const title = document.getElementById("loginTitle");
+      if (title) title.textContent = role === "brand" ? "Sign in as Brand" : "Sign in as Creator";
       const sub = document.getElementById("loginSubText");
       if (sub) sub.textContent = role === "brand"
-        ? "After login, complete your brand profile"
-        : "After login, complete your creator profile";
+        ? "After login, complete your brand profile to find creators"
+        : "After login, complete your creator profile to get discovered";
       showPage("login");
       setTimeout(initGoogleSignIn, 300);
+    }
+
+
+
+    function prefillJoinFromSession() {
+      const s = getSession();
+      const form = document.getElementById("joinForm");
+      if (!form || !s) return;
+      const set = (name, val) => {
+        const el = form.elements.namedItem(name);
+        if (el && val != null && String(val).trim() !== "") el.value = val;
+      };
+      set("email", s.email || "");
+      set("name", s.displayName || "");
+      const u = s._user || {};
+      set("phone", u.phone || "");
+      set("instagram", u.instagram || "");
+      set("city", u.city || "");
+      set("gender", u.gender || "");
+      if (u.niche) {
+        const skill = form.elements.namedItem("skill");
+        if (skill) {
+          const opts = Array.from(skill.options).map(o => o.value);
+          if (opts.includes(u.niche)) skill.value = u.niche;
+          else {
+            skill.value = "Other";
+            const wrap = document.getElementById("joinSkillOtherWrap");
+            const other = document.getElementById("joinSkillOther");
+            if (wrap) wrap.style.display = "block";
+            if (other) { other.required = true; other.value = u.niche; }
+          }
+        }
+      }
+      // Edit mode title
+      const title = document.querySelector("#page-join .section-title");
+      const sub = document.querySelector("#page-join .section-sub");
+      if (s.role === "creator" && s.profileComplete) {
+        if (title) title.textContent = "Edit your creator profile";
+        if (sub) sub.textContent = "Update your details — changes save to Connectly and the marketplace listing.";
+        const btn = document.getElementById("joinSubmitBtn");
+        if (btn) btn.textContent = "Save changes →";
+      }
+    }
+
+    function prefillCreatorProfile() {
+      const s = getSession();
+      if (!s) return;
+      const form = document.getElementById("creatorProfileForm");
+      if (!form) return;
+      const set = (name, val) => {
+        const el = form.elements.namedItem(name);
+        if (el && val != null && val !== "") el.value = val;
+      };
+      set("displayName", s.displayName || "");
+      // rest filled from server user if available
+      try {
+        const u = s._user || {};
+        set("instagram", u.instagram || "");
+        set("phone", u.phone || "");
+        set("city", u.city || "");
+        set("niche", u.niche || "");
+        set("followers", u.followers || "");
+        set("gender", u.gender || "");
+        set("charges", u.charges || "");
+        set("bio", u.bio || "");
+        if (u.niche && !["Fashion","Beauty","Lifestyle","Food","Fitness","Tech","Travel","Parenting","Education","Comedy","Gaming","UGC","Other"].includes(u.niche)) {
+          set("niche", "Other");
+          const wrap = document.getElementById("creatorNicheOtherWrap");
+          const other = document.getElementById("creatorNicheOther");
+          if (wrap) wrap.style.display = "block";
+          if (other) { other.required = true; other.value = u.niche; }
+        }
+      } catch (_) {}
+    }
+    function prefillBrandProfile() {
+      const s = getSession();
+      if (!s) return;
+      const form = document.getElementById("brandProfileForm");
+      if (!form) return;
+      const set = (name, val) => {
+        const el = form.elements.namedItem(name);
+        if (el && val != null && val !== "") el.value = val;
+      };
+      set("brandName", s.brandName || "");
+      set("displayName", s.displayName || "");
+      try {
+        const u = s._user || {};
+        set("website", u.website || "");
+        set("instagram", u.instagram || "");
+        set("phone", u.phone || "");
+        set("city", u.city || "");
+        set("niche", u.niche || "");
+        set("bio", u.bio || "");
+      } catch (_) {}
     }
 
     function showToast(title, msg, variant) {
@@ -3390,9 +3586,10 @@
       if (t) t.textContent = title || "Saved";
       if (m) m.textContent = msg || "";
       el.classList.toggle("toast-brand", variant === "brand");
+      el.classList.toggle("toast-error", variant === "error");
       el.classList.add("show");
       clearTimeout(showToast._timer);
-      showToast._timer = setTimeout(() => el.classList.remove("show"), 3200);
+      showToast._timer = setTimeout(() => el.classList.remove("show"), 5500);
     }
 
     function doLogout() {
@@ -3481,7 +3678,7 @@
       try {
         await apiPost({ action: "auth_profile", email: s.email, role, displayName: s.displayName });
       } catch (_) {}
-      showPage(role === "brand" ? "brand-profile" : "creator-profile");
+      showPage(role === "brand" ? "brand-profile" : "join");
     }
 
     async function submitBrandProfile(e) {
@@ -3489,6 +3686,14 @@
       const s = getSession();
       if (!s) { showPage("login"); return; }
       const fd = new FormData(e.target);
+      let niche = String(fd.get("niche") || "").trim();
+      if (niche === "Other") {
+        niche = String(fd.get("nicheOther") || "").trim();
+        if (!niche) {
+          showToast("Industry required", "Please type your industry.", "error");
+          return;
+        }
+      }
       const body = {
         action: "auth_profile",
         email: s.email,
@@ -3499,10 +3704,20 @@
         instagram: fd.get("instagram"),
         phone: fd.get("phone"),
         city: fd.get("city"),
-        niche: fd.get("niche"),
+        niche: niche,
         bio: fd.get("bio")
       };
-      try { await apiPost(body); } catch (_) {}
+      const btn = e.target.querySelector('[type="submit"]');
+      if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
+      try {
+        const data = await apiPost(body, 12000);
+        if (data && data.ok === false) throw new Error(data.error || "fail");
+      } catch (err) {
+        console.warn(err);
+        showToast("Could not save", "Try again in a moment.", "error");
+        if (btn) { btn.disabled = false; btn.textContent = "Save brand profile"; }
+        return;
+      }
       setSession(Object.assign({}, s, {
         role: "brand",
         brandName: body.brandName,
@@ -3510,6 +3725,7 @@
         profileComplete: true
       }));
       showToast("Brand profile saved", "You're ready to find creators and post campaigns.", "brand");
+      if (btn) { btn.disabled = false; btn.textContent = "Save brand profile"; }
       showPage("brandhome");
     }
 
@@ -3518,6 +3734,14 @@
       const s = getSession();
       if (!s) { showPage("login"); return; }
       const fd = new FormData(e.target);
+      let niche = String(fd.get("niche") || "").trim();
+      if (niche === "Other") {
+        niche = String(fd.get("nicheOther") || "").trim();
+        if (!niche) {
+          showToast("Niche required", "Please type your niche.", "error");
+          return;
+        }
+      }
       const body = {
         action: "auth_profile",
         email: s.email,
@@ -3526,22 +3750,34 @@
         instagram: fd.get("instagram"),
         phone: fd.get("phone"),
         city: fd.get("city"),
-        niche: fd.get("niche"),
+        niche: niche,
         followers: fd.get("followers"),
         gender: fd.get("gender"),
         charges: fd.get("charges"),
         bio: fd.get("bio")
       };
-      try { await apiPost(body); } catch (_) {}
+      const btn = e.target.querySelector('[type="submit"]');
+      if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
+      try {
+        const data = await apiPost(body, 12000);
+        if (data && data.ok === false) throw new Error(data.error || "fail");
+      } catch (err) {
+        console.warn(err);
+        showToast("Could not save", "Try again in a moment.", "error");
+        if (btn) { btn.disabled = false; btn.textContent = "Save creator profile"; }
+        return;
+      }
       setSession(Object.assign({}, s, {
         role: "creator",
         displayName: body.displayName,
         profileComplete: true
       }));
-      showToast("Creator profile saved", "Brands can now discover you on Connectly.");
+      showToast("Profile updated", "Your creator details are saved. Brands can find you on Connectly.");
+      if (btn) { btn.disabled = false; btn.textContent = "Save creator profile"; }
       showPage("creators");
       try { loadLiveData(true, true); } catch (_) {}
     }
+
 
     // Realtime shortlist (server when logged in)
     async function loadServerShortlist() {
@@ -4216,19 +4452,27 @@
     const joinError = document.getElementById("joinError");
     const joinSubmitBtn = document.getElementById("joinSubmitBtn");
 
-    // Show "Other city" text field when needed
-    document.getElementById("joinCity")?.addEventListener("change", (e) => {
-      const wrap = document.getElementById("joinCityOtherWrap");
-      const other = document.getElementById("joinCityOther");
-      if (e.target.value === "Other") {
-        wrap.style.display = "block";
-        other.required = true;
-      } else {
-        wrap.style.display = "none";
-        other.required = false;
-        other.value = "";
-      }
-    });
+    // Show "Other city / niche" fields when needed
+    function wireOtherSelect(selectId, wrapId, inputId) {
+      const sel = document.getElementById(selectId);
+      const wrap = document.getElementById(wrapId);
+      const other = document.getElementById(inputId);
+      if (!sel || !wrap || !other) return;
+      sel.addEventListener("change", () => {
+        if (sel.value === "Other") {
+          wrap.style.display = "block";
+          other.required = true;
+        } else {
+          wrap.style.display = "none";
+          other.required = false;
+          other.value = "";
+        }
+      });
+    }
+    wireOtherSelect("joinCity", "joinCityOtherWrap", "joinCityOther");
+    wireOtherSelect("joinSkill", "joinSkillOtherWrap", "joinSkillOther");
+    wireOtherSelect("creatorNiche", "creatorNicheOtherWrap", "creatorNicheOther");
+    wireOtherSelect("brandIndustry", "brandIndustryOtherWrap", "brandIndustryOther");
 
     if (joinForm) {
       joinForm.addEventListener("submit", async (e) => {
@@ -4257,8 +4501,21 @@
         let cityVal = (fd.get("city") || "").toString().trim();
         if (cityVal === "Other") {
           cityVal = (fd.get("cityOther") || "").toString().trim();
+          if (!cityVal) {
+            showToast("City required", "Please type your city name.", "error");
+            return;
+          }
         }
-        cityVal = cleanCity(cityVal); // normalize before save
+        cityVal = cleanCity(cityVal);
+        let skillVal = (fd.get("skill") || "").toString().trim();
+        if (skillVal === "Other") {
+          skillVal = (fd.get("skillOther") || "").toString().trim();
+          if (!skillVal) {
+            showToast("Niche required", "Please type your niche.", "error");
+            document.getElementById("joinSkillOther")?.focus();
+            return;
+          }
+        }
         const payload = {
           action: "join",
           token: SITE_TOKEN,
@@ -4268,10 +4525,10 @@
           email: (fd.get("email") || "").toString().trim(),
           phone: (fd.get("phone") || "").toString().trim(),
           city: cityVal,
-          instagram: (fd.get("instagram") || "").toString().trim(),
           followers: (fd.get("followers") || "").toString().trim(),
-          skill: (fd.get("skill") || "").toString().trim(),
+          skill: skillVal,
           income: (fd.get("income") || "").toString().trim(),
+          instagram: (fd.get("instagram") || "").toString().trim(),
           working: (fd.get("working") || "").toString().trim(),
           charges: chargesText
         };
@@ -4280,23 +4537,47 @@
         joinSubmitBtn.textContent = "Submitting…";
         joinError.style.display = "none";
 
-        const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
-        if (!url) {
-          joinError.style.display = "block";
-          joinSubmitBtn.disabled = false;
-          joinSubmitBtn.textContent = "Submit & Get Listed →";
-          return;
-        }
         try {
-          await fetch(url, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload)
-          });
+          const data = await apiPost(payload, 15000);
+          if (!data || data.ok === false) {
+            throw new Error((data && data.error) || "save_failed");
+          }
           joinForm.style.display = "none";
           joinSuccess.style.display = "block";
           joinError.style.display = "none";
+          showToast("You're listed!", "Brands can now discover your profile on Connectly.");
+          try {
+            const s = getSession();
+            if (s && s.email) {
+              await apiPost({
+                action: "auth_profile",
+                email: s.email,
+                role: "creator",
+                displayName: payload.name,
+                instagram: payload.instagram,
+                phone: payload.phone,
+                city: payload.city,
+                niche: payload.skill,
+                followers: payload.followers,
+                gender: payload.gender,
+                charges: payload.charges
+              }, 10000);
+              setSession(Object.assign({}, s, {
+                role: "creator",
+                displayName: payload.name,
+                profileComplete: true,
+                _user: {
+                  instagram: payload.instagram,
+                  phone: payload.phone,
+                  city: payload.city,
+                  niche: payload.skill,
+                  followers: payload.followers,
+                  gender: payload.gender,
+                  charges: payload.charges
+                }
+              }));
+            }
+          } catch (_) {}
           try {
             const local = {
               name: payload.name,
@@ -4323,6 +4604,7 @@
           joinError.style.display = "block";
           joinSubmitBtn.disabled = false;
           joinSubmitBtn.textContent = "Submit & Get Listed →";
+          showToast("Could not save", "Check your connection and try again.", "error");
         }
       });
     }
@@ -4332,6 +4614,40 @@
       joinForm.style.display = "block";
       joinSubmitBtn.disabled = false;
       joinSubmitBtn.textContent = "Submit & Get Listed →";
+    });
+
+
+    // Contact form → backend email to ops
+    document.getElementById("contactForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const name = String(fd.get("name") || "").trim();
+      const email = String(fd.get("email") || "").trim();
+      const message = String(fd.get("message") || "").trim();
+      if (!name || !email || !message) {
+        showToast("Missing fields", "Please fill name, email and message.", "error");
+        return;
+      }
+      const btn = document.getElementById("contactSubmitBtn");
+      if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
+      try {
+        const data = await apiPost({
+          action: "contact",
+          name, email, message,
+          to: "kalyankris92@gmail.com"
+        }, 12000);
+        if (data && data.ok === false) throw new Error(data.error || "fail");
+        e.target.reset();
+        showToast("Message sent", "Thanks — Connectly will reply to " + email + " soon.");
+      } catch (err) {
+        console.warn(err);
+        // Fallback: open mailto so user can still reach us
+        const subject = encodeURIComponent("Connectly contact from " + name);
+        const body = encodeURIComponent(message + "\n\n— " + name + " <" + email + ">");
+        window.location.href = "mailto:kalyankris92@gmail.com?subject=" + subject + "&body=" + body;
+        showToast("Opening email app", "If nothing opens, write to kalyankris92@gmail.com");
+      }
+      if (btn) { btn.disabled = false; btn.textContent = "Send message"; }
     });
 
     document.getElementById("searchInput").addEventListener("input", (e) => {
@@ -4559,20 +4875,107 @@
       </div>`;
     }
 
+    let __dealsCache = [];
+    let __dealsFilter = "all";
+
+    function dealBucket(st) {
+      st = String(st || "");
+      if (/Rejected|Declined|Complete|CreatorReceived/i.test(st)) return "closed";
+      if (/Proposed/i.test(st)) return "pending";
+      if (/BrandPaid|PlatformReceived|Paid|Payment/i.test(st)) return "payment";
+      if (/Accepted|Submitted|Approved|Advance/i.test(st)) return "active";
+      return "active";
+    }
+
+    function setDealsStatus(mode, text) {
+      const bar = document.getElementById("dealsStatusBar");
+      const t = document.getElementById("dealsStatusText");
+      if (bar) {
+        bar.classList.remove("loading", "ready");
+        if (mode) bar.classList.add(mode);
+      }
+      if (t) t.textContent = text || "";
+    }
+
+    function renderDealsList() {
+      const box = document.getElementById("dealsList");
+      if (!box) return;
+      let deals = __dealsCache.slice();
+      if (__dealsFilter !== "all") {
+        deals = deals.filter(d => dealBucket(d.status) === __dealsFilter);
+      }
+      if (!deals.length) {
+        box.innerHTML = '<p class="section-sub" style="padding:1.5rem 0;text-align:center;">No deals in this category yet.</p>';
+        return;
+      }
+      const openIds = new Set();
+      box.querySelectorAll(".deal-card.expanded[data-deal-id]").forEach(el => openIds.add(el.getAttribute("data-deal-id")));
+      box.innerHTML = deals.map(d => dealCardHTML(d, openIds.has(String(d.dealId)))).join("");
+      box.querySelectorAll("[data-deal-action]").forEach(btn => {
+        btn.addEventListener("click", () => runDealAction(btn));
+      });
+      box.querySelectorAll("[data-deal-send-msg]").forEach(btn => {
+        btn.addEventListener("click", () => sendDealMessage(btn));
+      });
+      box.querySelectorAll("[data-deal-save-edit]").forEach(btn => {
+        btn.addEventListener("click", () => saveDealEdit(btn));
+      });
+      box.querySelectorAll("[data-deal-toggle]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const card = btn.closest(".deal-card");
+          if (card) card.classList.toggle("expanded");
+        });
+      });
+    }
+
     async function loadMyDeals(opts) {
       opts = opts || {};
       const silent = !!opts.silent;
-      const email = (document.getElementById("dealsEmail")?.value || "").trim();
+      const s = getSession();
+      const emailInput = document.getElementById("dealsEmail");
+      let email = (emailInput?.value || "").trim().toLowerCase();
+
+      // Always prefer session email; only admin can view other emails
+      if (s && s.email) {
+        if (!isAdminEmail(s.email)) {
+          email = s.email.toLowerCase();
+          if (emailInput) emailInput.value = email;
+        } else if (!email) {
+          email = s.email.toLowerCase();
+          if (emailInput) emailInput.value = email;
+        }
+      }
+
+      const label = document.getElementById("dealsEmailLabel");
+      if (label) label.textContent = email || "—";
+
       const box = document.getElementById("dealsList");
       if (!box) return;
+
       if (!email || email.indexOf("@") < 0) {
-        if (!silent) alert("Enter a valid email");
+        setDealsStatus("", "Sign in to see your deals");
+        box.innerHTML = '<p class="section-sub" style="text-align:center;padding:1.5rem 0;">Sign in with the email used on Connectly to load your deals.</p>';
         return;
       }
-      if (!silent) box.innerHTML = '<p class="section-sub">Loading deals…</p>';
-      else box.style.opacity = "0.65";
+
+      // Security: non-admin cannot load someone else's deals
+      if (s && s.email && !isAdminEmail(s.email) && email !== s.email.toLowerCase()) {
+        setDealsStatus("", "Wrong email");
+        box.innerHTML = '<p class="section-sub" style="text-align:center;padding:1.5rem 0;color:#fca5a5;">That email is not yours. Deals only load for the account you signed in with.</p>';
+        showToast("Wrong email", "Use your own Connectly login email.", "error");
+        return;
+      }
+
+      if (!silent) {
+        setDealsStatus("loading", "Loading your deals…");
+        box.innerHTML = '<p class="section-sub" style="text-align:center;padding:1.5rem 0;">Loading deals…</p>';
+      } else {
+        box.style.opacity = "0.65";
+      }
+
       const base = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
       if (!base) {
+        setDealsStatus("", "Backend missing");
         box.innerHTML = '<p class="section-sub">Backend URL missing.</p>';
         return;
       }
@@ -4581,39 +4984,25 @@
         const res = await fetch(url);
         const data = await res.json();
         const deals = (data && data.deals) || [];
-        if (!deals.length) {
-          box.innerHTML = '<p class="section-sub">No deals for this email yet.</p>';
-          box.style.opacity = "1";
-          return;
-        }
+        __dealsCache = deals;
         window.__lastDealsEmail = email;
         if (deals[0] && deals[0].connectlyUpi) window.__lastDealsUpi = deals[0].connectlyUpi;
-        // restore which cards were expanded
-        const openIds = new Set();
-        box.querySelectorAll(".deal-card.expanded[data-deal-id]").forEach(el => openIds.add(el.getAttribute("data-deal-id")));
-        box.innerHTML = deals.map(d => dealCardHTML(d, openIds.has(String(d.dealId)))).join("");
         box.style.opacity = "1";
-        box.querySelectorAll("[data-deal-action]").forEach(btn => {
-          btn.addEventListener("click", () => runDealAction(btn));
-        });
-        box.querySelectorAll("[data-deal-send-msg]").forEach(btn => {
-          btn.addEventListener("click", () => sendDealMessage(btn));
-        });
-        box.querySelectorAll("[data-deal-save-edit]").forEach(btn => {
-          btn.addEventListener("click", () => saveDealEdit(btn));
-        });
-        box.querySelectorAll("[data-deal-toggle]").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const card = btn.closest(".deal-card");
-            if (card) card.classList.toggle("expanded");
-          });
-        });
+        if (!deals.length) {
+          setDealsStatus("ready", "No deals yet");
+          box.innerHTML = '<p class="section-sub" style="text-align:center;padding:1.5rem 0;">No deals for your account yet. When a brand invites you (or you invite a creator), deals appear here.</p>';
+          return;
+        }
+        setDealsStatus("ready", deals.length + " deal" + (deals.length === 1 ? "" : "s") + " loaded");
+        renderDealsList();
       } catch (err) {
         console.error(err);
         box.style.opacity = "1";
-        if (!silent) box.innerHTML = '<p class="section-sub">Could not load deals. Redeploy Apps Script, then try again.</p>';
+        setDealsStatus("", "Could not load");
+        if (!silent) box.innerHTML = '<p class="section-sub" style="text-align:center;color:#fca5a5;">Could not load deals. Check connection and tap Refresh.</p>';
       }
     }
+
 
     function statusLabel(st, role, d) {
       const paid = d && /yes/i.test(String(d.platformPaid || ""));
@@ -4944,7 +5333,15 @@
       setTimeout(() => loadMyDeals({ silent: true }), 800);
     }
 
-    document.getElementById("dealsLoadBtn")?.addEventListener("click", loadMyDeals);
+    document.getElementById("dealsRefreshBtn")?.addEventListener("click", () => loadMyDeals({ silent: false }));
+    document.querySelectorAll("[data-deal-filter]").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll("[data-deal-filter]").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        __dealsFilter = tab.getAttribute("data-deal-filter") || "all";
+        renderDealsList();
+      });
+    });
 
     document.getElementById("loginContinueBtn")?.addEventListener("click", () => landLogin());
     document.getElementById("landPickCreator")?.addEventListener("click", () => goLoginWithIntent("creator"));
