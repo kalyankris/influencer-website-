@@ -1298,6 +1298,89 @@
       display: inline-block;
     }
 
+  
+    .deal-card .deal-body { display: none; margin-top: 0.75rem; }
+    .deal-card.expanded .deal-body { display: block; }
+    .deal-toggle {
+      margin-top: 0.65rem; width: 100%;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 0.82rem; font-weight: 600;
+      padding: 0.55rem 0.85rem; border-radius: 12px; cursor: pointer; font-family: inherit;
+    }
+    .deal-toggle:hover { color: var(--text); border-color: var(--border-strong); }
+    .deal-card.expanded .deal-toggle-open { display: none; }
+    .deal-card:not(.expanded) .deal-toggle-close { display: none; }
+    .deal-chip-deliv {
+      color: #fdba74 !important; border-color: rgba(251,146,60,0.35) !important;
+      background: rgba(251,146,60,0.1) !important; font-weight: 600;
+    }
+    .deal-brief-preview {
+      color: var(--text-muted); font-size: 0.86rem; margin: 0.35rem 0 0;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .deal-card.expanded .deal-brief-preview { display: none; }
+    .deal-section-label { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin: 0.85rem 0 0.35rem; }
+    .deal-id-line { font-size: 0.72rem; color: var(--text-muted); margin: 0.75rem 0 0; }
+
+  
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin: 0 auto 0.5rem;
+    }
+    @media (max-width: 560px) {
+      .dash-grid { grid-template-columns: 1fr; }
+    }
+    .dash-card {
+      text-align: center;
+      padding: 1rem 0.75rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+    .dash-num {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #fff7ed;
+      line-height: 1.15;
+    }
+    .dash-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+    .hub-tip {
+      margin: 1.5rem auto 0;
+      max-width: 480px;
+      padding: 0.85rem 1rem;
+      border-radius: 14px;
+      border: 1px solid rgba(232,195,154,0.22);
+      background: rgba(232,195,154,0.06);
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      text-align: left;
+    }
+    .hub-tip strong { color: #e8c39a; }
+    .btn-save-short {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.42rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-save-short.saved {
+      border-color: rgba(251,146,60,0.45);
+      color: #fdba74;
+      background: rgba(251,146,60,0.12);
+    }
+
   </style>
 </head>
 <body>
@@ -1334,6 +1417,7 @@
         <button type="button" class="nav-btn" data-page="brands">Post a Campaign</button>
         <button type="button" class="nav-btn" data-page="campaigns">See Open Campaigns</button>
         <button type="button" class="nav-btn" data-page="deals">My Deals</button>
+        <button type="button" class="nav-btn" data-page="shortlist">Shortlist</button>
       </div>
     </div>
     <button type="button" class="nav-btn" data-page="how">How it Works</button>
@@ -1384,25 +1468,61 @@
 
   <!-- INFLUENCER HUB -->
   <div class="page" id="page-creators">
-    <section class="section" style="padding-top:2.2rem;text-align:center;max-width:520px;">
-      <h2 class="section-title">Influencers</h2>
-      <p class="section-sub">Two things you can do here</p>
-      <div class="hub-actions">
-        <button type="button" class="btn btn-creator" data-page="join">Register / Join directory</button>
-        <button type="button" class="btn btn-outline-creator" data-page="campaigns">Check open campaigns</button>
+    <section class="section" style="padding-top:2rem;max-width:720px;">
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <h2 class="section-title">Influencer home</h2>
+        <p class="section-sub" style="margin-bottom:0;">Your dashboard for campaigns &amp; deals</p>
+      </div>
+      <div class="dash-grid" id="creatorDashStats">
+        <div class="dash-card"><div class="dash-num" id="dashOpenCampaigns">—</div><div class="dash-label">Open campaigns</div></div>
+        <div class="dash-card"><div class="dash-num" id="dashCreatorsListed">—</div><div class="dash-label">Creators listed</div></div>
+        <div class="dash-card"><div class="dash-num" id="dashCreatorDeals">—</div><div class="dash-label">My deals (check email)</div></div>
+      </div>
+      <div class="hub-actions" style="max-width:480px;margin:1.5rem auto 0;">
+        <button type="button" class="btn btn-creator" data-page="deals">My Deals</button>
+        <button type="button" class="btn btn-outline-creator" data-page="campaigns">Open campaigns</button>
+        <button type="button" class="btn btn-outline-creator" data-page="join">Register / Join directory</button>
+      </div>
+      <div class="hub-tip">
+        <strong>Tip:</strong> After a brand invites you, open <em>My Deals</em>, enter your email, accept the deal, then upload your work link.
       </div>
     </section>
   </div>
 
   <!-- BRAND HUB -->
   <div class="page" id="page-brandhome">
-    <section class="section" style="padding-top:2.2rem;text-align:center;max-width:520px;">
-      <h2 class="section-title">Brands</h2>
-      <p class="section-sub">Two things you can do here</p>
-      <div class="hub-actions">
-        <button type="button" class="btn btn-primary" data-page="discover">Find influencers</button>
+    <section class="section" style="padding-top:2rem;max-width:720px;">
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <h2 class="section-title">Brand home</h2>
+        <p class="section-sub" style="margin-bottom:0;">Find creators, run campaigns, manage deals</p>
+      </div>
+      <div class="dash-grid" id="brandDashStats">
+        <div class="dash-card"><div class="dash-num" id="dashBrandCreators">—</div><div class="dash-label">Creators available</div></div>
+        <div class="dash-card"><div class="dash-num" id="dashBrandCampaigns">—</div><div class="dash-label">Open campaigns</div></div>
+        <div class="dash-card"><div class="dash-num" id="dashShortlistCount">0</div><div class="dash-label">Saved shortlist</div></div>
+      </div>
+      <div class="hub-actions" style="max-width:480px;margin:1.5rem auto 0;">
+        <button type="button" class="btn btn-primary" data-page="deals">My Deals</button>
+        <button type="button" class="btn btn-outline" data-page="discover">Find influencers</button>
         <button type="button" class="btn btn-outline" data-page="brands">Post a campaign</button>
-        <button type="button" class="btn btn-outline" data-page="campaigns">See open campaigns</button>
+        <button type="button" class="btn btn-outline" data-page="shortlist">My shortlist</button>
+      </div>
+      <div class="hub-tip">
+        <strong>Tip:</strong> Save creators to your shortlist while browsing, then invite them from <em>My Deals</em> flow. Pay Connectly before you can open creator work links.
+      </div>
+    </section>
+  </div>
+
+  <!-- BRAND SHORTLIST (new feature) -->
+  <div class="page" id="page-shortlist">
+    <section class="section" style="padding-top:2rem;">
+      <h2 class="section-title">Your shortlist</h2>
+      <p class="section-sub">Creators you saved while browsing. Only stored on this device.</p>
+      <div id="shortlistGrid" class="influencer-grid">
+        <div class="empty-state"><p>No saved creators yet. Open Find influencers and tap Save.</p></div>
+      </div>
+      <div style="text-align:center;margin-top:1.25rem;">
+        <button type="button" class="btn btn-primary" data-page="discover">Find influencers</button>
       </div>
     </section>
   </div>
@@ -2327,6 +2447,7 @@
       populateFilterOptions();
       applyFilters();
       renderFeatured();
+      updateDashboardStats();
     }
 
     // ============================================================
@@ -2469,6 +2590,7 @@
             ${i.charges ? `<div class="card-rate">${esc(shortCharges(i.charges))}</div>` : ""}
             <div class="card-footer">
               ${i.igLink ? `<a class="btn btn-outline btn-sm" href="${esc(i.igLink)}" target="_blank" rel="noopener">Instagram</a>` : `<span></span>`}
+              <button type="button" class="btn-save-short ${typeof isShortlisted === "function" && isShortlisted(i.id) ? "saved" : ""}" data-shortlist-id="${i.id}">${typeof isShortlisted === "function" && isShortlisted(i.id) ? "★" : "☆"}</button>
               <button type="button" class="btn btn-creator btn-sm view-btn" data-id="${i.id}">View</button>
             </div>
           </div>
@@ -2540,6 +2662,8 @@
     function showPage(pageId, fromHistory) {
       if (!pageId) pageId = "home";
       if (!document.getElementById("page-" + pageId)) pageId = "home";
+      if (pageId === "shortlist") setTimeout(renderShortlist, 40);
+      if (pageId === "creators" || pageId === "brandhome" || pageId === "home") setTimeout(updateDashboardStats, 60);
       document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
       document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
       const page = document.getElementById("page-" + pageId);
@@ -2662,6 +2786,75 @@
     // Applications are saved to Google Sheet tab "Applications" via Apps Script
     const APPLICATIONS_KEY = "connectly_applications"; // local backup only
     let allCampaigns = [];
+    function getCampaignList() { return Array.isArray(allCampaigns) ? allCampaigns : []; }
+
+    // ========== Dashboard + Shortlist ==========
+    const SHORTLIST_KEY = "cnt_brand_shortlist_v1";
+
+    function getShortlist() {
+      try {
+        const raw = localStorage.getItem(SHORTLIST_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      } catch (_) { return []; }
+    }
+    function setShortlist(ids) {
+      localStorage.setItem(SHORTLIST_KEY, JSON.stringify(ids || []));
+      updateDashboardStats();
+    }
+    function isShortlisted(id) {
+      return getShortlist().indexOf(String(id)) >= 0;
+    }
+    function toggleShortlist(id) {
+      id = String(id);
+      let list = getShortlist();
+      if (list.indexOf(id) >= 0) list = list.filter(x => x !== id);
+      else list.push(id);
+      setShortlist(list);
+      return list.indexOf(id) >= 0;
+    }
+    function updateDashboardStats() {
+      const nInf = (allInfluencers && allInfluencers.length) || 0;
+      const nCamp = (typeof getCampaignList === "function" ? getCampaignList() : (allCampaigns || [])).length;
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      set("dashOpenCampaigns", nCamp || "0");
+      set("dashCreatorsListed", nInf || "0");
+      set("dashBrandCreators", nInf || "0");
+      set("dashBrandCampaigns", nCamp || "0");
+      set("dashShortlistCount", String(getShortlist().length));
+      // Home hero stats (real when available)
+      document.querySelectorAll(".stat-num").forEach(el => {
+        const label = (el.parentElement && el.parentElement.querySelector(".stat-label") || {}).textContent || "";
+        if (/Influencer/i.test(label) && nInf) {
+          el.textContent = nInf >= 1000 ? (nInf/1000).toFixed(1).replace(/\.0$/,"") + "K+" : nInf + "+";
+        }
+        if (/Campaign/i.test(label) && nCamp) {
+          el.textContent = nCamp + "+";
+        }
+      });
+    }
+    function renderShortlist() {
+      const grid = document.getElementById("shortlistGrid");
+      if (!grid) return;
+      const ids = getShortlist();
+      const rows = (allInfluencers || []).filter(i => ids.indexOf(String(i.id)) >= 0);
+      if (!rows.length) {
+        grid.innerHTML = '<div class="empty-state"><p>No saved creators yet. Open Find influencers and tap Save.</p></div>';
+        return;
+      }
+      grid.innerHTML = rows.map(cardHTML).join("");
+      grid.querySelectorAll("[data-shortlist-id]").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute("data-shortlist-id");
+          toggleShortlist(id);
+          renderShortlist();
+          applyFilters && applyFilters();
+        });
+      });
+    }
+
+
 
     function uid() {
       return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -2738,6 +2931,7 @@
           .filter(c => c && c.title);
         if (live.length > 0) {
           allCampaigns = live;
+          try { updateDashboardStats(); } catch(_) {}
           try { localStorage.setItem("cnt_camp_cache_v2", JSON.stringify({ ts: Date.now(), rows: live })); } catch (_) {}
         }
         renderCampaigns();
@@ -3556,15 +3750,18 @@
       </div>`;
     }
 
-    async function loadMyDeals() {
+    async function loadMyDeals(opts) {
+      opts = opts || {};
+      const silent = !!opts.silent;
       const email = (document.getElementById("dealsEmail")?.value || "").trim();
       const box = document.getElementById("dealsList");
       if (!box) return;
       if (!email || email.indexOf("@") < 0) {
-        alert("Enter a valid email");
+        if (!silent) alert("Enter a valid email");
         return;
       }
-      box.innerHTML = '<p class="section-sub">Loading deals…</p>';
+      if (!silent) box.innerHTML = '<p class="section-sub">Loading deals…</p>';
+      else box.style.opacity = "0.65";
       const base = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
       if (!base) {
         box.innerHTML = '<p class="section-sub">Backend URL missing.</p>';
@@ -3577,11 +3774,16 @@
         const deals = (data && data.deals) || [];
         if (!deals.length) {
           box.innerHTML = '<p class="section-sub">No deals for this email yet.</p>';
+          box.style.opacity = "1";
           return;
         }
         window.__lastDealsEmail = email;
         if (deals[0] && deals[0].connectlyUpi) window.__lastDealsUpi = deals[0].connectlyUpi;
-        box.innerHTML = deals.map(dealCardHTML).join("");
+        // restore which cards were expanded
+        const openIds = new Set();
+        box.querySelectorAll(".deal-card.expanded[data-deal-id]").forEach(el => openIds.add(el.getAttribute("data-deal-id")));
+        box.innerHTML = deals.map(d => dealCardHTML(d, openIds.has(String(d.dealId)))).join("");
+        box.style.opacity = "1";
         box.querySelectorAll("[data-deal-action]").forEach(btn => {
           btn.addEventListener("click", () => runDealAction(btn));
         });
@@ -3591,9 +3793,16 @@
         box.querySelectorAll("[data-deal-save-edit]").forEach(btn => {
           btn.addEventListener("click", () => saveDealEdit(btn));
         });
+        box.querySelectorAll("[data-deal-toggle]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const card = btn.closest(".deal-card");
+            if (card) card.classList.toggle("expanded");
+          });
+        });
       } catch (err) {
         console.error(err);
-        box.innerHTML = '<p class="section-sub">Could not load deals. Redeploy Apps Script, then try again.</p>';
+        box.style.opacity = "1";
+        if (!silent) box.innerHTML = '<p class="section-sub">Could not load deals. Redeploy Apps Script, then try again.</p>';
       }
     }
 
@@ -3628,18 +3837,26 @@
         if (isOpsView) return "⚡ Confirm brand payment";
         return "Brand paid — pending confirmation";
       }
+      // Revision requested (status Accepted but history has changes request)
+      const needsRevision = d && st === "Accepted" && /asked for changes|revision|Please revise|pay again|payment rejected/i.test(String(d.history || ""));
+      if (needsRevision) {
+        if (role === "creator") return "⚠ Changes requested — resubmit";
+        if (role === "brand" || role === "both") return "Waiting for revised work";
+        return "Changes requested";
+      }
+
       const map = {
         "Proposed": "New offer",
         "Accepted": "In progress",
         "PlatformReceived": "Payment confirmed by Connectly",
         "Approved": "Approved — ready to pay creator",
-        "Paid": "Creator paid",
+        "Paid": "Creator paid — confirm receipt",
         "Rejected": "Declined"
       };
       return map[st] || st || "—";
     }
 
-    function dealCardHTML(d) {
+    function dealCardHTML(d, forceOpen) {
       const st = d.status || "";
       const role = d.role || "";
       const isCreator = role === "creator" || role === "both";
@@ -3656,17 +3873,17 @@
         </div>`;
       }
       if (isCreator && (st === "Accepted" || st === "AdvancePaid" || st === "BrandPaidPlatform" || st === "PlatformReceived")) {
-        const isResubmit = /revision|requested revision|ask for changes/i.test(String(d.history || ""));
-        const title = isResubmit ? "Resubmit your work" : "Upload your work";
+        const isResubmit = /asked for changes|revision|Please revise|resubmit/i.test(String(d.history || ""));
+        const title = isResubmit ? "⚠ Re-upload & resubmit" : "Upload your work";
         const btnText = isResubmit ? "Resubmit to brand" : "Send to brand";
         const hint = isResubmit
-          ? "Brand asked for changes. Upload the new Drive / reel link and a short note about what you fixed."
+          ? "Brand requested changes. Upload the new file link and explain what you fixed."
           : "Paste your Google Drive or Instagram reel link. Add a short note if needed.";
-        actions += `<div class="deal-upload-box">
+        actions += `<div class="deal-upload-box${isResubmit ? " deal-warn-box" : ""}">
           <div class="deal-upload-title">${title}</div>
           <p class="deal-upload-hint">${hint}</p>
           <input type="url" id="url_${esc(d.dealId)}" class="deal-upload-input" placeholder="https://drive.google.com/file/..." value="">
-          <textarea id="msg_${esc(d.dealId)}" class="deal-upload-note" placeholder="${isResubmit ? "What did you change?" : "Optional note for brand"}"></textarea>
+          <textarea id="msg_${esc(d.dealId)}" class="deal-upload-note" placeholder="${isResubmit ? "What did you change in this version?" : "Optional note for brand"}"></textarea>
           <button type="button" class="btn btn-creator btn-sm" style="margin-top:0.55rem;" data-deal-action="Submitted" data-deal-id="${esc(d.dealId)}" data-needs-url="1" data-actor-role="creator">${btnText}</button>
         </div>`;
       }
@@ -3735,6 +3952,18 @@
         </div>`;
       }
 
+      // Creator confirms they received payout
+      if (isCreator && st === "Paid" && !/yes/i.test(String(d.creatorConfirmed || ""))) {
+        actions += `<div class="deal-upload-box deal-ops-action">
+          <div class="deal-upload-title">Did you receive payment?</div>
+          <p class="deal-upload-hint">Connectly marked this as paid. Confirm only if money reached your account.</p>
+          <div class="deal-actions-row">
+            <button type="button" class="btn btn-creator btn-sm" data-deal-action="CreatorReceived" data-deal-id="${esc(d.dealId)}" data-actor-role="creator" data-creator-confirm="1">✓ Yes, I received it</button>
+            <button type="button" class="btn btn-outline btn-sm" data-deal-action="CreatorNotReceived" data-deal-id="${esc(d.dealId)}" data-actor-role="creator" data-creator-problem="1" style="border-color:rgba(248,113,113,0.4);color:#fca5a5;">✕ Not received / wrong UPI</button>
+          </div>
+        </div>`;
+      }
+
       // Notes (visible to both) — skip when creator already has upload box with note field
       const creatorCanSubmit = isCreator && (st === "Accepted" || st === "AdvancePaid" || st === "BrandPaidPlatform" || st === "PlatformReceived");
       let extra = "";
@@ -3758,7 +3987,10 @@
       }
 
       const roleLabel = role === "both" ? "creator + brand" : (role === "ops" ? "Connectly" : role);
-      return `<div class="deal-card">
+      const needsAction = !!(actions && actions.trim());
+      const expanded = forceOpen || needsAction ? "expanded" : "";
+      const delivText = (d.deliverable || "").trim() || "—";
+      return `<div class="deal-card ${expanded}" data-deal-id="${esc(d.dealId)}">
         <div class="deal-card-head">
           <div class="deal-parties">
             <span class="bn">${esc(d.brandName || "Brand")}</span>
@@ -3769,18 +4001,23 @@
         </div>
         <div class="deal-meta-row">
           <span class="deal-chip">₹ <strong>${esc(d.price || "—")}</strong></span>
-          <span class="deal-chip">${esc(d.deliverable || "—")}</span>
+          <span class="deal-chip deal-chip-deliv" title="Deliverable">${esc(delivText)}</span>
           <span class="deal-chip">Due <strong>${esc(d.deadline || "—")}</strong></span>
           <span class="deal-chip">You: ${esc(roleLabel)}</span>
         </div>
-        <p style="color:var(--text-muted);font-size:0.88rem;margin:0.4rem 0 0.2rem;">${esc(d.brief || "")}</p>
-        ${"" /* work link only in timeline — avoids broken / duplicate links */}
-        ${payRailHTML(d)}
-        <div style="font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin:0.85rem 0 0.35rem;">Timeline</div>
-        ${dealTimelineHTML(d)}
-        <div class="deal-actions">${actions}</div>
-        ${extra}
-        <p style="font-size:0.72rem;color:var(--text-muted);margin:0.75rem 0 0;">ID ${esc(d.dealId || "")}</p>
+        ${d.brief ? `<p class="deal-brief-preview">${esc(d.brief)}</p>` : ""}
+        <button type="button" class="deal-toggle" data-deal-toggle="${esc(d.dealId)}">
+          <span class="deal-toggle-open">Show details &amp; timeline ▾</span>
+          <span class="deal-toggle-close">Hide details ▴</span>
+        </button>
+        <div class="deal-body">
+          ${payRailHTML(d)}
+          <div class="deal-section-label">Timeline</div>
+          ${dealTimelineHTML(d)}
+          <div class="deal-actions">${actions}</div>
+          ${extra}
+          <p class="deal-id-line">ID ${esc(d.dealId || "")}</p>
+        </div>
       </div>`;
     }
 
@@ -3818,6 +4055,16 @@
         payload.messageText = "Payment not received — please pay again";
         payload.rejectPayment = true;
       }
+      if (btn.getAttribute("data-creator-confirm")) {
+        payload.status = "CreatorReceived";
+        payload.creatorConfirmed = "Yes";
+        payload.messageText = "Creator confirmed payment received";
+      }
+      if (btn.getAttribute("data-creator-problem")) {
+        payload.status = "Paid";
+        payload.creatorConfirmed = "Problem";
+        payload.messageText = "Creator reported: payment not received or wrong UPI";
+      }
       if (btn.getAttribute("data-platform-paid")) {
         const ref = (document.getElementById("payref_" + dealId)?.value || "").trim();
         if (!ref) {
@@ -3845,7 +4092,7 @@
       btn.disabled = true;
       try {
         await postDeal(payload);
-        setTimeout(loadMyDeals, 1400);
+        setTimeout(() => loadMyDeals({ silent: true }), 900);
       } catch (err) {
         alert("Update failed");
         btn.disabled = false;
@@ -3862,7 +4109,7 @@
         messageText: text,
         actorRole: btn.getAttribute("data-actor-role") || "user"
       });
-      setTimeout(loadMyDeals, 1200);
+      setTimeout(() => loadMyDeals({ silent: true }), 800);
     }
 
     async function saveDealEdit(btn) {
@@ -3877,10 +4124,23 @@
         editNote: "Updated deal terms",
         actorRole: "brand"
       });
-      setTimeout(loadMyDeals, 1200);
+      setTimeout(() => loadMyDeals({ silent: true }), 800);
     }
 
     document.getElementById("dealsLoadBtn")?.addEventListener("click", loadMyDeals);
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-shortlist-id]");
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const id = btn.getAttribute("data-shortlist-id");
+      const on = toggleShortlist(id);
+      btn.textContent = on ? "★ Saved" : "☆ Save";
+      btn.classList.toggle("saved", on);
+      if (document.getElementById("page-shortlist")?.classList.contains("active")) renderShortlist();
+    });
+
 
     setTimeout(() => loadLiveCampaigns(false), 2500);
     setInterval(() => {
