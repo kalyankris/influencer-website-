@@ -2212,7 +2212,11 @@
         <p id="joinNewRequired" style="display:none;margin:0.85rem auto 0;max-width:420px;padding:0.75rem 1rem;border-radius:12px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.35);color:#ffedd5;font-size:0.86rem;line-height:1.45;">New creator — complete this form to appear in the directory. You can edit it later from My profile.</p>
       </div>
 
-      <div class="form-card" style="max-width:560px;">
+      <div class="form-card" style="max-width:560px;position:relative;">
+        <div id="joinLoading" style="display:none;position:absolute;inset:0;z-index:5;background:rgba(18,16,14,0.82);backdrop-filter:blur(6px);border-radius:inherit;align-items:center;justify-content:center;flex-direction:column;gap:0.75rem;">
+          <div class="auth-spinner"></div>
+          <p style="color:#f7f3ea;font-size:0.9rem;margin:0;">Loading your profile…</p>
+        </div>
         <form id="joinForm">
           <div class="form-group">
             <label>Full Name *</label>
@@ -3183,7 +3187,7 @@
       if (pageId === "login" || pageId === "admin" || pageId === "home") refreshAuthUI();
       if (pageId === "creator-profile") setTimeout(prefillCreatorProfile, 40);
       if (pageId === "join") setTimeout(() => { prefillJoinFromSession(); }, 40);
-      if (pageId === "brand-profile") setTimeout(prefillBrandProfile, 40);
+      if (pageId === "brand-profile") setTimeout(() => { prefillBrandProfile(); }, 40);
 if (pageId === "login") {
         sessionStorage.setItem("cnt_auth_mode", "signin");
         const modeEl = document.getElementById("authMode");
@@ -3723,6 +3727,7 @@ if (pageId === "login") {
       const submitBtn = document.getElementById("joinSubmitBtn");
       const success = document.getElementById("joinSuccess");
       const joinErr = document.getElementById("joinError");
+      const loading = document.getElementById("joinLoading");
 
       if (success) success.style.display = "none";
       if (joinErr) joinErr.style.display = "none";
@@ -3738,7 +3743,14 @@ if (pageId === "login") {
         submitBtn.textContent = "Submit & Get Listed →";
       }
 
-      if (!form || !s) return;
+      if (!form || !s) {
+        if (loading) loading.style.display = "none";
+        return;
+      }
+
+      // Show loading while fetching saved profile (avoids empty flash)
+      if (loading) loading.style.display = "flex";
+      if (form) form.style.opacity = "0.35";
 
       // Refresh profile from server so My profile always shows saved data
       let u = Object.assign({}, s._user || {});
@@ -3760,7 +3772,8 @@ if (pageId === "login") {
             gender: su.gender || u.gender || "",
             charges: su.charges || u.charges || "",
             bio: su.bio || u.bio || "",
-            website: su.website || u.website || ""
+            website: su.website || u.website || "",
+            age: su.age || u.age || ""
           };
           setSession(Object.assign({}, s, {
             displayName: su.displayName || s.displayName,
@@ -3840,6 +3853,8 @@ if (pageId === "login") {
       } else {
         form.dataset.editMode = "0";
       }
+      if (loading) loading.style.display = "none";
+      if (form) form.style.opacity = "1";
     }
 
 
@@ -3875,27 +3890,76 @@ if (pageId === "login") {
         }
       } catch (_) {}
     }
-    function prefillBrandProfile() {
+    async function prefillBrandProfile() {
       const s = getSession();
       if (!s) return;
       const form = document.getElementById("brandProfileForm");
       if (!form) return;
+      const btn = form.querySelector('[type="submit"]');
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove("is-loading");
+        btn.textContent = s.profileComplete ? "Save changes →" : "Save brand profile";
+      }
+      // Optional light loading on form
+      form.style.opacity = "0.45";
+      let u = Object.assign({}, s._user || {});
+      try {
+        const data = await apiPost({
+          action: "auth_login",
+          mode: "signin",
+          email: s.email,
+          name: s.displayName || ""
+        }, 10000);
+        if (data && data.ok && data.user) {
+          const su = data.user;
+          u = {
+            phone: su.phone || u.phone || "",
+            website: su.website || u.website || "",
+            instagram: su.instagram || u.instagram || "",
+            city: su.city || u.city || "",
+            niche: su.niche || u.niche || "",
+            bio: su.bio || u.bio || ""
+          };
+          setSession(Object.assign({}, s, {
+            brandName: su.brandName || s.brandName,
+            displayName: su.displayName || s.displayName,
+            profileComplete: !!su.profileComplete,
+            picture: su.picture || s.picture,
+            _user: u
+          }));
+        }
+      } catch (_) {}
+      const sess = getSession() || s;
       const set = (name, val) => {
         const el = form.elements.namedItem(name);
         if (el && val != null && val !== "") el.value = val;
       };
-      set("brandName", s.brandName || "");
-      set("displayName", s.displayName || "");
-      try {
-        const u = s._user || {};
-        set("website", u.website || "");
-        set("instagram", u.instagram || "");
-        set("phone", u.phone || "");
-        set("city", u.city || "");
-        set("niche", u.niche || "");
-        set("bio", u.bio || "");
-      } catch (_) {}
+      set("brandName", sess.brandName || "");
+      set("displayName", sess.displayName || "");
+      set("website", u.website || "");
+      set("instagram", u.instagram || "");
+      set("phone", u.phone || "");
+      set("city", u.city || "");
+      set("bio", u.bio || "");
+      if (u.niche) {
+        const nicheEl = form.elements.namedItem("niche");
+        if (nicheEl) {
+          const opts = Array.from(nicheEl.options || []).map(o => o.value);
+          if (opts.includes(u.niche)) nicheEl.value = u.niche;
+          else {
+            nicheEl.value = "Other";
+            const wrap = document.getElementById("brandIndustryOtherWrap");
+            const other = document.getElementById("brandIndustryOther");
+            if (wrap) wrap.style.display = "block";
+            if (other) { other.required = true; other.value = u.niche; }
+          }
+        }
+      }
+      if (btn) btn.textContent = sess.profileComplete ? "Save changes →" : "Save brand profile";
+      form.style.opacity = "1";
     }
+
 
     function showAuthLoading(text) {
       const el = document.getElementById("authLoadingOverlay");
@@ -4035,6 +4099,7 @@ if (pageId === "login") {
           return;
         }
       }
+      const isEdit = !!s.profileComplete;
       const body = {
         action: "auth_profile",
         email: s.email,
@@ -4049,25 +4114,47 @@ if (pageId === "login") {
         bio: fd.get("bio")
       };
       const btn = e.target.querySelector('[type="submit"]');
-      if (btn) { btn.disabled = true; btn.classList.add("is-loading"); btn.textContent = "Saving…"; }
+      const idleLabel = isEdit ? "Save changes →" : "Save brand profile";
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add("is-loading");
+        btn.textContent = isEdit ? "Saving changes…" : "Submitting…";
+      }
       try {
         const data = await apiPost(body, 12000);
         if (data && data.ok === false) throw new Error(data.error || "fail");
       } catch (err) {
         console.warn(err);
         showToast("Could not save", "Try again in a moment.", "error");
-        if (btn) { btn.disabled = false; btn.classList.remove("is-loading"); btn.textContent = "Save brand profile"; }
+        if (btn) { btn.disabled = false; btn.classList.remove("is-loading"); btn.textContent = idleLabel; }
         return;
       }
       setSession(Object.assign({}, s, {
         role: "brand",
         brandName: body.brandName,
         displayName: body.displayName,
-        profileComplete: true
+        profileComplete: true,
+        phone: body.phone,
+        _user: Object.assign({}, s._user || {}, {
+          phone: body.phone,
+          website: body.website,
+          instagram: body.instagram,
+          city: body.city,
+          niche: body.niche,
+          bio: body.bio
+        })
       }));
-      showToast("Brand profile saved", "You're ready to find creators and post campaigns.", "brand");
-      if (btn) { btn.disabled = false; btn.textContent = "Save brand profile"; }
-      showPage("brandhome");
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove("is-loading");
+        btn.textContent = "Save changes →";
+      }
+      if (isEdit) {
+        showToast("Profile updated", "Your brand details were saved.", "brand");
+      } else {
+        showToast("Brand profile saved", "You're ready to find creators and post campaigns.", "brand");
+        showPage("brandhome");
+      }
     }
 
     async function submitCreatorProfile(e) {
@@ -4727,19 +4814,36 @@ if (pageId === "login") {
     function openInviteModal(creatorId) {
       const i = allInfluencers.find(x => x.id === creatorId);
       if (!i) return;
+      const form = document.getElementById("inviteForm");
+      document.getElementById("inviteSuccess").style.display = "none";
+      if (form) form.style.display = "block";
+      if (form) form.reset();
+      // Creator (target)
       document.getElementById("inviteCreatorId").value = i.id || "";
       document.getElementById("inviteCreatorName").value = i.name || "";
       document.getElementById("inviteCreatorEmail").value = i.email || "";
       document.getElementById("inviteCreatorIg").value = i.igLink || "";
       document.getElementById("inviteCreatorLabel").textContent =
         (i.name || "Creator") + (i.location ? " · " + i.location : "") + (i.niche ? " · " + i.niche : "");
-      document.getElementById("inviteForm").style.display = "block";
-      document.getElementById("inviteSuccess").style.display = "none";
-      document.getElementById("inviteForm").reset();
-      document.getElementById("inviteCreatorId").value = i.id || "";
-      document.getElementById("inviteCreatorName").value = i.name || "";
-      document.getElementById("inviteCreatorEmail").value = i.email || "";
-      document.getElementById("inviteCreatorIg").value = i.igLink || "";
+      // Brand — auto-fill from saved profile (no re-typing every invite)
+      const s = getSession();
+      if (s && form) {
+        const set = (name, val) => {
+          const el = form.elements.namedItem(name);
+          if (el && val) el.value = val;
+        };
+        const u = s._user || {};
+        set("brandName", s.brandName || s.displayName || "");
+        set("brandEmail", s.email || "");
+        set("brandPhone", u.phone || s.phone || "");
+      }
+      // Read-only hint on prefilled brand fields when logged in as brand
+      if (s && s.role === "brand") {
+        ["brandName", "brandEmail", "brandPhone"].forEach(n => {
+          const el = form && form.elements.namedItem(n);
+          if (el && el.value) el.style.opacity = "0.92";
+        });
+      }
       closeModal();
       document.getElementById("inviteModalOverlay").classList.add("open");
     }
