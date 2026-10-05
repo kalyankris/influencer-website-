@@ -2047,29 +2047,35 @@
     </section>
   </div>
 
-  <!-- SIGN UP — pick role + ONE Google step on same page -->
+  <!-- SIGN UP — Google once, then choose role (no second Google) -->
   <div class="page" id="page-signup">
     <section class="section" style="padding-top:2rem;">
       <div class="auth-card">
         <h2 class="section-title" style="text-align:center;">Sign up</h2>
-        <p class="section-sub" style="text-align:center;">Step 1 — choose how you&apos;ll use Connectly</p>
-        <div class="role-pick">
-          <button type="button" class="role-creator" id="signupCreatorBtn">
-            <strong>I&apos;m a Creator</strong>
-            <span>Get brand deals &amp; campaigns</span>
-          </button>
-          <button type="button" class="role-brand" id="signupBrandBtn">
-            <strong>I&apos;m a Brand</strong>
-            <span>Find creators &amp; hire</span>
-          </button>
-        </div>
-        <div id="signupGoogleSection" style="display:none;margin-top:1.35rem;padding-top:1.15rem;border-top:1px solid var(--border);">
-          <p id="signupRoleBadge" style="text-align:center;margin:0 0 0.35rem;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;color:#e8c39a;font-weight:700;"></p>
-          <p class="section-sub" id="signupGoogleSub" style="text-align:center;margin-bottom:0.85rem;">Step 2 — continue with Google (once)</p>
-          <div id="googleSignupBtnWrap" style="display:flex;justify-content:center;min-height:44px;margin-bottom:0.5rem;">
+        <p class="section-sub" style="text-align:center;" id="signupMainSub">Continue with Google once — then choose Creator or Brand</p>
+
+        <div id="signupGoogleFirst" style="margin-bottom:0.5rem;">
+          <div id="googleSignupBtnWrap" style="display:flex;justify-content:center;min-height:44px;margin-bottom:0.75rem;">
             <div class="g_id_signin_signup"></div>
           </div>
+          <p style="text-align:center;font-size:0.82rem;color:var(--text-muted);margin:0 0 1rem;line-height:1.45;">One Google step only. You won&apos;t be asked again.</p>
         </div>
+
+        <div id="signupRoleSection" style="display:none;margin-top:0.5rem;padding-top:1.15rem;border-top:1px solid var(--border);">
+          <p id="signupPendingEmail" style="text-align:center;font-size:0.88rem;color:#e8c39a;margin:0 0 0.85rem;"></p>
+          <p class="section-sub" style="text-align:center;margin-bottom:0.85rem;">Choose how you&apos;ll use Connectly</p>
+          <div class="role-pick">
+            <button type="button" class="role-creator" id="signupCreatorBtn">
+              <strong>I&apos;m a Creator</strong>
+              <span>Get brand deals &amp; campaigns</span>
+            </button>
+            <button type="button" class="role-brand" id="signupBrandBtn">
+              <strong>I&apos;m a Brand</strong>
+              <span>Find creators &amp; hire</span>
+            </button>
+          </div>
+        </div>
+
         <p id="signupError" style="display:none;color:#fca5a5;font-size:0.9rem;margin-top:0.9rem;text-align:center;line-height:1.5;"></p>
         <div style="margin-top:1.25rem;text-align:center;">
           <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:0.5rem;">Already registered?</p>
@@ -3200,6 +3206,21 @@ if (pageId === "login") {
       }
       if (pageId === "signup") {
         sessionStorage.setItem("cnt_auth_mode", "signup");
+        const pending = typeof getPendingGoogle === "function" ? getPendingGoogle() : null;
+        const gFirst = document.getElementById("signupGoogleFirst");
+        const roleSec = document.getElementById("signupRoleSection");
+        if (pending && pending.email) {
+          if (gFirst) gFirst.style.display = "none";
+          if (roleSec) roleSec.style.display = "block";
+          const pendingEl = document.getElementById("signupPendingEmail");
+          if (pendingEl) pendingEl.textContent = "Signed in as " + pending.email;
+          const sub = document.getElementById("signupMainSub");
+          if (sub) sub.textContent = "Almost done — choose Creator or Brand";
+        } else {
+          if (gFirst) gFirst.style.display = "block";
+          if (roleSec) roleSec.style.display = "none";
+          setTimeout(() => initGoogleSignIn(true), 200);
+        }
       }
       // hide nav tools when logged out
       document.body.classList.toggle("authed", !!s);
@@ -3545,6 +3566,7 @@ if (pageId === "login") {
     
     function routeAfterAuth(user) {
       if (!user || !user.email) { showPage("home"); return; }
+      try { clearPendingGoogle(); } catch (_) {}
       if (typeof isAdminEmail === "function" && isAdminEmail(user.email)) {
         user.role = "ops";
         user.profileComplete = true;
@@ -3626,6 +3648,10 @@ if (pageId === "login") {
           if (!data || data.ok === false || data.needSignup || data.error === "new_user") {
             hideAuthLoading();
             clearSession();
+            if (opts.softSignup) {
+              // Google already done — caller will show role picker
+              return false;
+            }
             const msg = (data && data.message) || "No account for this Google login. Please Sign up first.";
             if (errLogin) { errLogin.textContent = msg; errLogin.style.display = "block"; }
             showPage("signup");
@@ -3694,7 +3720,6 @@ if (pageId === "login") {
     function openSignupGoogle(role) {
       sessionStorage.setItem("cnt_intent", role);
       sessionStorage.setItem("cnt_auth_mode", "signup");
-      // Highlight selected role
       document.querySelectorAll("#signupCreatorBtn, #signupBrandBtn, #pickCreatorBtn, #pickBrandBtn").forEach(b => {
         b.style.outline = "";
         b.style.opacity = "0.55";
@@ -3704,22 +3729,31 @@ if (pageId === "login") {
         : (document.getElementById("signupCreatorBtn") || document.getElementById("pickCreatorBtn"));
       if (active) { active.style.outline = "2px solid rgba(232,195,154,0.7)"; active.style.opacity = "1"; }
 
-      const badge = document.getElementById("signupRoleBadge");
-      if (badge) badge.textContent = role === "brand" ? "Brand account" : "Creator account";
-      const sub = document.getElementById("signupGoogleSub");
-      if (sub) sub.textContent = role === "brand"
-        ? "Step 2 — continue with Google once to create your brand account"
-        : "Step 2 — continue with Google once to create your creator account";
       const err = document.getElementById("signupError");
       if (err) { err.style.display = "none"; err.textContent = ""; }
 
-      // Stay on signup page — show Google only after role is chosen (one verification)
-      showPage("signup");
-      const sec = document.getElementById("signupGoogleSection");
-      if (sec) {
-        sec.style.display = "block";
-        setTimeout(() => sec.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
+      // If Google already done once → create account without second prompt
+      const pending = getPendingGoogle();
+      if (pending && pending.email) {
+        showAuthLoading(role === "brand" ? "Setting up your brand account…" : "Setting up your creator account…");
+        finishAuth(pending.email, pending.name, {
+          picture: pending.picture,
+          credential: pending.credential,
+          mode: "signup",
+          role: role,
+          intent: role
+        }).then(ok => {
+          if (ok) clearPendingGoogle();
+        }).finally(() => hideAuthLoading());
+        return;
       }
+
+      // No pending Google — show signup with Google first
+      showPage("signup");
+      const gFirst = document.getElementById("signupGoogleFirst");
+      const roleSec = document.getElementById("signupRoleSection");
+      if (gFirst) gFirst.style.display = "block";
+      if (roleSec) roleSec.style.display = "none";
       setTimeout(() => initGoogleSignIn(true), 150);
     }
 
@@ -4068,6 +4102,47 @@ if (pageId === "login") {
       showToast("Signed out", "Come back anytime to manage deals on Connectly.");
     }
 
+    function storePendingGoogle(email, name, picture, credential) {
+      try {
+        sessionStorage.setItem("cnt_pending_google", JSON.stringify({
+          email: String(email || "").toLowerCase().trim(),
+          name: name || "",
+          picture: picture || "",
+          credential: credential || "",
+          ts: Date.now()
+        }));
+      } catch (_) {}
+    }
+    function getPendingGoogle() {
+      try {
+        const raw = sessionStorage.getItem("cnt_pending_google");
+        if (!raw) return null;
+        const p = JSON.parse(raw);
+        if (!p || !p.email) return null;
+        // expire after 30 min
+        if (p.ts && Date.now() - p.ts > 30 * 60 * 1000) {
+          sessionStorage.removeItem("cnt_pending_google");
+          return null;
+        }
+        return p;
+      } catch (_) { return null; }
+    }
+    function clearPendingGoogle() {
+      try { sessionStorage.removeItem("cnt_pending_google"); } catch (_) {}
+    }
+    function showSignupRoleStep(email) {
+      sessionStorage.setItem("cnt_auth_mode", "signup");
+      const gFirst = document.getElementById("signupGoogleFirst");
+      const roleSec = document.getElementById("signupRoleSection");
+      const sub = document.getElementById("signupMainSub");
+      const pendingEl = document.getElementById("signupPendingEmail");
+      if (gFirst) gFirst.style.display = "none";
+      if (roleSec) roleSec.style.display = "block";
+      if (sub) sub.textContent = "Almost done — choose Creator or Brand";
+      if (pendingEl) pendingEl.textContent = "Signed in as " + (email || "");
+      showPage("signup");
+    }
+
     function handleGoogleCredential(response) {
       try {
         const cred = response && response.credential;
@@ -4078,15 +4153,44 @@ if (pageId === "login") {
         const picture = payload.picture || "";
         let mode = String(sessionStorage.getItem("cnt_auth_mode") || "signin").toLowerCase();
         if (mode !== "signup") mode = "signin";
-        const role = mode === "signup" ? (sessionStorage.getItem("cnt_intent") || "") : "";
-        showAuthLoading(mode === "signup" ? "Creating your account…" : "Signing you in…");
-        finishAuth(email, name, { picture, credential: cred, mode, role, intent: role })
+        const role = sessionStorage.getItem("cnt_intent") || "";
+
+        // Always store so role pick never needs Google again
+        storePendingGoogle(email, name, picture, cred);
+
+        // Sign in page → existing only
+        if (mode === "signin") {
+          showAuthLoading("Signing you in…");
+          finishAuth(email, name, { picture, credential: cred, mode: "signin" })
+            .finally(() => hideAuthLoading());
+          return;
+        }
+
+        // Signup: if role already chosen (legacy), finish; else ask role without second Google
+        if (role === "creator" || role === "brand") {
+          showAuthLoading("Creating your account…");
+          finishAuth(email, name, { picture, credential: cred, mode: "signup", role, intent: role })
+            .finally(() => hideAuthLoading());
+          return;
+        }
+
+        // Google done once → try signin in case they already have an account
+        showAuthLoading("Checking your account…");
+        finishAuth(email, name, { picture, credential: cred, mode: "signin", softSignup: true })
+          .then(ok => {
+            if (!ok) {
+              // New user — show role picker only (no Google again)
+              hideAuthLoading();
+              showSignupRoleStep(email);
+            }
+          })
           .finally(() => hideAuthLoading());
       } catch (e) {
         console.error(e);
         const mode = sessionStorage.getItem("cnt_auth_mode") || "signin";
         const err = document.getElementById(mode === "signup" ? "signupError" : "loginError");
         if (err) { err.textContent = "Google sign-in failed. Please try again."; err.style.display = "block"; }
+        hideAuthLoading();
       }
     }
 
@@ -4157,29 +4261,41 @@ if (pageId === "login") {
     async function submitBrandProfile(e) {
       e.preventDefault();
       const s = getSession();
-      if (!s) { showPage("login"); return; }
+      if (!s || !s.email) {
+        showToast("Please sign in", "Sign in again, then save your brand profile.", "error");
+        showPage("login");
+        return;
+      }
       const fd = new FormData(e.target);
-      let niche = String(fd.get("niche") || "").trim();
+      const str = (k) => String(fd.get(k) || "").trim();
+      let niche = str("niche");
       if (niche === "Other") {
-        niche = String(fd.get("nicheOther") || "").trim();
+        niche = str("nicheOther");
         if (!niche) {
           showToast("Industry required", "Please type your industry.", "error");
           return;
         }
       }
+      const brandName = str("brandName");
+      const displayName = str("displayName");
+      const phone = str("phone");
+      if (!brandName || !displayName || !phone) {
+        showToast("Missing details", "Brand name, your name, and phone are required.", "error");
+        return;
+      }
       const isEdit = !!s.profileComplete;
       const body = {
         action: "auth_profile",
-        email: s.email,
+        email: String(s.email).toLowerCase().trim(),
         role: "brand",
-        brandName: fd.get("brandName"),
-        displayName: fd.get("displayName"),
-        website: fd.get("website"),
-        instagram: fd.get("instagram"),
-        phone: fd.get("phone"),
-        city: fd.get("city"),
+        brandName: brandName,
+        displayName: displayName,
+        website: str("website"),
+        instagram: str("instagram"),
+        phone: phone,
+        city: str("city"),
         niche: niche,
-        bio: fd.get("bio")
+        bio: str("bio")
       };
       const btn = e.target.querySelector('[type="submit"]');
       const idleLabel = isEdit ? "Save changes →" : "Save brand profile";
@@ -4189,39 +4305,56 @@ if (pageId === "login") {
         btn.textContent = isEdit ? "Saving changes…" : "Submitting…";
       }
       try {
-        const data = await apiPost(body, 12000);
-        if (data && data.ok === false) throw new Error(data.error || "fail");
-      } catch (err) {
-        console.warn(err);
-        showToast("Could not save", "Try again in a moment.", "error");
-        if (btn) { btn.disabled = false; btn.classList.remove("is-loading"); btn.textContent = idleLabel; }
-        return;
-      }
-      setSession(Object.assign({}, s, {
-        role: "brand",
-        brandName: body.brandName,
-        displayName: body.displayName,
-        profileComplete: true,
-        phone: body.phone,
-        _user: Object.assign({}, s._user || {}, {
+        let data = await apiPost(body, 15000);
+        // Recover if user row missing (signup race)
+        if (data && data.ok === false && (data.error === "user_not_found" || data.error === "new_user")) {
+          const pending = typeof getPendingGoogle === "function" ? getPendingGoogle() : null;
+          await apiPost({
+            action: "auth_login",
+            mode: "signup",
+            email: body.email,
+            name: displayName,
+            role: "brand",
+            picture: (s.picture || (pending && pending.picture) || ""),
+            googleCredential: (pending && pending.credential) || ""
+          }, 12000);
+          data = await apiPost(body, 15000);
+        }
+        if (!data || data.ok === false) {
+          const msg = (data && (data.message || data.error)) || "Save failed";
+          throw new Error(msg);
+        }
+        // opaque success still OK if network wrote
+        setSession({
+          email: body.email,
+          role: "brand",
+          brandName: body.brandName,
+          displayName: body.displayName,
+          picture: s.picture || "",
+          profileComplete: true,
           phone: body.phone,
           website: body.website,
           instagram: body.instagram,
           city: body.city,
           niche: body.niche,
           bio: body.bio
-        })
-      }));
-      if (btn) {
-        btn.disabled = false;
-        btn.classList.remove("is-loading");
-        btn.textContent = "Save changes →";
-      }
-      if (isEdit) {
-        showToast("Profile updated", "Your brand details were saved.", "brand");
-      } else {
-        showToast("Brand profile saved", "You're ready to find creators and post campaigns.", "brand");
-        showPage("brandhome");
+        });
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove("is-loading");
+          btn.textContent = "Save changes →";
+        }
+        if (isEdit) {
+          showToast("Profile updated", "Your brand details were saved.", "brand");
+        } else {
+          showToast("Brand profile saved", "You're ready to find creators and post campaigns.", "brand");
+          showPage("brandhome");
+        }
+      } catch (err) {
+        console.warn(err);
+        const msg = String(err && err.message ? err.message : "Try again in a moment.");
+        showToast("Could not save", msg.replace(/_/g, " "), "error");
+        if (btn) { btn.disabled = false; btn.classList.remove("is-loading"); btn.textContent = idleLabel; }
       }
     }
 
