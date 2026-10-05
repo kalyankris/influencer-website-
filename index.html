@@ -1427,6 +1427,99 @@
     .role-pick strong { display: block; font-size: 1.05rem; margin-bottom: 0.25rem; }
     .role-pick span { font-size: 0.8rem; opacity: 0.85; }
 
+  
+    .land-wrap {
+      min-height: calc(100vh - 70px);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 2rem 1rem 3rem;
+      position: relative; overflow: hidden;
+    }
+    .land-glow {
+      position: absolute; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(249,115,22,0.22), transparent 55%),
+        radial-gradient(ellipse 70% 45% at 85% 20%, rgba(99,102,241,0.28), transparent 50%),
+        radial-gradient(ellipse 50% 40% at 50% 90%, rgba(34,211,238,0.12), transparent 60%);
+    }
+    .land-inner { position: relative; z-index: 1; width: 100%; max-width: 920px; }
+    .land-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.4rem 0.9rem; border-radius: 999px;
+      border: 1px solid rgba(232,195,154,0.35);
+      background: rgba(232,195,154,0.1);
+      color: #e8c39a; font-size: 0.8rem; font-weight: 600;
+      margin: 0 auto 1.25rem; width: fit-content;
+    }
+    .land-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2rem, 6vw, 3.15rem);
+      font-weight: 750; line-height: 1.12; text-align: center;
+      margin: 0 0 0.85rem; letter-spacing: -0.02em;
+    }
+    .land-title span {
+      background: linear-gradient(120deg, #fdba74, #c4b5fd, #67e8f9);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .land-sub {
+      text-align: center; color: var(--text-muted); font-size: 1.05rem;
+      max-width: 540px; margin: 0 auto 1.75rem; line-height: 1.55;
+    }
+    .land-panels {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+      max-width: 640px; margin: 0 auto 1.5rem;
+    }
+    @media (max-width: 640px) {
+      .land-panels { grid-template-columns: 1fr; }
+    }
+    .land-panel {
+      border-radius: 20px; padding: 1.35rem 1.2rem 1.25rem;
+      border: 1px solid var(--border); text-align: left; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      font-family: inherit; width: 100%; color: inherit;
+      background: rgba(20,18,30,0.75);
+    }
+    .land-panel:hover { transform: translateY(-3px); }
+    .land-panel.creator {
+      border-color: rgba(251,146,60,0.35);
+      background: linear-gradient(165deg, rgba(251,146,60,0.14), rgba(20,18,30,0.85));
+    }
+    .land-panel.brand {
+      border-color: rgba(167,139,250,0.35);
+      background: linear-gradient(165deg, rgba(167,139,250,0.14), rgba(20,18,30,0.85));
+    }
+    .land-panel:hover.creator { box-shadow: 0 12px 40px rgba(249,115,22,0.15); }
+    .land-panel:hover.brand { box-shadow: 0 12px 40px rgba(99,102,241,0.18); }
+    .land-panel h3 { font-size: 1.2rem; margin: 0 0 0.35rem; }
+    .land-panel p { font-size: 0.88rem; color: var(--text-muted); margin: 0 0 0.9rem; line-height: 1.45; }
+    .land-panel .lp-cta {
+      display: inline-block; font-size: 0.85rem; font-weight: 650;
+      padding: 0.45rem 0.9rem; border-radius: 999px;
+    }
+    .land-panel.creator .lp-cta { background: rgba(249,115,22,0.25); color: #ffedd5; }
+    .land-panel.brand .lp-cta { background: rgba(124,108,246,0.3); color: #ede9fe; }
+    .land-login-box {
+      max-width: 420px; margin: 0 auto;
+      padding: 1.35rem 1.25rem; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(15,14,22,0.9);
+      backdrop-filter: blur(12px);
+    }
+    .land-login-box h3 {
+      text-align: center; font-size: 1.05rem; margin: 0 0 0.85rem;
+      color: #f5f0e8;
+    }
+    .land-stats {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem;
+      margin-top: 2rem; color: var(--text-muted); font-size: 0.82rem;
+    }
+    .land-stats strong { color: #e8c39a; font-size: 1.1rem; display: block; text-align: center; }
+
+  
+    body:not(.authed) .nav-section { display: none !important; }
+    body:not(.authed) .nav-links .nav-btn[data-page="admin"] { display: none !important; }
+    body:not(.authed) .nav-links .nav-btn[data-page="shortlist"] { display: none !important; }
+    body.authed .land-login-box { display: none; }
+
   </style>
 </head>
 <body>
@@ -1473,46 +1566,52 @@
     <button type="button" class="nav-btn" data-page="contact">Contact</button>
   </div>
 
-  <!-- HOME -->
+  <!-- HOME = public landing (login required for rest) -->
   <div class="page active" id="page-home">
-    <section class="hero">
-      <div class="hero-bg" aria-hidden="true">
-        <div class="hero-grid"></div>
-        <div class="hero-orb a"></div>
-        <div class="hero-orb b"></div>
-        <div class="hero-orb c"></div>
-        <div class="hero-orb d"></div>
-        
+    <div class="land-wrap">
+      <div class="land-glow" aria-hidden="true"></div>
+      <div class="land-inner">
+        <div style="text-align:center;">
+          <div class="land-badge">✦ India&#39;s creator–brand marketplace</div>
+          <h1 class="land-title">Where brands meet<br><span>the right creators</span></h1>
+          <p class="land-sub">Safe deals. Clear payments. Real collaborations — for influencers and brands who want work done right.</p>
+        </div>
+        <div class="land-panels">
+          <button type="button" class="land-panel creator" id="landPickCreator">
+            <h3>I&#39;m a Creator</h3>
+            <p>Join free, get discovered by brands, and manage deals in one place.</p>
+            <span class="lp-cta">Continue as Creator →</span>
+          </button>
+          <button type="button" class="land-panel brand" id="landPickBrand">
+            <h3>I&#39;m a Brand</h3>
+            <p>Find influencers, post campaigns, and run deals with payment protection.</p>
+            <span class="lp-cta">Continue as Brand →</span>
+          </button>
+        </div>
+        <div class="land-login-box">
+          <h3>Sign in with Gmail</h3>
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="landEmail" placeholder="you@gmail.com" autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label>Your name</label>
+            <input type="text" id="landName" placeholder="How should we call you?">
+          </div>
+          <input type="hidden" id="landIntent" value="">
+          <button type="button" class="btn btn-primary" style="width:100%;" id="landLoginBtn">Sign in &amp; continue</button>
+          <p id="landLoginError" style="display:none;color:#fca5a5;font-size:0.85rem;margin-top:0.65rem;text-align:center;"></p>
+          <p style="font-size:0.75rem;color:var(--text-dim);margin-top:0.85rem;text-align:center;line-height:1.4;">
+            After sign-in you&#39;ll set up your profile. Campaigns, deals &amp; directory unlock only for signed-in users.
+          </p>
+        </div>
+        <div class="land-stats">
+          <div><strong id="landStatInf">—</strong>Creators</div>
+          <div><strong id="landStatCamp">—</strong>Open campaigns</div>
+          <div><strong>Safe</strong>UPI via Connectly</div>
+        </div>
       </div>
-      <div class="hero-front">
-      <div class="hero-badge"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.2l1.35 4.15L13.6 6.7l-4.25 1.45L8 12.4l-1.35-4.25L2.4 6.7l4.25-1.35L8 1.2z" stroke="#e8c39a" stroke-width="1.1" fill="rgba(232,195,154,0.2)"/></svg> Connecting creators with brands</div>
-      <h1>Discover the perfect <span>influencer</span> for your next campaign</h1>
-      <p>Connectly is the modern marketplace where brands find authentic creators and creators find meaningful collaborations.</p>
-      <div class="path-grid">
-        <button type="button" class="path-card creator" data-page="creators">
-          <h3>Influencers</h3>
-          <p>Join the directory and apply to open campaigns.</p>
-          <span class="btn btn-creator btn-sm">Enter as Influencer</span>
-        </button>
-        <button type="button" class="path-card brand" data-page="brandhome">
-          <h3>Brands</h3>
-          <p>Find creators and post a campaign.</p>
-          <span class="btn btn-primary btn-sm">Enter as Brand</span>
-        </button>
-      </div>
-      <div class="stats">
-        <div class="stat"><div class="stat-num" data-target="500">0</div><div class="stat-label">Brands</div></div>
-        <div class="stat"><div class="stat-num" data-target="10000">0</div><div class="stat-label">Influencers</div></div>
-        <div class="stat"><div class="stat-num" data-target="8500">0</div><div class="stat-label">Campaigns</div></div>
-        <div class="stat"><div class="stat-num" data-target="98">0</div><div class="stat-label">% Satisfaction</div></div>
-      </div>
-      </div>
-    </section>
-    <section class="section">
-      <h2 class="section-title">Featured Creators</h2>
-      <p class="section-sub">Hand-picked talent ready to collaborate</p>
-      <div class="influencer-grid" id="featuredGrid"></div>
-    </section>
+    </div>
   </div>
 
   <!-- INFLUENCER HUB -->
@@ -2854,14 +2953,36 @@
     function showPage(pageId, fromHistory) {
       if (!pageId) pageId = "home";
       if (!document.getElementById("page-" + pageId)) pageId = "home";
+
+      // Public pages only before login
+      const PUBLIC = { home:1, login:1, how:1, contact:1 };
+      const s = (typeof getSession === "function") ? getSession() : null;
+      if (!s && !PUBLIC[pageId]) {
+        try { sessionStorage.setItem("cnt_after_login", pageId); } catch(_){}
+        pageId = "home";
+      }
+      // Logged in: keep admin/profile routes open; send incomplete profiles to setup
+      if (s && !isAdminEmail(s.email)) {
+        if (!s.role && pageId !== "role" && pageId !== "login" && pageId !== "home") {
+          pageId = "role";
+        } else if (s.role && !s.profileComplete) {
+          const need = s.role === "brand" ? "brand-profile" : "creator-profile";
+          if (pageId !== need && pageId !== "login" && pageId !== "home") pageId = need;
+        }
+      }
+      // Admin only
+      if (pageId === "admin" && !(s && isAdminEmail(s.email))) pageId = s ? "home" : "home";
+
       if (pageId === "shortlist") setTimeout(renderShortlist, 40);
       if (pageId === "creators" || pageId === "brandhome" || pageId === "home") setTimeout(updateDashboardStats, 60);
       if (pageId === "deals") {
-        const s = getSession();
         const de = document.getElementById("dealsEmail");
         if (s && de && !de.value) de.value = s.email;
+        if (s && isAdminEmail(s.email) && de) de.value = ADMIN_EMAIL;
       }
-      if (pageId === "login" || pageId === "admin") refreshAuthUI();
+      if (pageId === "login" || pageId === "admin" || pageId === "home") refreshAuthUI();
+      // hide nav tools when logged out
+      document.body.classList.toggle("authed", !!s);
       document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
       document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
       const page = document.getElementById("page-" + pageId);
@@ -3100,6 +3221,58 @@
       }
     }
 
+    
+    async function landLogin() {
+      const email = (document.getElementById("landEmail")?.value || document.getElementById("loginEmail")?.value || "").trim();
+      const name = (document.getElementById("landName")?.value || document.getElementById("loginName")?.value || "").trim();
+      const intent = (document.getElementById("landIntent")?.value || "").trim();
+      const err = document.getElementById("landLoginError") || document.getElementById("loginError");
+      if (err) err.style.display = "none";
+      if (!email || email.indexOf("@") < 0) {
+        if (err) { err.textContent = "Enter a valid Gmail / email"; err.style.display = "block"; }
+        return;
+      }
+      const btn = document.getElementById("landLoginBtn") || document.getElementById("loginContinueBtn");
+      if (btn) { btn.disabled = true; btn.textContent = "Signing in…"; }
+      let user = { email: email.toLowerCase(), displayName: name, role: "", profileComplete: false };
+      try {
+        const data = await apiPost({ action: "auth_login", email, name });
+        if (data && data.ok && data.user) user = data.user;
+      } catch (_) {}
+
+      if (isAdminEmail(user.email)) {
+        user.role = "ops"; user.profileComplete = true;
+        setSession(user); setAdminViewMode("ops"); showPage("admin");
+        if (btn) { btn.disabled = false; btn.textContent = "Sign in & continue"; }
+        return;
+      }
+
+      // Intent from landing panels
+      if (!user.role && (intent === "creator" || intent === "brand")) {
+        user.role = intent;
+        try { await apiPost({ action: "auth_profile", email: user.email, role: intent, displayName: name }); } catch(_){}
+      }
+      setSession(user);
+      if (!user.role) showPage("role");
+      else if (!user.profileComplete) showPage(user.role === "brand" ? "brand-profile" : "creator-profile");
+      else showPage(user.role === "brand" ? "brandhome" : "creators");
+      loadServerShortlist();
+      if (btn) { btn.disabled = false; btn.textContent = "Sign in & continue"; }
+    }
+
+    function landSetIntent(role) {
+      const el = document.getElementById("landIntent");
+      if (el) el.value = role;
+      const box = document.querySelector(".land-login-box");
+      if (box) {
+        box.scrollIntoView({ behavior: "smooth", block: "center" });
+        box.style.boxShadow = role === "creator"
+          ? "0 0 0 1px rgba(251,146,60,0.45), 0 12px 40px rgba(249,115,22,0.12)"
+          : "0 0 0 1px rgba(167,139,250,0.45), 0 12px 40px rgba(99,102,241,0.12)";
+      }
+      document.getElementById("landEmail")?.focus();
+    }
+
     async function authContinue() {
       const email = (document.getElementById("loginEmail")?.value || "").trim();
       const name = (document.getElementById("loginName")?.value || "").trim();
@@ -3287,6 +3460,8 @@
       set("dashBrandCreators", nInf || "0");
       set("dashBrandCampaigns", nCamp || "0");
       set("dashShortlistCount", String(getShortlist().length));
+      set("landStatInf", nInf || "0");
+      set("landStatCamp", nCamp || "0");
       // Home hero stats (real when available)
       document.querySelectorAll(".stat-num").forEach(el => {
         const label = (el.parentElement && el.parentElement.querySelector(".stat-label") || {}).textContent || "";
@@ -4043,6 +4218,18 @@
     // INIT + Meta Ads deep link (?page=join or #join)
     // ============================================================
     loadLiveData(false);
+    (function bootAuth() {
+      const s = getSession();
+      refreshAuthUI();
+      if (s) {
+        if (isAdminEmail(s.email)) showPage("admin");
+        else if (!s.role) showPage("role");
+        else if (!s.profileComplete) showPage(s.role === "brand" ? "brand-profile" : "creator-profile");
+        else showPage(s.role === "brand" ? "brandhome" : "creators");
+      } else {
+        showPage("home");
+      }
+    })();
 
     // ---------- My Deals ----------
     const CONNECTLY_UPI_FALLBACK = "connectly@upi";
@@ -4602,7 +4789,16 @@
 
     document.getElementById("dealsLoadBtn")?.addEventListener("click", loadMyDeals);
 
-    document.getElementById("loginContinueBtn")?.addEventListener("click", authContinue);
+    document.getElementById("loginContinueBtn")?.addEventListener("click", () => {
+      const le = document.getElementById("loginEmail");
+      const ln = document.getElementById("loginName");
+      if (le && document.getElementById("landEmail")) document.getElementById("landEmail").value = le.value;
+      if (ln && document.getElementById("landName")) document.getElementById("landName").value = ln.value;
+      landLogin();
+    });
+    document.getElementById("landLoginBtn")?.addEventListener("click", landLogin);
+    document.getElementById("landPickCreator")?.addEventListener("click", () => landSetIntent("creator"));
+    document.getElementById("landPickBrand")?.addEventListener("click", () => landSetIntent("brand"));
     document.getElementById("loginLogoutBtn")?.addEventListener("click", () => {
       setSession(null);
       showPage("login");
