@@ -1612,52 +1612,58 @@
       position: fixed; inset: 0; z-index: 10000;
       display: none; align-items: center; justify-content: center;
       flex-direction: column; gap: 1.15rem;
+      /* Opaque frosted glass — solid base, not a cheap transparent wash */
+      background: rgba(10, 9, 8, 0.88);
+      backdrop-filter: blur(22px) saturate(1.1);
+      -webkit-backdrop-filter: blur(22px) saturate(1.1);
+    }
+    .auth-loading-overlay::before {
+      content: "";
+      position: absolute; inset: 0; pointer-events: none;
       background:
-        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(232,195,154,0.12), transparent 55%),
-        rgba(6, 5, 4, 0.62);
-      backdrop-filter: blur(18px) saturate(1.25);
-      -webkit-backdrop-filter: blur(18px) saturate(1.25);
+        radial-gradient(ellipse 55% 40% at 50% 42%, rgba(232,195,154,0.14), transparent 70%);
     }
     .auth-loading-overlay.show { display: flex; }
     .auth-loading-card {
+      position: relative; z-index: 1;
       display: flex; flex-direction: column; align-items: center; gap: 1rem;
-      padding: 1.75rem 2rem; border-radius: 20px;
-      background: rgba(18, 16, 14, 0.72);
-      border: 1px solid rgba(247,243,234,0.1);
-      box-shadow: 0 24px 64px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
-      min-width: min(280px, 86vw);
+      padding: 2rem 2.25rem; border-radius: 22px;
+      background: rgba(28, 25, 22, 0.92);
+      border: 1px solid rgba(247,243,234,0.14);
+      box-shadow:
+        0 28px 80px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      min-width: min(300px, 88vw);
     }
     .auth-loading-overlay p, .auth-loading-card p {
-      color: #f7f3ea; font-size: 0.95rem; font-weight: 500; margin: 0;
-      text-align: center; letter-spacing: 0.01em; line-height: 1.4;
+      color: #f7f3ea; font-size: 0.98rem; font-weight: 550; margin: 0;
+      text-align: center; letter-spacing: 0.015em; line-height: 1.4;
     }
     .auth-loading-sub {
-      color: #a8a29a !important; font-size: 0.8rem !important; font-weight: 400 !important;
+      color: #9c958c !important; font-size: 0.8rem !important; font-weight: 400 !important;
     }
     .profile-glass-loading {
       position: absolute; inset: 0; z-index: 8;
       display: none; align-items: center; justify-content: center;
       flex-direction: column; gap: 0.95rem;
-      background:
-        radial-gradient(ellipse 70% 50% at 50% 45%, rgba(232,195,154,0.1), transparent 60%),
-        rgba(6, 5, 4, 0.78);
-      backdrop-filter: blur(16px) saturate(1.2);
-      -webkit-backdrop-filter: blur(16px) saturate(1.2);
+      background: rgba(12, 11, 10, 0.9);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       border-radius: inherit;
-      border: 1px solid rgba(247,243,234,0.07);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+      border: 1px solid rgba(247,243,234,0.1);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
     }
     .profile-glass-loading p {
       color: #f7f3ea; font-size: 0.92rem; margin: 0; font-weight: 500;
       letter-spacing: 0.01em;
     }
     .auth-spinner {
-      width: 42px; height: 42px; border-radius: 50%;
-      border: 3px solid rgba(247,243,234,0.12);
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 3px solid rgba(247,243,234,0.1);
       border-top-color: #e8c39a;
-      border-right-color: rgba(232,195,154,0.35);
-      animation: spin 0.75s linear infinite;
-      box-shadow: 0 0 24px rgba(232,195,154,0.15);
+      border-right-color: rgba(232,195,154,0.4);
+      animation: spin 0.7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .btn.is-loading { opacity: 0.75; pointer-events: none; position: relative; }
@@ -2903,6 +2909,8 @@
         status.textContent = "";
         status.removeAttribute("style");
       }
+      // Prevent flashing old/wrong totals while refreshing
+      if (!isSilent) __infCountReady = false;
 
       let hadCache = false;
       let cacheAge = 1e12;
@@ -2914,7 +2922,8 @@
           cacheAge = parsed && parsed.ts ? (Date.now() - parsed.ts) : 0;
           if (Array.isArray(rows) && rows.length) {
             allInfluencers = prepare(rows);
-            __infCountReady = rows.length >= 50; // small caches still provisional
+            // Cache may be stale (e.g. 590) — never show count until live fetch confirms
+            __infCountReady = false;
             finishLoad();
             hadCache = true;
             hideProgress();
@@ -3969,65 +3978,77 @@ if (pageId === "login") {
         if (el && val != null && String(val).trim() !== "") el.value = val;
       };
       const sess = getSession() || s;
+      const isCreator = sess.role === "creator";
+      const isNew = isCreator && !sess.profileComplete;
+      const isEdit = isCreator && sess.profileComplete;
+
+      // Always wipe form first so previous users / directory data never stick
+      try { form.reset(); } catch (_) {}
+      Array.from(form.elements).forEach(el => {
+        if (!el || !el.name) return;
+        if (el.tagName === "SELECT") el.selectedIndex = 0;
+        else if (el.type !== "hidden" && el.type !== "submit" && el.type !== "button") el.value = "";
+      });
+      ["joinSkillOtherWrap", "joinCityOtherWrap"].forEach(id => {
+        const w = document.getElementById(id);
+        if (w) w.style.display = "none";
+      });
+
+      // Google identity only for brand-new creators — never invent profile from sheet
       set("email", sess.email || "");
       set("name", sess.displayName || "");
-      set("phone", u.phone || "");
-      set("instagram", u.instagram || "");
-      set("city", u.city || "");
-      set("gender", u.gender || "");
-      if (u.age) set("age", u.age);
-      if (u.followers) set("followers", u.followers);
-      if (u.niche) {
-        const skill = form.elements.namedItem("skill");
-        if (skill) {
-          const opts = Array.from(skill.options).map(o => o.value);
-          if (opts.includes(u.niche)) skill.value = u.niche;
-          else {
-            skill.value = "Other";
-            const wrap = document.getElementById("joinSkillOtherWrap");
-            const other = document.getElementById("joinSkillOther");
-            if (wrap) wrap.style.display = "block";
-            if (other) { other.required = true; other.value = u.niche; }
-          }
-        }
-      }
-      // Parse charges text back into fields when possible
-      if (u.charges) {
-        const ch = String(u.charges);
-        const mPost = ch.match(/Post\s*₹?\s*(\d+)/i);
-        const mStory = ch.match(/Story\s*₹?\s*(\d+)/i);
-        const mReel = ch.match(/Reel\s*₹?\s*(\d+)/i);
-        const mShout = ch.match(/Shoutout\s*₹?\s*(\d+)/i);
-        if (mPost) set("chargePost", mPost[1]);
-        if (mStory) set("chargeStory", mStory[1]);
-        if (mReel) set("chargeReel", mReel[1]);
-        if (mShout) set("chargeShoutout", mShout[1]);
-      }
-
       if (sess.picture && pic && picWrap) {
         pic.src = sess.picture;
         pic.alt = sess.displayName || "Profile";
         picWrap.style.display = "block";
       }
 
-      const isCreator = sess.role === "creator";
-      const isNew = isCreator && !sess.profileComplete;
-      const isEdit = isCreator && sess.profileComplete;
-
-      if (isNew) {
-        if (title) title.textContent = "Complete your creator profile";
-        if (sub) sub.textContent = "You're signed in. Finish this form once so brands can find you in the directory.";
-        if (badge) badge.textContent = "Required for new creators";
-        if (required) required.style.display = "block";
-        if (submitBtn) submitBtn.textContent = "Save & get listed →";
-        form.dataset.editMode = "0";
-      } else if (isEdit) {
+      if (isEdit) {
+        // Returning creator: fill saved profile fields
+        set("phone", u.phone || "");
+        set("instagram", u.instagram || "");
+        set("city", u.city || "");
+        set("gender", u.gender || "");
+        if (u.age) set("age", u.age);
+        if (u.followers) set("followers", u.followers);
+        if (u.niche) {
+          const skill = form.elements.namedItem("skill");
+          if (skill) {
+            const opts = Array.from(skill.options).map(o => o.value);
+            if (opts.includes(u.niche)) skill.value = u.niche;
+            else {
+              skill.value = "Other";
+              const wrap = document.getElementById("joinSkillOtherWrap");
+              const other = document.getElementById("joinSkillOther");
+              if (wrap) wrap.style.display = "block";
+              if (other) { other.required = true; other.value = u.niche; }
+            }
+          }
+        }
+        if (u.charges) {
+          const ch = String(u.charges);
+          const mPost = ch.match(/Post\s*₹?\s*(\d+)/i);
+          const mStory = ch.match(/Story\s*₹?\s*(\d+)/i);
+          const mReel = ch.match(/Reel\s*₹?\s*(\d+)/i);
+          const mShout = ch.match(/Shoutout\s*₹?\s*(\d+)/i);
+          if (mPost) set("chargePost", mPost[1]);
+          if (mStory) set("chargeStory", mStory[1]);
+          if (mReel) set("chargeReel", mReel[1]);
+          if (mShout) set("chargeShoutout", mShout[1]);
+        }
         if (title) title.textContent = "My profile";
         if (sub) sub.textContent = "Edit your details — updates the marketplace directory.";
         if (badge) { badge.textContent = "Edit profile"; badge.style.display = ""; }
         if (required) required.style.display = "none";
         if (submitBtn) submitBtn.textContent = "Save changes →";
         form.dataset.editMode = "1";
+      } else if (isNew) {
+        if (title) title.textContent = "Complete your creator profile";
+        if (sub) sub.textContent = "You're signed in. Fill this form once so brands can find you. Only name & email come from Google.";
+        if (badge) badge.textContent = "Required for new creators";
+        if (required) required.style.display = "block";
+        if (submitBtn) submitBtn.textContent = "Save & get listed →";
+        form.dataset.editMode = "0";
       } else {
         form.dataset.editMode = "0";
       }
