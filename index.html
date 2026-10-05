@@ -1543,7 +1543,6 @@
   
     body:not(.authed) .nav-section { display: none !important; }
     body:not(.authed) .nav-links .nav-btn[data-page="admin"] { display: none !important; }
-    body:not(.authed) .nav-links .nav-btn[data-page="shortlist"] { display: none !important; }
     body.authed .land-login-box { display: none; }
 
     /* Role-aware nav: only show relevant path after login */
@@ -1617,6 +1616,21 @@
       flex-direction: column; gap: 1rem;
     }
     .auth-loading-overlay.show { display: flex; }
+    .profile-glass-loading {
+      position: absolute; inset: 0; z-index: 8;
+      display: none; align-items: center; justify-content: center;
+      flex-direction: column; gap: 0.95rem;
+      background: rgba(6, 5, 4, 0.78);
+      backdrop-filter: blur(16px) saturate(1.15);
+      -webkit-backdrop-filter: blur(16px) saturate(1.15);
+      border-radius: inherit;
+      border: 1px solid rgba(247,243,234,0.07);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .profile-glass-loading p {
+      color: #f7f3ea; font-size: 0.92rem; margin: 0; font-weight: 500;
+      letter-spacing: 0.01em;
+    }
     .auth-spinner {
       width: 40px; height: 40px; border-radius: 50%;
       border: 3px solid rgba(247,243,234,0.15);
@@ -1666,7 +1680,6 @@
         <button type="button" class="nav-btn" data-page="brands">Post a Campaign</button>
         <button type="button" class="nav-btn" data-page="campaigns">See Open Campaigns</button>
         <button type="button" class="nav-btn" data-page="deals">My Deals</button>
-        <button type="button" class="nav-btn" data-page="shortlist">Shortlist</button>
       </div>
     </div>
     <button type="button" class="nav-btn" data-page="admin" id="navAdminLink" style="display:none;">Admin panel</button>
@@ -1741,30 +1754,15 @@
       <div class="dash-grid" id="brandDashStats">
         <div class="dash-card"><div class="dash-num" id="dashBrandCreators">—</div><div class="dash-label">Creators available</div></div>
         <div class="dash-card"><div class="dash-num" id="dashBrandCampaigns">—</div><div class="dash-label">Open campaigns</div></div>
-        <div class="dash-card"><div class="dash-num" id="dashShortlistCount">0</div><div class="dash-label">Saved shortlist</div></div>
+        <div class="dash-card"><div class="dash-num" id="dashBrandDeals">—</div><div class="dash-label">My deals</div></div>
       </div>
       <div class="hub-actions" style="max-width:480px;margin:1.5rem auto 0;">
         <button type="button" class="btn btn-primary" data-page="deals">My Deals</button>
         <button type="button" class="btn btn-outline" data-page="discover">Find creators</button>
         <button type="button" class="btn btn-outline" data-page="brands">Post a campaign</button>
-        <button type="button" class="btn btn-outline" data-page="shortlist">My shortlist</button>
       </div>
       <div class="hub-tip">
-        <strong>Tip:</strong> Save creators to your shortlist while browsing, then invite them from <em>My Deals</em> flow. Pay Connectly before you can open creator work links.
-      </div>
-    </section>
-  </div>
-
-  <!-- BRAND SHORTLIST (new feature) -->
-  <div class="page" id="page-shortlist">
-    <section class="section" style="padding-top:2rem;">
-      <h2 class="section-title">Your shortlist</h2>
-      <p class="section-sub">Creators you saved while browsing. Only stored on this device.</p>
-      <div id="shortlistGrid" class="influencer-grid">
-        <div class="empty-state"><p>No saved creators yet. Open Find creators and tap Save.</p></div>
-      </div>
-      <div style="text-align:center;margin-top:1.25rem;">
-        <button type="button" class="btn btn-primary" data-page="discover">Find creators</button>
+        <strong>Tip:</strong> Browse creators, send a deal offer, then manage everything in <em>My Deals</em>. Pay Connectly before you can open creator work links.
       </div>
     </section>
   </div>
@@ -1995,11 +1993,11 @@
         <div class="dash-card"><div class="dash-num" id="adminViewMode">ops</div><div class="dash-label">View mode</div></div>
       </div>
       <div class="auth-card" style="max-width:100%;">
-        <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.85rem;"><strong style="color:#e9e5ff;">Test as role</strong> — switches how deals &amp; shortlist behave without logging out</p>
+        <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.85rem;"><strong style="color:#e9e5ff;">Test as role</strong> — switches how deals behave without logging out</p>
         <div class="role-pick" style="grid-template-columns:1fr 1fr 1fr;">
           <button type="button" class="role-brand" data-admin-view="ops"><strong>Ops</strong><span>Confirm pay · payout</span></button>
           <button type="button" class="role-creator" data-admin-view="creator"><strong>Creator</strong><span>Accept · upload</span></button>
-          <button type="button" class="role-brand" data-admin-view="brand"><strong>Brand</strong><span>Pay · review · shortlist</span></button>
+          <button type="button" class="role-brand" data-admin-view="brand"><strong>Brand</strong><span>Pay · review · deals</span></button>
         </div>
         <p style="font-size:0.8rem;color:var(--text-dim);margin:1rem 0 0.75rem;">Quick links</p>
         <div class="hub-actions" style="max-width:100%;margin:0;">
@@ -2007,7 +2005,6 @@
           <button type="button" class="btn btn-outline" data-page="discover">Find creators</button>
           <button type="button" class="btn btn-outline" data-page="campaigns">Open campaigns</button>
           <button type="button" class="btn btn-outline" data-page="brands">Post campaign</button>
-          <button type="button" class="btn btn-outline" data-page="shortlist">Shortlist</button>
           <button type="button" class="btn btn-outline" data-page="join">Creator join form</button>
           <button type="button" class="btn btn-outline" data-page="brand-profile">Brand profile form</button>
           <button type="button" class="btn btn-outline" data-page="creator-profile">Creator profile form</button>
@@ -2115,9 +2112,9 @@
   <div class="page" id="page-brand-profile">
     <section class="section" style="padding-top:2rem;">
       <div class="form-card" style="max-width:560px;margin:0 auto;position:relative;">
-        <div id="brandProfileLoading" style="display:none;position:absolute;inset:0;z-index:6;background:rgba(18,16,14,0.88);backdrop-filter:blur(8px);border-radius:inherit;align-items:center;justify-content:center;flex-direction:column;gap:0.85rem;">
+        <div id="brandProfileLoading" class="profile-glass-loading" style="display:none;">
           <div class="auth-spinner"></div>
-          <p style="color:#f7f3ea;font-size:0.92rem;margin:0;font-weight:500;">Loading your brand profile…</p>
+          <p>Loading your brand profile…</p>
         </div>
         <h2 class="section-title" style="text-align:center;">Brand profile</h2>
         <p class="section-sub" style="text-align:center;">Tell creators who you are</p>
@@ -2217,9 +2214,9 @@
       </div>
 
       <div class="form-card" style="max-width:560px;position:relative;">
-        <div id="joinLoading" style="display:none;position:absolute;inset:0;z-index:5;background:rgba(18,16,14,0.82);backdrop-filter:blur(6px);border-radius:inherit;align-items:center;justify-content:center;flex-direction:column;gap:0.75rem;">
+        <div id="joinLoading" class="profile-glass-loading" style="display:none;">
           <div class="auth-spinner"></div>
-          <p style="color:#f7f3ea;font-size:0.9rem;margin:0;">Loading your profile…</p>
+          <p>Loading your profile…</p>
         </div>
         <form id="joinForm">
           <div class="form-group">
@@ -2459,10 +2456,6 @@
   <footer>
     <div class="footer-links">
       <a data-page="home">Home</a>
-      <a data-page="join">Creator Join</a>
-      <a data-page="campaigns">Creator Campaigns</a>
-      <a data-page="discover">Brand: Find Creators</a>
-      <a data-page="brands">Brand: Post Campaign</a>
       <a data-page="how">How it Works</a>
       <a data-page="contact">Contact</a>
     </div>
@@ -3082,7 +3075,6 @@
             ${i.charges ? `<div class="card-rate">${esc(shortCharges(i.charges))}</div>` : ""}
             <div class="card-footer">
               ${i.igLink ? `<a class="btn btn-outline btn-sm" href="${esc(i.igLink)}" target="_blank" rel="noopener">Instagram</a>` : `<span></span>`}
-              <button type="button" class="btn-save-short ${typeof isShortlisted === "function" && isShortlisted(i.id) ? "saved" : ""}" data-shortlist-id="${i.id}">${typeof isShortlisted === "function" && isShortlisted(i.id) ? "★" : "☆"}</button>
               <button type="button" class="btn btn-creator btn-sm view-btn" data-id="${i.id}">View</button>
             </div>
           </div>
@@ -3178,8 +3170,6 @@
       }
       // Admin only
       if (pageId === "admin" && !(s && isAdminEmail(s.email))) pageId = s ? "home" : "home";
-
-      if (pageId === "shortlist") setTimeout(renderShortlist, 40);
       if (pageId === "creators" || pageId === "brandhome" || pageId === "home") setTimeout(updateDashboardStats, 60);
       if (pageId === "deals") {
         const de = document.getElementById("dealsEmail");
@@ -3194,6 +3184,7 @@
       if (pageId === "brand-profile") setTimeout(() => { prefillBrandProfile(); }, 40);
 if (pageId === "login") {
         sessionStorage.setItem("cnt_auth_mode", "signin");
+        try { sessionStorage.removeItem("cnt_intent"); } catch (_) {}
         const modeEl = document.getElementById("authMode");
         if (modeEl) modeEl.value = "signin";
         const err = document.getElementById("loginError");
@@ -3320,7 +3311,7 @@ if (pageId === "login") {
 
     document.addEventListener("click", (e) => {
       // Never open creator modal when tapping shortlist / links / invite
-      if (e.target.closest("[data-shortlist-id], .btn-save-short, .invite-creator-btn, a")) return;
+      if (e.target.closest(".invite-creator-btn, a")) return;
       const viewBtn = e.target.closest(".view-btn[data-id]");
       if (viewBtn) {
         e.preventDefault();
@@ -3552,7 +3543,6 @@ if (pageId === "login") {
         return;
       }
       setSession(user);
-      try { loadServerShortlist(); } catch (_) {}
       const role = String(user.role || "").toLowerCase();
       if (role !== "creator" && role !== "brand") {
         try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
@@ -4025,9 +4015,10 @@ if (pageId === "login") {
         const email = payload.email || "";
         const name = payload.name || payload.given_name || "";
         const picture = payload.picture || "";
-        const mode = sessionStorage.getItem("cnt_auth_mode") || "signin";
-        const role = sessionStorage.getItem("cnt_intent") || "";
-        showAuthLoading(mode === "signup" ? "Creating your account…" : "Signing in with Google…");
+        let mode = String(sessionStorage.getItem("cnt_auth_mode") || "signin").toLowerCase();
+        if (mode !== "signup") mode = "signin";
+        const role = mode === "signup" ? (sessionStorage.getItem("cnt_intent") || "") : "";
+        showAuthLoading(mode === "signup" ? "Creating your account…" : "Signing you in…");
         finishAuth(email, name, { picture, credential: cred, mode, role, intent: role })
           .finally(() => hideAuthLoading());
       } catch (e) {
@@ -4224,70 +4215,17 @@ if (pageId === "login") {
 
 
     // Realtime shortlist (server when logged in)
-    async function loadServerShortlist() {
-      const s = getSession();
-      if (!s) return;
-      if (s.role !== "brand" && !isAdminEmail(s.email) && effectiveRole() !== "brand") return;
-      try {
-        const data = await apiPost({ action: "shortlist_get", email: s.email });
-        if (data && data.ok && Array.isArray(data.items)) {
-          const ids = data.items.map(it => String(it.creatorId || it.id || "")).filter(Boolean);
-          localStorage.setItem(SHORTLIST_KEY, JSON.stringify(ids));
-          updateDashboardStats();
-          if (document.getElementById("page-shortlist")?.classList.contains("active")) renderShortlist();
-        }
-      } catch (_) {}
-    }
+    async function loadServerShortlist() { return false; /* shortlist removed */ }
 
-    async function toggleShortlistRealtime(id, meta) {
-      id = String(id);
-      const s = getSession();
-      // local first for snappy UI
-      let list = getShortlist();
-      const was = list.indexOf(id) >= 0;
-      if (was) list = list.filter(x => x !== id);
-      else list.push(id);
-      setShortlist(list);
-      if (s && s.email) {
-        try {
-          await apiPost({
-            action: "shortlist_toggle",
-            email: s.email,
-            creatorId: id,
-            creatorName: meta && meta.name || "",
-            creatorIg: meta && meta.ig || ""
-          });
-          loadServerShortlist();
-        } catch (_) {}
-      }
-      return !was;
-    }
+    async function toggleShortlistRealtime(id, meta) { return false; /* shortlist removed */ }
 
 
     const SHORTLIST_KEY = "cnt_brand_shortlist_v1";
 
-    function getShortlist() {
-      try {
-        const raw = localStorage.getItem(SHORTLIST_KEY);
-        const arr = raw ? JSON.parse(raw) : [];
-        return Array.isArray(arr) ? arr : [];
-      } catch (_) { return []; }
-    }
-    function setShortlist(ids) {
-      localStorage.setItem(SHORTLIST_KEY, JSON.stringify(ids || []));
-      updateDashboardStats();
-    }
-    function isShortlisted(id) {
-      return getShortlist().indexOf(String(id)) >= 0;
-    }
-    function toggleShortlist(id) {
-      id = String(id);
-      let list = getShortlist();
-      if (list.indexOf(id) >= 0) list = list.filter(x => x !== id);
-      else list.push(id);
-      setShortlist(list);
-      return list.indexOf(id) >= 0;
-    }
+    function getShortlist() { return []; /* shortlist removed */ }
+    function setShortlist(ids) { return false; /* shortlist removed */ }
+    function isShortlisted(id) { return []; /* shortlist removed */ }
+    function toggleShortlist(id) { return false; /* shortlist removed */ }
     function animateCountTo(el, target, opts) {
       if (!el) return;
       opts = opts || {};
@@ -4324,7 +4262,6 @@ if (pageId === "login") {
       animateCountTo(document.getElementById("dashCreatorsListed"), nInf, { duration: 1100, format: fmt });
       animateCountTo(document.getElementById("dashBrandCreators"), nInf, { duration: 1100, format: fmt });
       animateCountTo(document.getElementById("dashBrandCampaigns"), nCamp, { duration: 700 });
-      animateCountTo(document.getElementById("dashShortlistCount"), getShortlist().length, { duration: 500 });
       animateCountTo(document.getElementById("landStatInf"), nInf, { duration: 1200, format: fmt });
       animateCountTo(document.getElementById("landStatCamp"), nCamp, { duration: 700 });
       document.querySelectorAll(".stat-num").forEach(el => {
@@ -4337,26 +4274,7 @@ if (pageId === "login") {
         }
       });
     }
-    function renderShortlist() {
-      const grid = document.getElementById("shortlistGrid");
-      if (!grid) return;
-      const ids = getShortlist();
-      const rows = (allInfluencers || []).filter(i => ids.indexOf(String(i.id)) >= 0);
-      if (!rows.length) {
-        grid.innerHTML = '<div class="empty-state"><p>No saved creators yet. Open Find creators and tap Save.</p></div>';
-        return;
-      }
-      grid.innerHTML = rows.map(cardHTML).join("");
-      grid.querySelectorAll("[data-shortlist-id]").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const id = btn.getAttribute("data-shortlist-id");
-          toggleShortlist(id);
-          renderShortlist();
-          applyFilters && applyFilters();
-        });
-      });
-    }
+    function renderShortlist() { return false; /* shortlist removed */ }
 
 
 
@@ -5892,7 +5810,7 @@ if (pageId === "login") {
     document.getElementById("brandProfileForm")?.addEventListener("submit", submitBrandProfile);
     document.getElementById("creatorProfileForm")?.addEventListener("submit", submitCreatorProfile);
     refreshAuthUI();
-    loadServerShortlist();
+    /* loadServerShortlist removed */
 
     document.querySelectorAll("[data-admin-view]").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -5908,36 +5826,7 @@ if (pageId === "login") {
 
 
 
-    document.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-shortlist-id]");
-      if (!btn) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const id = btn.getAttribute("data-shortlist-id");
-      const s = getSession();
-      if (!s) {
-        alert("Sign in to save creators to your shortlist (syncs across devices).");
-        showPage("login");
-        return;
-      }
-      if (s.role && s.role !== "brand" && !isAdminEmail(s.email) && effectiveRole() !== "brand") {
-        alert("Shortlist is for brand accounts. Admin: switch view mode to Brand.");
-        return;
-      }
-      const card = allInfluencers.find(x => String(x.id) === String(id));
-      btn.style.pointerEvents = "none";
-      toggleShortlistRealtime(id, card ? { name: card.name, ig: card.igLink || "" } : {}).then(on => {
-        btn.textContent = on ? "★" : "☆";
-        btn.classList.toggle("saved", on);
-        btn.title = on ? "Saved to shortlist" : "Save to shortlist";
-        if (typeof showToast === "function") {
-          showToast(on ? "Saved to shortlist" : "Removed from shortlist",
-            on ? ((card && card.name) || "Creator") + " is on your shortlist." : "Removed.", on ? "brand" : "");
-        }
-        if (document.getElementById("page-shortlist")?.classList.contains("active")) renderShortlist();
-        try { updateDashboardStats(); } catch (_) {}
-      }).finally(() => { btn.style.pointerEvents = ""; });
-    });
+    
 
 
     setTimeout(() => loadLiveCampaigns(false), 2500);
