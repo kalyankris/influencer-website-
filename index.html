@@ -1653,7 +1653,7 @@
       <button type="button" class="menu-parent creator">Influencers <span>▾</span></button>
       <div class="menu-sub">
         <button type="button" class="nav-btn" data-page="creators">Influencer home</button>
-        <button type="button" class="nav-btn" data-page="join">Join / Register</button>
+        <button type="button" class="nav-btn" data-page="join" id="menuJoinBtn">Join / Register</button>
         <button type="button" class="nav-btn" data-page="campaigns">Open Campaigns</button>
         <button type="button" class="nav-btn" data-page="deals">My Deals</button>
       </div>
@@ -1723,7 +1723,7 @@
       <div class="hub-actions" style="max-width:480px;margin:1.5rem auto 0;">
         <button type="button" class="btn btn-creator" data-page="deals">My Deals</button>
         <button type="button" class="btn btn-outline-creator" data-page="campaigns">Open campaigns</button>
-        <button type="button" class="btn btn-outline-creator" data-page="join">Register / Join directory</button>
+        <button type="button" class="btn btn-outline-creator" data-page="join" id="creatorHubJoinBtn">Register / Join directory</button>
       </div>
       <div class="hub-tip">
         <strong>Tip:</strong> After a brand invites you, open <em>My Deals</em>, enter your email, accept the deal, then upload your work link.
@@ -2050,12 +2050,12 @@
     </section>
   </div>
 
-  <!-- SIGN UP — pick role -->
+  <!-- SIGN UP — pick role + ONE Google step on same page -->
   <div class="page" id="page-signup">
     <section class="section" style="padding-top:2rem;">
       <div class="auth-card">
         <h2 class="section-title" style="text-align:center;">Sign up</h2>
-        <p class="section-sub" style="text-align:center;">New to Connectly? Choose one — you can only pick once</p>
+        <p class="section-sub" style="text-align:center;">Step 1 — choose how you&apos;ll use Connectly</p>
         <div class="role-pick">
           <button type="button" class="role-creator" id="signupCreatorBtn">
             <strong>I&apos;m a Creator</strong>
@@ -2063,9 +2063,17 @@
           </button>
           <button type="button" class="role-brand" id="signupBrandBtn">
             <strong>I&apos;m a Brand</strong>
-            <span>Find influencers &amp; hire</span>
+            <span>Find creators &amp; hire</span>
           </button>
         </div>
+        <div id="signupGoogleSection" style="display:none;margin-top:1.35rem;padding-top:1.15rem;border-top:1px solid var(--border);">
+          <p id="signupRoleBadge" style="text-align:center;margin:0 0 0.35rem;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;color:#e8c39a;font-weight:700;"></p>
+          <p class="section-sub" id="signupGoogleSub" style="text-align:center;margin-bottom:0.85rem;">Step 2 — continue with Google (once)</p>
+          <div id="googleSignupBtnWrap" style="display:flex;justify-content:center;min-height:44px;margin-bottom:0.5rem;">
+            <div class="g_id_signin_signup"></div>
+          </div>
+        </div>
+        <p id="signupError" style="display:none;color:#fca5a5;font-size:0.9rem;margin-top:0.9rem;text-align:center;line-height:1.5;"></p>
         <div style="margin-top:1.25rem;text-align:center;">
           <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:0.5rem;">Already registered?</p>
           <button type="button" class="btn btn-outline btn-sm" data-page="login">Sign in with Google</button>
@@ -2074,18 +2082,11 @@
     </section>
   </div>
 
-  <!-- SIGN UP Google -->
+  <!-- kept for deep-links; redirects to signup -->
   <div class="page" id="page-signup-google">
     <section class="section" style="padding-top:2rem;">
       <div class="auth-card">
-        <p id="signupRoleBadge" style="text-align:center;margin:0 0 0.5rem;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;color:#e8c39a;font-weight:700;"></p>
-        <h2 class="section-title" style="text-align:center;">Create your account</h2>
-        <p class="section-sub" id="signupGoogleSub" style="text-align:center;">Continue with Google to finish sign up</p>
-        <div id="googleSignupBtnWrap" style="display:flex;justify-content:center;min-height:44px;margin-bottom:0.75rem;">
-          <div class="g_id_signin_signup"></div>
-        </div>
-        <p id="signupError" style="display:none;color:#fca5a5;font-size:0.9rem;margin-top:0.9rem;text-align:center;line-height:1.5;"></p>
-        <button type="button" class="btn btn-outline btn-sm" style="width:100%;margin-top:1rem;" data-page="signup">← Change Creator / Brand</button>
+        <p class="section-sub" style="text-align:center;">Redirecting to sign up…</p>
       </div>
     </section>
   </div>
@@ -3155,8 +3156,8 @@
       }
       // Logged in: keep admin/profile routes open; send incomplete profiles to setup
       if (s && !isAdminEmail(s.email)) {
-        if (!s.role && pageId !== "role" && pageId !== "login" && pageId !== "home") {
-          pageId = "role";
+        if (!s.role && pageId !== "role" && pageId !== "signup" && pageId !== "signup-google" && pageId !== "login" && pageId !== "home") {
+          pageId = "signup";
         } else if (s.role && pageId === "role") {
           // Already chose role — never show "I'm a Creator / Brand" again
           pageId = s.profileComplete
@@ -3192,8 +3193,11 @@ if (pageId === "login") {
         setTimeout(() => initGoogleSignIn(false), 200);
       }
       if (pageId === "signup-google") {
-        sessionStorage.setItem("cnt_auth_mode", "signup");
-        setTimeout(() => initGoogleSignIn(true), 200);
+        // Legacy route — one page signup only
+        const intent = sessionStorage.getItem("cnt_intent") || "";
+        if (intent) openSignupGoogle(intent);
+        else showPage("signup");
+        return;
       }
       if (pageId === "signup") {
         sessionStorage.setItem("cnt_auth_mode", "signup");
@@ -3413,11 +3417,46 @@ if (pageId === "login") {
           } else if (s.role === "creator") {
             menuAccount.setAttribute("data-page", "join");
           } else {
-            menuAccount.setAttribute("data-page", "role");
+            menuAccount.setAttribute("data-page", "signup");
           }
         } else {
           menuAccount.textContent = "Sign in";
           menuAccount.setAttribute("data-page", "login");
+        }
+      }
+      // Existing creators: no "Join / Register" — only Update profile
+      const menuJoin = document.getElementById("menuJoinBtn");
+      const hubJoin = document.getElementById("creatorHubJoinBtn");
+      if (s && s.role === "creator" && s.profileComplete) {
+        if (menuJoin) {
+          menuJoin.textContent = "Update profile";
+          menuJoin.setAttribute("data-page", "join");
+        }
+        if (hubJoin) {
+          hubJoin.textContent = "Update profile";
+          hubJoin.setAttribute("data-page", "join");
+        }
+      } else if (s && s.role === "creator" && !s.profileComplete) {
+        if (menuJoin) {
+          menuJoin.textContent = "Complete profile";
+          menuJoin.setAttribute("data-page", "join");
+        }
+        if (hubJoin) {
+          hubJoin.textContent = "Complete profile";
+          hubJoin.setAttribute("data-page", "join");
+        }
+      } else if (s && s.role === "brand") {
+        // Brands don't need join menu
+        if (menuJoin) menuJoin.style.display = "none";
+      } else {
+        if (menuJoin) {
+          menuJoin.style.display = "";
+          menuJoin.textContent = "Join / Register";
+          menuJoin.setAttribute("data-page", "join");
+        }
+        if (hubJoin) {
+          hubJoin.textContent = "Register / Join directory";
+          hubJoin.setAttribute("data-page", "join");
         }
       }
       if (adminLink) adminLink.style.display = (s && isAdminEmail(s.email)) ? "block" : "none";
@@ -3505,16 +3544,16 @@ if (pageId === "login") {
       }
       if (!user.profileComplete) {
         if (role === "creator") {
-          showToast("Complete your profile", "Fill the join form once to appear in the directory.");
           showPage("join");
+          showToast("Complete your profile", "Fill the form once to appear in the directory.");
         } else {
-          showToast("Complete brand profile", "Add your brand details to continue.", "brand");
           showPage("brand-profile");
+          showToast("Complete brand profile", "Add your brand details to continue.", "brand");
         }
         return;
       }
-      showToast("Welcome back", (user.displayName || user.brandName || "You're") + " signed in.");
       showPage(role === "brand" ? "brandhome" : "creators");
+      showToast("Welcome back", (user.displayName || user.brandName || "You're") + " signed in.");
     }
 
     async function finishAuth(email, name, opts) {
@@ -3570,8 +3609,8 @@ if (pageId === "login") {
             try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
             const msg = (data && data.message) || "No account for this Google login. Please Sign up first.";
             if (errLogin) { errLogin.textContent = msg; errLogin.style.display = "block"; }
+            showPage("signup");
             showToast("New login", "Please Sign up as Creator or Brand first.", "error");
-            setTimeout(() => showPage("signup"), 500);
             return false;
           }
           const user = Object.assign({}, data.user || {}, {
@@ -3629,16 +3668,33 @@ if (pageId === "login") {
     function openSignupGoogle(role) {
       sessionStorage.setItem("cnt_intent", role);
       sessionStorage.setItem("cnt_auth_mode", "signup");
+      // Highlight selected role
+      document.querySelectorAll("#signupCreatorBtn, #signupBrandBtn, #pickCreatorBtn, #pickBrandBtn").forEach(b => {
+        b.style.outline = "";
+        b.style.opacity = "0.55";
+      });
+      const active = role === "brand"
+        ? (document.getElementById("signupBrandBtn") || document.getElementById("pickBrandBtn"))
+        : (document.getElementById("signupCreatorBtn") || document.getElementById("pickCreatorBtn"));
+      if (active) { active.style.outline = "2px solid rgba(232,195,154,0.7)"; active.style.opacity = "1"; }
+
       const badge = document.getElementById("signupRoleBadge");
       if (badge) badge.textContent = role === "brand" ? "Brand account" : "Creator account";
       const sub = document.getElementById("signupGoogleSub");
       if (sub) sub.textContent = role === "brand"
-        ? "Continue with Google to create your brand account"
-        : "Continue with Google to create your creator account";
+        ? "Step 2 — continue with Google once to create your brand account"
+        : "Step 2 — continue with Google once to create your creator account";
       const err = document.getElementById("signupError");
       if (err) { err.style.display = "none"; err.textContent = ""; }
-      showPage("signup-google");
-      setTimeout(() => initGoogleSignIn(true), 200);
+
+      // Stay on signup page — show Google only after role is chosen (one verification)
+      showPage("signup");
+      const sec = document.getElementById("signupGoogleSection");
+      if (sec) {
+        sec.style.display = "block";
+        setTimeout(() => sec.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
+      }
+      setTimeout(() => initGoogleSignIn(true), 150);
     }
 
     function openSignIn() {
@@ -3728,6 +3784,7 @@ if (pageId === "login") {
       set("instagram", u.instagram || "");
       set("city", u.city || "");
       set("gender", u.gender || "");
+      if (u.age) set("age", u.age);
       if (u.followers) set("followers", u.followers);
       if (u.niche) {
         const skill = form.elements.namedItem("skill");
@@ -4128,25 +4185,52 @@ if (pageId === "login") {
       setShortlist(list);
       return list.indexOf(id) >= 0;
     }
+    function animateCountTo(el, target, opts) {
+      if (!el) return;
+      opts = opts || {};
+      const duration = opts.duration || 900;
+      const suffix = opts.suffix || "";
+      const format = opts.format || (n => String(n));
+      const prev = parseInt(String(el.dataset.countVal || el.textContent || "0").replace(/[^0-9]/g, ""), 10) || 0;
+      const to = Math.max(0, Math.floor(Number(target) || 0));
+      el.dataset.countVal = String(to);
+      if (to === prev && el.textContent && el.textContent !== "—") {
+        el.textContent = format(to) + suffix;
+        return;
+      }
+      // Always animate from 0 when jumping up a lot, else from prev
+      const from = (to > prev * 2 && to > 200) ? 0 : prev;
+      const start = performance.now();
+      const step = (now) => {
+        const t = Math.min(1, (now - start) / duration);
+        // ease-out cubic — fast start, smooth end
+        const ease = 1 - Math.pow(1 - t, 3);
+        const val = Math.round(from + (to - from) * ease);
+        el.textContent = format(val) + suffix;
+        if (t < 1) requestAnimationFrame(step);
+        else el.textContent = format(to) + suffix;
+      };
+      requestAnimationFrame(step);
+    }
+
     function updateDashboardStats() {
       const nInf = (allInfluencers && allInfluencers.length) || 0;
       const nCamp = (typeof getCampaignList === "function" ? getCampaignList() : (allCampaigns || [])).length;
-      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-      set("dashOpenCampaigns", nCamp || "0");
-      set("dashCreatorsListed", nInf || "0");
-      set("dashBrandCreators", nInf || "0");
-      set("dashBrandCampaigns", nCamp || "0");
-      set("dashShortlistCount", String(getShortlist().length));
-      set("landStatInf", nInf || "0");
-      set("landStatCamp", nCamp || "0");
-      // Home hero stats (real when available)
+      const fmt = (n) => n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "") + "K" : String(n);
+      animateCountTo(document.getElementById("dashOpenCampaigns"), nCamp, { duration: 700 });
+      animateCountTo(document.getElementById("dashCreatorsListed"), nInf, { duration: 1100, format: fmt });
+      animateCountTo(document.getElementById("dashBrandCreators"), nInf, { duration: 1100, format: fmt });
+      animateCountTo(document.getElementById("dashBrandCampaigns"), nCamp, { duration: 700 });
+      animateCountTo(document.getElementById("dashShortlistCount"), getShortlist().length, { duration: 500 });
+      animateCountTo(document.getElementById("landStatInf"), nInf, { duration: 1200, format: fmt });
+      animateCountTo(document.getElementById("landStatCamp"), nCamp, { duration: 700 });
       document.querySelectorAll(".stat-num").forEach(el => {
         const label = (el.parentElement && el.parentElement.querySelector(".stat-label") || {}).textContent || "";
-        if (/Influencer/i.test(label) && nInf) {
-          el.textContent = nInf >= 1000 ? (nInf/1000).toFixed(1).replace(/\.0$/,"") + "K+" : nInf + "+";
+        if (/Influencer|Creator/i.test(label) && nInf) {
+          animateCountTo(el, nInf, { duration: 1200, format: fmt, suffix: "+" });
         }
         if (/Campaign/i.test(label) && nCamp) {
-          el.textContent = nCamp + "+";
+          animateCountTo(el, nCamp, { duration: 800, suffix: "+" });
         }
       });
     }
@@ -4878,7 +4962,8 @@ if (pageId === "login") {
                   niche: payload.skill,
                   followers: payload.followers,
                   gender: payload.gender,
-                  charges: payload.charges
+                  charges: payload.charges,
+                  age: payload.age
                 }
               }));
             }
@@ -5007,7 +5092,7 @@ if (pageId === "login") {
       refreshAuthUI();
       if (s) {
         if (isAdminEmail(s.email)) showPage("admin");
-        else if (!s.role) showPage("role");
+        else if (!s.role) showPage("signup");
         else if (!s.profileComplete) showPage(s.role === "brand" ? "brand-profile" : "join");
         else showPage(s.role === "brand" ? "brandhome" : "creators");
       } else {
