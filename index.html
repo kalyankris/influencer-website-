@@ -1610,19 +1610,39 @@
 
     .auth-loading-overlay {
       position: fixed; inset: 0; z-index: 10000;
-      background: rgba(12,11,10,0.72);
-      backdrop-filter: blur(8px);
       display: none; align-items: center; justify-content: center;
-      flex-direction: column; gap: 1rem;
+      flex-direction: column; gap: 1.15rem;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(232,195,154,0.12), transparent 55%),
+        rgba(6, 5, 4, 0.62);
+      backdrop-filter: blur(18px) saturate(1.25);
+      -webkit-backdrop-filter: blur(18px) saturate(1.25);
     }
     .auth-loading-overlay.show { display: flex; }
+    .auth-loading-card {
+      display: flex; flex-direction: column; align-items: center; gap: 1rem;
+      padding: 1.75rem 2rem; border-radius: 20px;
+      background: rgba(18, 16, 14, 0.72);
+      border: 1px solid rgba(247,243,234,0.1);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+      min-width: min(280px, 86vw);
+    }
+    .auth-loading-overlay p, .auth-loading-card p {
+      color: #f7f3ea; font-size: 0.95rem; font-weight: 500; margin: 0;
+      text-align: center; letter-spacing: 0.01em; line-height: 1.4;
+    }
+    .auth-loading-sub {
+      color: #a8a29a !important; font-size: 0.8rem !important; font-weight: 400 !important;
+    }
     .profile-glass-loading {
       position: absolute; inset: 0; z-index: 8;
       display: none; align-items: center; justify-content: center;
       flex-direction: column; gap: 0.95rem;
-      background: rgba(6, 5, 4, 0.78);
-      backdrop-filter: blur(16px) saturate(1.15);
-      -webkit-backdrop-filter: blur(16px) saturate(1.15);
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 45%, rgba(232,195,154,0.1), transparent 60%),
+        rgba(6, 5, 4, 0.78);
+      backdrop-filter: blur(16px) saturate(1.2);
+      -webkit-backdrop-filter: blur(16px) saturate(1.2);
       border-radius: inherit;
       border: 1px solid rgba(247,243,234,0.07);
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
@@ -1632,14 +1652,37 @@
       letter-spacing: 0.01em;
     }
     .auth-spinner {
-      width: 40px; height: 40px; border-radius: 50%;
-      border: 3px solid rgba(247,243,234,0.15);
+      width: 42px; height: 42px; border-radius: 50%;
+      border: 3px solid rgba(247,243,234,0.12);
       border-top-color: #e8c39a;
-      animation: spin 0.7s linear infinite;
+      border-right-color: rgba(232,195,154,0.35);
+      animation: spin 0.75s linear infinite;
+      box-shadow: 0 0 24px rgba(232,195,154,0.15);
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .auth-loading-overlay p { color: #f7f3ea; font-size: 0.95rem; font-weight: 500; }
     .btn.is-loading { opacity: 0.75; pointer-events: none; position: relative; }
+    /* Creators never browse the directory */
+    body.role-creator .nav-btn[data-page="discover"],
+    body.role-creator .btn[data-page="discover"],
+    body.role-creator #page-discover { display: none !important; }
+    .stat-updating { opacity: 0.55; transition: opacity 0.3s; }
+    .join-success-card {
+      text-align: center; padding: 2.25rem 1.25rem 1.5rem;
+      border-radius: 18px;
+      background: linear-gradient(160deg, rgba(34,197,94,0.1), rgba(18,16,14,0.4));
+      border: 1px solid rgba(74,222,128,0.25);
+    }
+    .join-success-card .js-icon {
+      width: 64px; height: 64px; margin: 0 auto 1rem; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.75rem;
+      background: rgba(34,197,94,0.15); border: 1px solid rgba(74,222,128,0.35);
+    }
+    .apply-prefill-note {
+      font-size: 0.8rem; color: var(--text-muted); margin: 0 0 0.85rem;
+      padding: 0.55rem 0.75rem; border-radius: 10px;
+      background: rgba(232,195,154,0.08); border: 1px solid rgba(232,195,154,0.2);
+    }
   </style>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -2388,11 +2431,18 @@
           </p>
         </form>
 
-        <div id="joinSuccess" style="display:none; text-align:center; padding:2rem 0;">
-          <div style="font-size:3rem; margin-bottom:0.75rem;">🎉</div>
-          <h3 style="color:var(--success); margin-bottom:0.5rem;">You're in!</h3>
-          <p style="color:var(--text-muted); margin-bottom:1.25rem;">Your profile was saved. Brands can discover you on Connectly.</p>
-          <button type="button" class="btn btn-primary" data-page="discover">Browse creators →</button>
+        <div id="joinSuccess" style="display:none;">
+          <div class="join-success-card">
+            <div class="js-icon">✓</div>
+            <h3 style="color:#86efac; margin:0 0 0.5rem; font-size:1.35rem;">You're listed!</h3>
+            <p style="color:var(--text-muted); margin:0 0 0.35rem; line-height:1.5;">Your creator profile is live. Brands on Connectly can find you and send deal offers.</p>
+            <p style="color:#a8a29a; font-size:0.84rem; margin:0 0 1.35rem; line-height:1.45;">Next: open campaigns to apply, or wait for brand invites in My Deals.</p>
+            <div style="display:flex;flex-direction:column;gap:0.55rem;max-width:280px;margin:0 auto;">
+              <button type="button" class="btn btn-creator" data-page="campaigns" style="width:100%;">Browse open campaigns</button>
+              <button type="button" class="btn btn-outline" data-page="deals" style="width:100%;">My Deals</button>
+              <button type="button" class="btn btn-outline btn-sm" data-page="creators" style="width:100%;">Creator home</button>
+            </div>
+          </div>
         </div>
 
         <div id="joinError" style="display:none; text-align:center; padding:1rem 0;">
@@ -2562,7 +2612,7 @@
             <label>Your proposed rate / notes</label>
             <textarea name="message" placeholder="e.g. ₹8,000 for 1 Reel + 2 Stories. I have 25K fashion audience in Hyderabad…"></textarea>
           </div>
-          <button type="submit" class="btn btn-creator" style="width:100%;" id="applySubmitBtn">Submit Application →</button>
+          <button type="submit" class="btn btn-creator" style="width:100%;" id="applySubmitBtn">Apply now →</button>
         </form>
         <div id="applySuccess" style="display:none; text-align:center; padding:1.5rem 0;">
           <h3 style="color:var(--success); margin-bottom:0.5rem;">✓ Application Sent!</h3>
@@ -2594,6 +2644,7 @@
 
     let allInfluencers = [];
     let filtered = [];
+    let __infCountReady = false; // true only after live/cache settles
     let activeFilters = { niche: "", location: "", followers: "", platform: "", search: "" };
 
     // ============================================================
@@ -2863,6 +2914,7 @@
           cacheAge = parsed && parsed.ts ? (Date.now() - parsed.ts) : 0;
           if (Array.isArray(rows) && rows.length) {
             allInfluencers = prepare(rows);
+            __infCountReady = rows.length >= 50; // small caches still provisional
             finishLoad();
             hadCache = true;
             hideProgress();
@@ -2891,6 +2943,7 @@
             const live = rows.map(normalizeRow).filter(i => i && String(i.name || "").trim());
             if (live.length) {
               allInfluencers = prepare(live);
+              __infCountReady = true;
               try { localStorage.setItem("cnt_inf_cache_v2", JSON.stringify({ ts: Date.now(), rows: live })); } catch (_) {}
               finishLoad();
               hideProgress();
@@ -2911,6 +2964,7 @@
                 .filter(i => i && String(i.name || "").trim().length > 0);
               if (live.length > 0) {
                 allInfluencers = prepare(live);
+                __infCountReady = true;
                 try {
                   localStorage.setItem("cnt_inf_cache_v2", JSON.stringify({ ts: Date.now(), rows: live }));
                 } catch (_) {}
@@ -2928,6 +2982,7 @@
         console.warn("Live fetch failed:", lastErr);
         if (!hadCache) {
           allInfluencers = prepare(FALLBACK_DATA);
+          __infCountReady = false; // don't flash tiny sample count
           finishLoad();
         }
         hideProgress();
@@ -3173,6 +3228,11 @@
           const need = s.role === "brand" ? "brand-profile" : "join";
           if (pageId !== need && pageId !== "login" && pageId !== "home") pageId = need;
         }
+      }
+      // Creators cannot browse the creator directory — brands only
+      if (pageId === "discover" && s && s.role === "creator" && !isAdminEmail(s.email)) {
+        pageId = "campaigns";
+        try { showToast("For brands only", "Creator directory is for brands. Explore open campaigns instead."); } catch (_) {}
       }
       // Admin only
       if (pageId === "admin" && !(s && isAdminEmail(s.email))) pageId = s ? "home" : "home";
@@ -4114,7 +4174,17 @@ if (pageId === "login") {
     function showAuthLoading(text) {
       const el = document.getElementById("authLoadingOverlay");
       const t = document.getElementById("authLoadingText");
+      const sub = document.getElementById("authLoadingSub");
       if (t) t.textContent = text || "Please wait…";
+      if (sub) {
+        const tx = String(text || "").toLowerCase();
+        if (tx.indexOf("setting up") >= 0 || tx.indexOf("creating") >= 0)
+          sub.textContent = "Creating your account securely…";
+        else if (tx.indexOf("sign") >= 0)
+          sub.textContent = "Almost there — hang tight";
+        else
+          sub.textContent = "This usually takes a few seconds";
+      }
       if (el) el.classList.add("show");
     }
     function hideAuthLoading() {
@@ -4504,22 +4574,56 @@ if (pageId === "login") {
       const nInf = (allInfluencers && allInfluencers.length) || 0;
       const nCamp = (typeof getCampaignList === "function" ? getCampaignList() : (allCampaigns || [])).length;
       const fmt = (n) => n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "") + "K" : String(n);
+
+      // Avoid jarring jumps: keep "—" until we have a real list (cache or live)
+      const showInf = __infCountReady && nInf > 0;
+      const setPlaceholder = (id, text) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.add("stat-updating");
+        el.textContent = text;
+        el.dataset.countVal = "0";
+      };
+
       animateCountTo(document.getElementById("dashOpenCampaigns"), nCamp, { duration: 700 });
-      animateCountTo(document.getElementById("dashCreatorsListed"), nInf, { duration: 1100, format: fmt });
-      animateCountTo(document.getElementById("dashBrandCreators"), nInf, { duration: 1100, format: fmt });
       animateCountTo(document.getElementById("dashBrandCampaigns"), nCamp, { duration: 700 });
-      animateCountTo(document.getElementById("landStatInf"), nInf, { duration: 1200, format: fmt });
       animateCountTo(document.getElementById("landStatCamp"), nCamp, { duration: 700 });
-      document.querySelectorAll(".stat-num").forEach(el => {
-        const label = (el.parentElement && el.parentElement.querySelector(".stat-label") || {}).textContent || "";
-        if (/Influencer|Creator/i.test(label) && nInf) {
-          animateCountTo(el, nInf, { duration: 1200, format: fmt, suffix: "+" });
-        }
-        if (/Campaign/i.test(label) && nCamp) {
-          animateCountTo(el, nCamp, { duration: 800, suffix: "+" });
-        }
-      });
+
+      if (!showInf) {
+        setPlaceholder("dashCreatorsListed", "…");
+        setPlaceholder("dashBrandCreators", "…");
+        setPlaceholder("landStatInf", "…");
+        document.querySelectorAll(".stat-num").forEach(el => {
+          const label = (el.parentElement && el.parentElement.querySelector(".stat-label") || {}).textContent || "";
+          if (/Influencer|Creator/i.test(label)) {
+            el.classList.add("stat-updating");
+            el.textContent = "…";
+            el.dataset.countVal = "0";
+          }
+        });
+      } else {
+        ["dashCreatorsListed", "dashBrandCreators", "landStatInf"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.remove("stat-updating");
+        });
+        // Smooth count-up from 0 (or previous) — longer when jumping a lot
+        const bigJump = nInf > 1000;
+        animateCountTo(document.getElementById("dashCreatorsListed"), nInf, { duration: bigJump ? 1600 : 1000, format: fmt });
+        animateCountTo(document.getElementById("dashBrandCreators"), nInf, { duration: bigJump ? 1600 : 1000, format: fmt });
+        animateCountTo(document.getElementById("landStatInf"), nInf, { duration: bigJump ? 1800 : 1100, format: fmt });
+        document.querySelectorAll(".stat-num").forEach(el => {
+          const label = (el.parentElement && el.parentElement.querySelector(".stat-label") || {}).textContent || "";
+          if (/Influencer|Creator/i.test(label) && nInf) {
+            el.classList.remove("stat-updating");
+            animateCountTo(el, nInf, { duration: bigJump ? 1800 : 1200, format: fmt, suffix: "+" });
+          }
+          if (/Campaign/i.test(label) && nCamp) {
+            animateCountTo(el, nCamp, { duration: 800, suffix: "+" });
+          }
+        });
+      }
     }
+
     function renderShortlist() { return false; /* shortlist removed */ }
 
 
@@ -4851,13 +4955,55 @@ if (pageId === "login") {
       const campaigns = getCampaigns();
       const c = campaigns.find(x => x.id === campaignId);
       if (!c) return;
-      document.getElementById("applyCampaignId").value = c.id;
-      document.getElementById("applyCampaignTitle").textContent = c.title;
-      document.getElementById("applyBrandName").textContent = "by " + c.brandName;
-      document.getElementById("applyForm").style.display = "block";
+      const form = document.getElementById("applyForm");
+      document.getElementById("applyCampaignTitle").textContent = c.title || "Campaign";
+      document.getElementById("applyBrandName").textContent = "by " + (c.brandName || "Brand");
+      if (form) form.style.display = "block";
       document.getElementById("applySuccess").style.display = "none";
-      document.getElementById("applyForm").reset();
+      if (form) form.reset();
       document.getElementById("applyCampaignId").value = c.id;
+
+      // One-click apply: prefill from logged-in creator profile
+      const s = typeof getSession === "function" ? getSession() : null;
+      const u = (s && s._user) || {};
+      if (form && s) {
+        const set = (name, val) => {
+          const el = form.elements.namedItem(name);
+          if (el && val) el.value = val;
+        };
+        set("name", s.displayName || "");
+        set("email", s.email || "");
+        set("phone", u.phone || s.phone || "");
+        const ig = u.instagram || "";
+        if (ig) {
+          const link = /^https?:\/\//i.test(ig) ? ig : ("https://instagram.com/" + String(ig).replace(/^@/, ""));
+          set("portfolio", link);
+        }
+        // Prefill note under title if possible
+        let note = document.getElementById("applyPrefillNote");
+        if (!note && form.parentElement) {
+          note = document.createElement("p");
+          note.id = "applyPrefillNote";
+          note.className = "apply-prefill-note";
+          form.parentElement.insertBefore(note, form);
+        }
+        if (note) {
+          note.style.display = "block";
+          note.textContent = s.profileComplete
+            ? "Your profile details are filled in — review and tap Apply."
+            : "Signed in as " + (s.email || "") + ". Complete any missing fields, then apply.";
+        }
+      } else {
+        const note = document.getElementById("applyPrefillNote");
+        if (note) note.style.display = "none";
+      }
+
+      const btn = document.getElementById("applySubmitBtn");
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove("is-loading");
+        btn.textContent = "Apply now →";
+      }
       document.getElementById("applyModalOverlay").classList.add("open");
     }
     function closeApplyModal() {
@@ -4917,7 +5063,8 @@ if (pageId === "login") {
       const btn = document.getElementById("applySubmitBtn");
       if (btn) {
         btn.disabled = true;
-        btn.textContent = "Submitting…";
+        btn.classList.add("is-loading");
+        btn.textContent = "Applying…";
       }
 
       const appId = "app_" + uid();
@@ -4969,26 +5116,31 @@ if (pageId === "login") {
         saveApplications(apps);
       } catch (_) {}
 
-      const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
-      if (url) {
-        try {
-          await fetch(url, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(sheetPayload)
-          });
-        } catch (err) {
-          console.warn("Apply sheet save failed (local backup kept):", err);
+      try {
+        const data = await apiPost(sheetPayload, 45000, 1);
+        if (data && data.ok === false && data.error && data.error !== "opaque") {
+          throw new Error(data.message || data.error);
         }
+      } catch (err) {
+        console.warn("Apply sheet save:", err);
+        // Local backup already saved — still show success so creator isn't stuck
       }
 
       e.target.style.display = "none";
-      document.getElementById("applySuccess").style.display = "block";
+      const succ = document.getElementById("applySuccess");
+      if (succ) {
+        succ.style.display = "block";
+        const h = succ.querySelector("h3");
+        const p = succ.querySelector("p");
+        if (h) h.textContent = "Applied!";
+        if (p) p.textContent = "Your application was submitted. The brand will review and update you by email.";
+      }
       if (btn) {
         btn.disabled = false;
-        btn.textContent = "Submit Application →";
+        btn.classList.remove("is-loading");
+        btn.textContent = "Apply now →";
       }
+      try { showToast("Applied!", "Application sent for " + (campaignTitle || "this campaign") + "."); } catch (_) {}
     });
 
     function openInviteModal(creatorId) {
@@ -5199,20 +5351,14 @@ if (pageId === "login") {
           }
           const updated = !!(data.updated || isEdit);
           if (updated) {
-            // Stay on form with values; show success toast
             joinForm.style.display = "block";
             if (joinSuccess) joinSuccess.style.display = "none";
-            showToast("Profile updated", "Your details were saved to the directory.");
+            showToast("Profile updated", "Your details are saved. Brands can find you.");
           } else {
             joinForm.style.display = "none";
-            if (joinSuccess) {
-              joinSuccess.style.display = "block";
-              const h = joinSuccess.querySelector("h3");
-              const p = joinSuccess.querySelector("p");
-              if (h) h.textContent = "You're in!";
-              if (p) p.textContent = "Your profile was saved. Brands can discover you on Connectly.";
-            }
-            showToast("You're listed!", "Brands can now discover your profile on Connectly.");
+            if (joinSuccess) joinSuccess.style.display = "block";
+            showToast("You're listed!", "Brands can now discover your profile.");
+            try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (_) {}
           }
           joinError.style.display = "none";
           joinSubmitBtn.disabled = false;
@@ -6096,8 +6242,11 @@ if (pageId === "login") {
   </script>
 
   <div class="auth-loading-overlay" id="authLoadingOverlay" aria-live="polite">
-    <div class="auth-spinner"></div>
-    <p id="authLoadingText">Signing in with Google…</p>
+    <div class="auth-loading-card">
+      <div class="auth-spinner"></div>
+      <p id="authLoadingText">Signing in with Google…</p>
+      <p class="auth-loading-sub" id="authLoadingSub">This usually takes a few seconds</p>
+    </div>
   </div>
   <!-- Connectly toast -->
   <div class="cnt-toast" id="cntToast" role="status" aria-live="polite">
