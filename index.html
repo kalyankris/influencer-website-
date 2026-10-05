@@ -2,6 +2,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1520,6 +1521,41 @@
     body:not(.authed) .nav-links .nav-btn[data-page="shortlist"] { display: none !important; }
     body.authed .land-login-box { display: none; }
 
+    /* Role-aware nav: only show relevant path after login */
+    body.role-brand .menu-acc.creator-acc,
+    body.role-creator .menu-acc.brand-acc { display: none !important; }
+    body.role-brand .desk-only[data-page="creators"],
+    body.role-creator .desk-only[data-page="brandhome"] { display: none !important; }
+    body.role-brand .land-panel.creator,
+    body.role-creator .land-panel.brand { display: none !important; }
+    body.authed.role-brand .land-panels,
+    body.authed.role-creator .land-panels { display: none !important; }
+    body.authed .land-pick-hint { display: none !important; }
+
+    /* Connectly toast */
+    .cnt-toast {
+      position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px);
+      z-index: 9999; max-width: min(420px, calc(100vw - 32px));
+      padding: 1rem 1.25rem; border-radius: 16px;
+      background: linear-gradient(165deg, rgba(30,28,26,0.98), rgba(20,18,16,0.98));
+      border: 1px solid rgba(247,243,234,0.16);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+      color: var(--text); font-size: 0.92rem; line-height: 1.45;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.28s var(--ease), transform 0.28s var(--ease);
+      display: flex; align-items: flex-start; gap: 0.75rem;
+    }
+    .cnt-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    .cnt-toast .toast-icon {
+      flex-shrink: 0; width: 36px; height: 36px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(34,197,94,0.15); color: #4ade80; font-size: 1.1rem;
+    }
+    .cnt-toast.toast-brand .toast-icon { background: rgba(124,108,246,0.18); color: #c4b5fd; }
+    .cnt-toast .toast-body strong { display: block; font-size: 0.95rem; margin-bottom: 0.15rem; color: #fff7ed; }
+    .cnt-toast .toast-body span { color: var(--text-muted); font-size: 0.82rem; }
+    .menu-logout-btn:hover { background: rgba(248,113,113,0.12) !important; color: #fecaca !important; }
+
   </style>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -1541,7 +1577,7 @@
   </nav>
   <div class="nav-links" id="navLinks">
     <button type="button" class="btn btn-outline" id="menuCloseBtn" style="width:100%;margin-bottom:1rem;">Close menu</button>
-    <div class="menu-acc">
+    <div class="menu-acc creator-acc">
       <button type="button" class="menu-parent creator">Influencers <span>▾</span></button>
       <div class="menu-sub">
         <button type="button" class="nav-btn" data-page="creators">Influencer home</button>
@@ -1550,7 +1586,7 @@
         <button type="button" class="nav-btn" data-page="deals">My Deals</button>
       </div>
     </div>
-    <div class="menu-acc">
+    <div class="menu-acc brand-acc">
       <button type="button" class="menu-parent brand">Brands <span>▾</span></button>
       <div class="menu-sub">
         <button type="button" class="nav-btn" data-page="brandhome">Brand home</button>
@@ -1562,7 +1598,8 @@
       </div>
     </div>
     <button type="button" class="nav-btn" data-page="admin" id="navAdminLink" style="display:none;">Admin panel</button>
-    <button type="button" class="nav-btn" data-page="login">Sign in / Account</button>
+    <button type="button" class="nav-btn" data-page="login" id="menuAccountBtn">Sign in / Account</button>
+    <button type="button" class="nav-btn menu-logout-btn" id="menuLogoutBtn" style="display:none;color:#fca5a5;">Sign out</button>
     <button type="button" class="nav-btn" data-page="how">How it Works</button>
     <button type="button" class="nav-btn" data-page="contact">Contact</button>
   </div>
@@ -1589,7 +1626,7 @@
             <span class="lp-cta">Continue as Brand →</span>
           </button>
         </div>
-        <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;margin:0.5rem 0 0;">Pick one — you&#39;ll sign in on the next step</p>
+        <p class="land-pick-hint" style="text-align:center;color:var(--text-dim);font-size:0.85rem;margin:0.5rem 0 0;">Pick one — you&#39;ll sign in on the next step</p>
         <div class="land-stats">
           <div><strong id="landStatInf">—</strong>Creators</div>
           <div><strong id="landStatCamp">—</strong>Open campaigns</div>
@@ -1983,12 +2020,21 @@
           <div class="form-group"><label>Instagram</label><input name="instagram" placeholder="@yourbrand or full URL"></div>
           <div class="form-group"><label>Phone / WhatsApp *</label><input name="phone" required placeholder="10-digit mobile"></div>
           <div class="form-group"><label>City</label><input name="city" placeholder="Hyderabad / Mumbai / Pan-India"></div>
-          <div class="form-group"><label>Category / Niche</label>
+          <div class="form-group"><label>Industry / Domain</label>
             <select name="niche">
-              <option value="">Select</option>
-              <option>Fashion</option><option>Beauty</option><option>Lifestyle</option>
-              <option>Food</option><option>Fitness</option><option>Tech</option>
-              <option>Travel</option><option>Education</option><option>Other</option>
+              <option value="">Select industry</option>
+              <option>Fashion &amp; Apparel</option>
+              <option>Beauty &amp; Personal Care</option>
+              <option>Food &amp; Beverage</option>
+              <option>Health &amp; Fitness</option>
+              <option>Tech &amp; Gadgets</option>
+              <option>Travel &amp; Hospitality</option>
+              <option>Education &amp; EdTech</option>
+              <option>Finance &amp; Fintech</option>
+              <option>Home &amp; Lifestyle</option>
+              <option>D2C / E-commerce</option>
+              <option>Entertainment &amp; Media</option>
+              <option>Other</option>
             </select>
           </div>
           <div class="form-group"><label>About the brand</label><textarea name="bio" rows="3" placeholder="What you sell, who you want to reach…"></textarea></div>
@@ -2966,6 +3012,11 @@
       if (s && !isAdminEmail(s.email)) {
         if (!s.role && pageId !== "role" && pageId !== "login" && pageId !== "home") {
           pageId = "role";
+        } else if (s.role && pageId === "role") {
+          // Already chose role — never show "I'm a Creator / Brand" again
+          pageId = s.profileComplete
+            ? (s.role === "brand" ? "brandhome" : "creators")
+            : (s.role === "brand" ? "brand-profile" : "creator-profile");
         } else if (s.role && !s.profileComplete) {
           const need = s.role === "brand" ? "brand-profile" : "creator-profile";
           if (pageId !== need && pageId !== "login" && pageId !== "home") pageId = need;
@@ -3176,6 +3227,19 @@
       const s = getSession();
       const btn = document.getElementById("navAccountBtn");
       const adminLink = document.getElementById("navAdminLink");
+      const menuLogout = document.getElementById("menuLogoutBtn");
+      const menuAccount = document.getElementById("menuAccountBtn");
+      document.body.classList.toggle("authed", !!s);
+      document.body.classList.toggle("role-brand", !!(s && s.role === "brand"));
+      document.body.classList.toggle("role-creator", !!(s && s.role === "creator"));
+      if (menuLogout) menuLogout.style.display = s ? "block" : "none";
+      if (menuAccount) {
+        if (s) {
+          menuAccount.textContent = "Account · " + (s.brandName || s.displayName || s.email.split("@")[0]);
+        } else {
+          menuAccount.textContent = "Sign in / Account";
+        }
+      }
       if (adminLink) adminLink.style.display = (s && isAdminEmail(s.email)) ? "block" : "none";
       if (btn) {
         if (s) {
@@ -3318,16 +3382,32 @@
       setTimeout(initGoogleSignIn, 300);
     }
 
+    function showToast(title, msg, variant) {
+      const el = document.getElementById("cntToast");
+      if (!el) { alert(title + (msg ? " — " + msg : "")); return; }
+      const t = document.getElementById("cntToastTitle");
+      const m = document.getElementById("cntToastMsg");
+      if (t) t.textContent = title || "Saved";
+      if (m) m.textContent = msg || "";
+      el.classList.toggle("toast-brand", variant === "brand");
+      el.classList.add("show");
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => el.classList.remove("show"), 3200);
+    }
+
     function doLogout() {
       try {
         localStorage.removeItem(SESSION_KEY);
         sessionStorage.removeItem("cnt_intent");
+        sessionStorage.removeItem("cnt_after_login");
       } catch (_) {}
-      if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
-        try { google.accounts.id.disableAutoSelect(); } catch (_) {}
-      }
+      document.body.classList.remove("role-brand", "role-creator", "authed");
       refreshAuthUI();
+      const menu = document.getElementById("navLinks");
+      if (menu) menu.classList.remove("open");
+      document.body.classList.remove("menu-open");
       showPage("home");
+      showToast("Signed out", "Come back anytime to manage deals on Connectly.");
     }
 
     function handleGoogleCredential(response) {
@@ -3429,7 +3509,7 @@
         displayName: body.displayName,
         profileComplete: true
       }));
-      alert("Brand profile saved");
+      showToast("Brand profile saved", "You're ready to find creators and post campaigns.", "brand");
       showPage("brandhome");
     }
 
@@ -3458,7 +3538,7 @@
         displayName: body.displayName,
         profileComplete: true
       }));
-      alert("Creator profile saved — brands can find you");
+      showToast("Creator profile saved", "Brands can now discover you on Connectly.");
       showPage("creators");
       try { loadLiveData(true, true); } catch (_) {}
     }
@@ -4873,6 +4953,9 @@
 
     document.getElementById("loginLogoutBtn")?.addEventListener("click", doLogout);
     document.getElementById("adminLogoutBtn")?.addEventListener("click", doLogout);
+    document.getElementById("menuLogoutBtn")?.addEventListener("click", () => {
+      doLogout();
+    });
     document.getElementById("pickCreatorBtn")?.addEventListener("click", () => saveRole("creator"));
     document.getElementById("pickBrandBtn")?.addEventListener("click", () => saveRole("brand"));
     document.getElementById("brandProfileForm")?.addEventListener("submit", submitBrandProfile);
@@ -4938,5 +5021,11 @@
       if (start !== "home") showPage(start, true);
     })();
   </script>
+
+  <!-- Connectly toast -->
+  <div class="cnt-toast" id="cntToast" role="status" aria-live="polite">
+    <div class="toast-icon">✓</div>
+    <div class="toast-body"><strong id="cntToastTitle">Saved</strong><span id="cntToastMsg"></span></div>
+  </div>
 </body>
 </html>
