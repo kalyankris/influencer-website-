@@ -1320,6 +1320,35 @@
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .deal-card.expanded .deal-brief-preview { display: none; }
+    .deal-deliv-block {
+      margin: 0.55rem 0 0.35rem;
+      padding: 0.7rem 0.85rem;
+      border-radius: 12px;
+      background: rgba(249,115,22,0.08);
+      border: 1px solid rgba(249,115,22,0.28);
+    }
+    .deal-deliv-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #fdba74;
+      margin-bottom: 0.25rem;
+    }
+    .deal-deliv-text {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #ffedd5;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .deal-deliv-brief {
+      margin-top: 0.35rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
     .deal-section-label { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin: 0.85rem 0 0.35rem; }
     .deal-id-line { font-size: 0.72rem; color: var(--text-muted); margin: 0.75rem 0 0; }
 
@@ -1592,11 +1621,11 @@
   <!-- NAV -->
   <nav class="nav">
     <button class="logo" type="button" data-page="home">Connectly</button>
-    <div class="nav-links desk-bar">
+    <div class="nav-links desk-bar" style="margin-left:auto;margin-right:0.35rem;">
       <button type="button" class="btn btn-creator btn-sm desk-only" data-page="creators">Influencers</button>
       <button type="button" class="btn btn-primary btn-sm desk-only" data-page="brandhome">Brands</button>
     </div>
-    <button type="button" class="auth-user-chip" id="navAccountBtn" data-page="login" style="margin-right:0.35rem;">Sign in</button>
+    <button type="button" class="auth-user-chip" id="navAccountBtn" data-page="login" style="margin-left:0.15rem;margin-right:0.4rem;">Sign in</button>
     <button class="menu-toggle" type="button" id="menuToggle" aria-label="Menu" aria-expanded="false">
       <span class="bar"></span>
       <span class="bar"></span>
@@ -1982,7 +2011,10 @@
       <div class="auth-card">
         <p id="loginRoleBadge" style="text-align:center;margin:0 0 0.5rem;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;color:#e8c39a;font-weight:700;"></p>
         <h2 class="section-title" id="loginTitle" style="text-align:center;">Sign in</h2>
-        <p class="section-sub" id="loginSubText" style="text-align:center;">Use Google for a secure one-tap login</p>
+        <p class="section-sub" id="loginSubText" style="text-align:center;">Sign in with Google to open your existing profile</p>
+        <div id="loginNewHint" style="display:none;margin:0 0 1rem;padding:0.85rem 1rem;border-radius:14px;border:1px solid rgba(232,195,154,0.35);background:rgba(232,195,154,0.1);font-size:0.86rem;color:#f5e6d3;line-height:1.45;text-align:center;">
+          <strong style="color:#fff7ed;">New here?</strong> Sign in with Google first, then we’ll ask you to create your profile (one form). After that you can edit anytime from <em>My profile</em>.
+        </div>
 
         <div id="googleBtnWrap" style="display:flex;justify-content:center;min-height:44px;margin-bottom:0.75rem;">
           <div id="g_id_onload" data-context="signin" data-ux_mode="popup" data-auto_prompt="false"></div>
@@ -1990,7 +2022,7 @@
         </div>
         <p id="googleHint" style="display:none;font-size:0.78rem;color:var(--text-dim);text-align:center;margin-bottom:0.75rem;"></p>
 
-        <div class="auth-divider"><span>or email</span></div>
+        <div class="auth-divider"><span>or email (existing account)</span></div>
 
         <div class="form-group">
           <label>Gmail / Email *</label>
@@ -2127,9 +2159,13 @@
   <div class="page" id="page-join">
     <section class="section" style="padding-top:2rem;">
       <div style="text-align:center; max-width:560px; margin:0 auto 2rem;">
-        <div class="hero-badge" style="margin-bottom:1rem;">🚀 Free for creators</div>
-        <h2 class="section-title" style="margin-bottom:0.5rem;color:#ffedd5;">Join Connectly as a Creator</h2>
-        <p class="section-sub" style="margin-bottom:0;">Get discovered by brands. Fill this form once — your profile goes live on the marketplace.</p>
+        <div id="joinProfilePicWrap" style="display:none;margin:0 auto 1rem;">
+          <img id="joinProfilePic" src="" alt="" style="width:88px;height:88px;border-radius:50%;object-fit:cover;border:2px solid rgba(249,115,22,0.45);box-shadow:0 8px 28px rgba(0,0,0,0.35);">
+        </div>
+        <div class="hero-badge" id="joinBadge" style="margin-bottom:1rem;">🚀 Free for creators</div>
+        <h2 class="section-title" id="joinPageTitle" style="margin-bottom:0.5rem;color:#ffedd5;">Join Connectly as a Creator</h2>
+        <p class="section-sub" id="joinPageSub" style="margin-bottom:0;">Get discovered by brands. Fill this form once — your profile goes live on the marketplace.</p>
+        <p id="joinNewRequired" style="display:none;margin:0.85rem auto 0;max-width:420px;padding:0.75rem 1rem;border-radius:12px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.35);color:#ffedd5;font-size:0.86rem;line-height:1.45;">New creator — complete this form to appear in the directory. You can edit it later from My profile.</p>
       </div>
 
       <div class="form-card" style="max-width:560px;">
@@ -3112,6 +3148,18 @@
         if (badge) badge.textContent = intent === "brand" ? "Brand account" : (intent === "creator" ? "Creator account" : "Connectly");
         const titleEl = document.getElementById("loginTitle");
         if (titleEl) titleEl.textContent = intent === "brand" ? "Sign in as Brand" : (intent === "creator" ? "Sign in as Creator" : "Sign in");
+        const newHint = document.getElementById("loginNewHint");
+        if (newHint) {
+          if (intent === "brand" || intent === "creator") {
+            newHint.style.display = "block";
+            newHint.innerHTML = intent === "brand"
+              ? '<strong style="color:#fff7ed;">New brand?</strong> Sign in with Google first, then complete your brand profile.'
+              : '<strong style="color:#fff7ed;">New creator?</strong> Sign in with Google first, then complete the join form to get listed.';
+          } else {
+            newHint.style.display = "block";
+            newHint.innerHTML = '<strong style="color:#fff7ed;">First time?</strong> Choose <em>I’m a Creator</em> or <em>I’m a Brand</em> on the home page, then sign in with Google and create your profile.';
+          }
+        }
         setTimeout(initGoogleSignIn, 200);
       }
       // hide nav tools when logged out
@@ -3410,11 +3458,26 @@
         showPage("admin");
         return;
       }
+      // Keep Google picture if server user has none
+      if (user.picture && !user._user) {
+        user._user = user._user || {};
+      }
       setSession(user);
       try { loadServerShortlist(); } catch (_) {}
-      if (!user.role) showPage("role");
-      else if (!user.profileComplete) showPage(user.role === "brand" ? "brand-profile" : "join");
-      else showPage(user.role === "brand" ? "brandhome" : "creators");
+      if (!user.role) {
+        showPage("role");
+      } else if (!user.profileComplete) {
+        if (user.role === "creator") {
+          showToast("Create your profile", "New creators must complete the join form to appear in the directory.");
+          showPage("join");
+        } else {
+          showToast("Complete brand profile", "Add your brand details to start finding creators.", "brand");
+          showPage("brand-profile");
+        }
+      } else {
+        showToast("Welcome back", (user.displayName || user.brandName || "You're") + " signed in.");
+        showPage(user.role === "brand" ? "brandhome" : "creators");
+      }
     }
 
     async function finishAuth(email, name, opts) {
@@ -3451,8 +3514,10 @@
           googleCredential: opts.credential || ""
         }, 10000);
         if (data && data.user) {
+          const pic = user.picture;
           user = Object.assign(user, data.user);
           if (intent && !user.role) user.role = intent;
+          if (pic && !user.picture) user.picture = pic;
         }
       } catch (_) {}
 
@@ -3478,8 +3543,15 @@
       if (title) title.textContent = role === "brand" ? "Sign in as Brand" : "Sign in as Creator";
       const sub = document.getElementById("loginSubText");
       if (sub) sub.textContent = role === "brand"
-        ? "After login, complete your brand profile to find creators"
-        : "After login, complete your creator profile to get discovered";
+        ? "Sign in with Google if you already have a brand profile"
+        : "Sign in with Google if you already have a creator profile";
+      const hint = document.getElementById("loginNewHint");
+      if (hint) {
+        hint.style.display = "block";
+        hint.innerHTML = role === "brand"
+          ? '<strong style="color:#fff7ed;">New brand?</strong> Sign in with Google first, then complete your brand profile on the next step.'
+          : '<strong style="color:#fff7ed;">New creator?</strong> Sign in with Google first, then fill the join form once to appear in the directory. You can edit it later from My profile.';
+      }
       showPage("login");
       setTimeout(initGoogleSignIn, 300);
     }
@@ -3489,7 +3561,26 @@
     function prefillJoinFromSession() {
       const s = getSession();
       const form = document.getElementById("joinForm");
+      const title = document.getElementById("joinPageTitle");
+      const sub = document.getElementById("joinPageSub");
+      const badge = document.getElementById("joinBadge");
+      const required = document.getElementById("joinNewRequired");
+      const picWrap = document.getElementById("joinProfilePicWrap");
+      const pic = document.getElementById("joinProfilePic");
+      const submitBtn = document.getElementById("joinSubmitBtn");
+
+      // Reset defaults for public join
+      if (title) title.textContent = "Join Connectly as a Creator";
+      if (sub) sub.textContent = "Get discovered by brands. Fill this form once — your profile goes live on the marketplace.";
+      if (badge) badge.style.display = "";
+      if (required) required.style.display = "none";
+      if (picWrap) picWrap.style.display = "none";
+      if (submitBtn) submitBtn.textContent = "Submit & Get Listed →";
+      if (document.getElementById("joinSuccess")) document.getElementById("joinSuccess").style.display = "none";
+      if (form) form.style.display = "block";
+
       if (!form || !s) return;
+
       const set = (name, val) => {
         const el = form.elements.namedItem(name);
         if (el && val != null && String(val).trim() !== "") el.value = val;
@@ -3501,6 +3592,10 @@
       set("instagram", u.instagram || "");
       set("city", u.city || "");
       set("gender", u.gender || "");
+      if (u.followers) set("followers", u.followers);
+      if (u.charges) {
+        // charges is combined text — leave charge fields for user to re-enter if needed
+      }
       if (u.niche) {
         const skill = form.elements.namedItem("skill");
         if (skill) {
@@ -3515,16 +3610,33 @@
           }
         }
       }
-      // Edit mode title
-      const title = document.querySelector("#page-join .section-title");
-      const sub = document.querySelector("#page-join .section-sub");
-      if (s.role === "creator" && s.profileComplete) {
-        if (title) title.textContent = "Edit your creator profile";
-        if (sub) sub.textContent = "Update your details — changes save to Connectly and the marketplace listing.";
-        const btn = document.getElementById("joinSubmitBtn");
-        if (btn) btn.textContent = "Save changes →";
+
+      // Picture from Google / session
+      if (s.picture && pic && picWrap) {
+        pic.src = s.picture;
+        pic.alt = s.displayName || "Profile";
+        picWrap.style.display = "block";
+      }
+
+      const isCreator = s.role === "creator" || sessionStorage.getItem("cnt_intent") === "creator";
+      const isNew = isCreator && !s.profileComplete;
+      const isEdit = isCreator && s.profileComplete;
+
+      if (isNew) {
+        if (title) title.textContent = "Complete your creator profile";
+        if (sub) sub.textContent = "You’re signed in. Finish this form once so brands can find you in the directory.";
+        if (badge) badge.textContent = "Required for new creators";
+        if (required) required.style.display = "block";
+        if (submitBtn) submitBtn.textContent = "Save & get listed →";
+      } else if (isEdit) {
+        if (title) title.textContent = "My profile";
+        if (sub) sub.textContent = "Edit your details — updates the marketplace directory and Google Sheet.";
+        if (badge) { badge.textContent = "Edit profile"; badge.style.display = ""; }
+        if (required) required.style.display = "none";
+        if (submitBtn) submitBtn.textContent = "Save changes →";
       }
     }
+
 
     function prefillCreatorProfile() {
       const s = getSession();
@@ -4697,7 +4809,7 @@
       if (s) {
         if (isAdminEmail(s.email)) showPage("admin");
         else if (!s.role) showPage("role");
-        else if (!s.profileComplete) showPage(s.role === "brand" ? "brand-profile" : "creator-profile");
+        else if (!s.profileComplete) showPage(s.role === "brand" ? "brand-profile" : "join");
         else showPage(s.role === "brand" ? "brandhome" : "creators");
       } else {
         showPage("home");
@@ -5196,6 +5308,7 @@
       const needsAction = !!(actions && actions.trim());
       const expanded = forceOpen || needsAction ? "expanded" : "";
       const delivText = (d.deliverable || "").trim() || "—";
+      const briefText = (d.brief || "").trim();
       return `<div class="deal-card ${expanded}" data-deal-id="${esc(d.dealId)}">
         <div class="deal-card-head">
           <div class="deal-parties">
@@ -5207,11 +5320,14 @@
         </div>
         <div class="deal-meta-row">
           <span class="deal-chip">₹ <strong>${esc(d.price || "—")}</strong></span>
-          <span class="deal-chip deal-chip-deliv" title="Deliverable">${esc(delivText)}</span>
           <span class="deal-chip">Due <strong>${esc(d.deadline || "—")}</strong></span>
           <span class="deal-chip">You: ${esc(roleLabel)}</span>
         </div>
-        ${d.brief ? `<p class="deal-brief-preview">${esc(d.brief)}</p>` : ""}
+        <div class="deal-deliv-block">
+          <div class="deal-deliv-label">Brand deliverables</div>
+          <div class="deal-deliv-text">${esc(delivText)}</div>
+          ${briefText ? `<div class="deal-deliv-brief">${esc(briefText)}</div>` : ""}
+        </div>
         <button type="button" class="deal-toggle" data-deal-toggle="${esc(d.dealId)}">
           <span class="deal-toggle-open">Show details &amp; timeline ▾</span>
           <span class="deal-toggle-close">Hide details ▴</span>
