@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2113,7 +2114,11 @@
   <!-- BRAND PROFILE -->
   <div class="page" id="page-brand-profile">
     <section class="section" style="padding-top:2rem;">
-      <div class="form-card" style="max-width:560px;margin:0 auto;">
+      <div class="form-card" style="max-width:560px;margin:0 auto;position:relative;">
+        <div id="brandProfileLoading" style="display:none;position:absolute;inset:0;z-index:6;background:rgba(18,16,14,0.88);backdrop-filter:blur(8px);border-radius:inherit;align-items:center;justify-content:center;flex-direction:column;gap:0.85rem;">
+          <div class="auth-spinner"></div>
+          <p style="color:#f7f3ea;font-size:0.92rem;margin:0;font-weight:500;">Loading your brand profile…</p>
+        </div>
         <h2 class="section-title" style="text-align:center;">Brand profile</h2>
         <p class="section-sub" style="text-align:center;">Tell creators who you are</p>
         <form id="brandProfileForm">
@@ -3314,10 +3319,20 @@ if (pageId === "login") {
     });
 
     document.addEventListener("click", (e) => {
-      const card = e.target.closest(".card[data-id], .view-btn[data-id]");
-      if (card) {
+      // Never open creator modal when tapping shortlist / links / invite
+      if (e.target.closest("[data-shortlist-id], .btn-save-short, .invite-creator-btn, a")) return;
+      const viewBtn = e.target.closest(".view-btn[data-id]");
+      if (viewBtn) {
+        e.preventDefault();
         e.stopPropagation();
-        openModal(card.dataset.id);
+        openModal(viewBtn.getAttribute("data-id"));
+        return;
+      }
+      // Card body click (not buttons) → view
+      const card = e.target.closest(".card[data-id]");
+      if (card && !e.target.closest("button, a")) {
+        e.stopPropagation();
+        openModal(card.getAttribute("data-id"));
       }
       const removeBtn = e.target.closest("[data-remove]");
       if (removeBtn) removeFilter(removeBtn.dataset.remove);
@@ -3900,8 +3915,9 @@ if (pageId === "login") {
         btn.classList.remove("is-loading");
         btn.textContent = s.profileComplete ? "Save changes →" : "Save brand profile";
       }
-      // Optional light loading on form
-      form.style.opacity = "0.45";
+      const loading = document.getElementById("brandProfileLoading");
+      if (loading) loading.style.display = "flex";
+      form.style.opacity = "1";
       let u = Object.assign({}, s._user || {});
       try {
         const data = await apiPost({
@@ -3956,6 +3972,7 @@ if (pageId === "login") {
         }
       }
       if (btn) btn.textContent = sess.profileComplete ? "Save changes →" : "Save brand profile";
+      if (loading) loading.style.display = "none";
       form.style.opacity = "1";
     }
 
@@ -5542,8 +5559,15 @@ if (pageId === "login") {
         return "Changes requested";
       }
 
+      // Proposed: creator sees "New offer"; brand sees waiting text
+      if (st === "Proposed") {
+        if (role === "creator") return "New offer";
+        if (role === "brand" || role === "both") return "Waiting for creator to accept";
+        if (isOpsView) return "Offer sent — awaiting creator";
+        return "Proposed";
+      }
+
       const map = {
-        "Proposed": "New offer",
         "Accepted": "In progress",
         "PlatformReceived": "Payment confirmed by Connectly",
         "Approved": "Approved — ready to pay creator",
@@ -5573,8 +5597,14 @@ if (pageId === "login") {
 
       if (isCreator && st === "Proposed") {
         actions += `<div class="deal-actions-row">
-          <button type="button" class="btn btn-creator btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}" data-actor-role="creator">Accept</button>
+          <button type="button" class="btn btn-creator btn-sm" data-deal-action="Accepted" data-deal-id="${esc(d.dealId)}" data-actor-role="creator">Accept offer</button>
           <button type="button" class="btn btn-outline btn-sm" data-deal-action="Rejected" data-deal-id="${esc(d.dealId)}" data-actor-role="creator">Decline</button>
+        </div>`;
+      }
+      if (isBrand && !isCreator && st === "Proposed") {
+        actions += `<div class="deal-upload-box" style="border-style:dashed;">
+          <div class="deal-upload-title">Waiting for creator</div>
+          <p class="deal-upload-hint">Offer sent. You'll be notified when they accept or decline.</p>
         </div>`;
       }
       if (isCreator && (st === "Accepted" || st === "AdvancePaid" || st === "BrandPaidPlatform" || st === "PlatformReceived")) {
@@ -5895,11 +5925,18 @@ if (pageId === "login") {
         return;
       }
       const card = allInfluencers.find(x => String(x.id) === String(id));
+      btn.style.pointerEvents = "none";
       toggleShortlistRealtime(id, card ? { name: card.name, ig: card.igLink || "" } : {}).then(on => {
-        btn.textContent = on ? (btn.textContent.indexOf("Save") >= 0 ? "★ Saved" : "★") : (btn.textContent.length <= 2 ? "☆" : "☆ Save");
+        btn.textContent = on ? "★" : "☆";
         btn.classList.toggle("saved", on);
+        btn.title = on ? "Saved to shortlist" : "Save to shortlist";
+        if (typeof showToast === "function") {
+          showToast(on ? "Saved to shortlist" : "Removed from shortlist",
+            on ? ((card && card.name) || "Creator") + " is on your shortlist." : "Removed.", on ? "brand" : "");
+        }
         if (document.getElementById("page-shortlist")?.classList.contains("active")) renderShortlist();
-      });
+        try { updateDashboardStats(); } catch (_) {}
+      }).finally(() => { btn.style.pointerEvents = ""; });
     });
 
 
