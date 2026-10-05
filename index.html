@@ -1609,6 +1609,23 @@
     }
     .deals-email-locked strong { color: var(--text); }
 
+    .auth-loading-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(12,11,10,0.72);
+      backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+      flex-direction: column; gap: 1rem;
+    }
+    .auth-loading-overlay.show { display: flex; }
+    .auth-spinner {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 3px solid rgba(247,243,234,0.15);
+      border-top-color: #e8c39a;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .auth-loading-overlay p { color: #f7f3ea; font-size: 0.95rem; font-weight: 500; }
+    .btn.is-loading { opacity: 0.75; pointer-events: none; position: relative; }
   </style>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -1728,7 +1745,7 @@
       </div>
       <div class="hub-actions" style="max-width:480px;margin:1.5rem auto 0;">
         <button type="button" class="btn btn-primary" data-page="deals">My Deals</button>
-        <button type="button" class="btn btn-outline" data-page="discover">Find influencers</button>
+        <button type="button" class="btn btn-outline" data-page="discover">Find creators</button>
         <button type="button" class="btn btn-outline" data-page="brands">Post a campaign</button>
         <button type="button" class="btn btn-outline" data-page="shortlist">My shortlist</button>
       </div>
@@ -1744,10 +1761,10 @@
       <h2 class="section-title">Your shortlist</h2>
       <p class="section-sub">Creators you saved while browsing. Only stored on this device.</p>
       <div id="shortlistGrid" class="influencer-grid">
-        <div class="empty-state"><p>No saved creators yet. Open Find influencers and tap Save.</p></div>
+        <div class="empty-state"><p>No saved creators yet. Open Find creators and tap Save.</p></div>
       </div>
       <div style="text-align:center;margin-top:1.25rem;">
-        <button type="button" class="btn btn-primary" data-page="discover">Find influencers</button>
+        <button type="button" class="btn btn-primary" data-page="discover">Find creators</button>
       </div>
     </section>
   </div>
@@ -1755,7 +1772,7 @@
   <!-- DISCOVER -->
   <div class="page" id="page-discover">
     <section class="section" style="padding-top: 2rem;">
-      <h2 class="section-title">Influencer Directory</h2>
+      <h2 class="section-title">Creator Directory</h2>
       <p class="section-sub">Search, filter and connect with creators</p>
       <div class="status-bar" id="statusBar"></div>
 
@@ -1987,7 +2004,7 @@
         <p style="font-size:0.8rem;color:var(--text-dim);margin:1rem 0 0.75rem;">Quick links</p>
         <div class="hub-actions" style="max-width:100%;margin:0;">
           <button type="button" class="btn btn-primary" data-page="deals">My Deals (all deals)</button>
-          <button type="button" class="btn btn-outline" data-page="discover">Find influencers</button>
+          <button type="button" class="btn btn-outline" data-page="discover">Find creators</button>
           <button type="button" class="btn btn-outline" data-page="campaigns">Open campaigns</button>
           <button type="button" class="btn btn-outline" data-page="brands">Post campaign</button>
           <button type="button" class="btn btn-outline" data-page="shortlist">Shortlist</button>
@@ -3164,7 +3181,7 @@
       }
       if (pageId === "login" || pageId === "admin" || pageId === "home") refreshAuthUI();
       if (pageId === "creator-profile") setTimeout(prefillCreatorProfile, 40);
-      if (pageId === "join") setTimeout(prefillJoinFromSession, 40);
+      if (pageId === "join") setTimeout(() => { prefillJoinFromSession(); }, 40);
       if (pageId === "brand-profile") setTimeout(prefillBrandProfile, 40);
 if (pageId === "login") {
         sessionStorage.setItem("cnt_auth_mode", "signin");
@@ -3542,11 +3559,14 @@ if (pageId === "login") {
           payload.role = role;
         }
 
+        showAuthLoading(mode === "signup" ? "Creating your account…" : "Signing you in…");
         const data = await apiPost(payload, 12000);
+        hideAuthLoading();
 
         if (mode !== "signup") {
           // SIGN IN — reject new / incomplete
           if (!data || data.ok === false || data.needSignup || data.error === "new_user") {
+            hideAuthLoading();
             try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
             const msg = (data && data.message) || "No account for this Google login. Please Sign up first.";
             if (errLogin) { errLogin.textContent = msg; errLogin.style.display = "block"; }
@@ -3570,22 +3590,17 @@ if (pageId === "login") {
 
         // SIGN UP
         if (!data || data.ok === false) {
-          if (data && data.needSignin) {
-            const msg = data.message || "Account already exists. Please Sign in.";
-            if (errSignup) { errSignup.textContent = msg; errSignup.style.display = "block"; }
-            showToast("Already registered", "Please Sign in with Google.", "error");
-            setTimeout(() => showPage("login"), 600);
-            return false;
-          }
           const msg = (data && (data.message || data.error)) || "Sign up failed.";
           if (errSignup) { errSignup.textContent = msg; errSignup.style.display = "block"; }
           showToast("Sign up failed", String(msg), "error");
           return false;
         }
+        // alreadyExists is ok — continue with their saved role
 
+        const serverRole = (data.user && data.user.role) || "";
         const user = Object.assign({}, data.user || {}, {
           email,
-          role: role,
+          role: serverRole || role,
           picture: (data.user && data.user.picture) || opts.picture || "",
           displayName: (data.user && data.user.displayName) || name,
           profileComplete: !!(data.user && data.user.profileComplete)
@@ -3598,6 +3613,7 @@ if (pageId === "login") {
         return true;
       } catch (e) {
         console.error(e);
+        hideAuthLoading();
         const msg = "Network error. Try again.";
         if (mode === "signup" && errSignup) { errSignup.textContent = msg; errSignup.style.display = "block"; }
         else if (errLogin) { errLogin.textContent = msg; errLogin.style.display = "block"; }
@@ -3639,7 +3655,7 @@ if (pageId === "login") {
 
 
 
-    function prefillJoinFromSession() {
+    async function prefillJoinFromSession() {
       const s = getSession();
       const form = document.getElementById("joinForm");
       const title = document.getElementById("joinPageTitle");
@@ -3649,34 +3665,70 @@ if (pageId === "login") {
       const picWrap = document.getElementById("joinProfilePicWrap");
       const pic = document.getElementById("joinProfilePic");
       const submitBtn = document.getElementById("joinSubmitBtn");
+      const success = document.getElementById("joinSuccess");
+      const joinErr = document.getElementById("joinError");
 
-      // Reset defaults for public join
+      if (success) success.style.display = "none";
+      if (joinErr) joinErr.style.display = "none";
+      if (form) form.style.display = "block";
       if (title) title.textContent = "Join Connectly as a Creator";
       if (sub) sub.textContent = "Get discovered by brands. Fill this form once — your profile goes live on the marketplace.";
-      if (badge) badge.style.display = "";
+      if (badge) { badge.style.display = ""; badge.textContent = "🚀 Free for creators"; }
       if (required) required.style.display = "none";
       if (picWrap) picWrap.style.display = "none";
-      if (submitBtn) submitBtn.textContent = "Submit & Get Listed →";
-      if (document.getElementById("joinSuccess")) document.getElementById("joinSuccess").style.display = "none";
-      if (form) form.style.display = "block";
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("is-loading");
+        submitBtn.textContent = "Submit & Get Listed →";
+      }
 
       if (!form || !s) return;
+
+      // Refresh profile from server so My profile always shows saved data
+      let u = Object.assign({}, s._user || {});
+      try {
+        const data = await apiPost({
+          action: "auth_login",
+          mode: "signin",
+          email: s.email,
+          name: s.displayName || ""
+        }, 10000);
+        if (data && data.ok && data.user) {
+          const su = data.user;
+          u = {
+            instagram: su.instagram || u.instagram || "",
+            phone: su.phone || u.phone || "",
+            city: su.city || u.city || "",
+            niche: su.niche || u.niche || "",
+            followers: su.followers || u.followers || "",
+            gender: su.gender || u.gender || "",
+            charges: su.charges || u.charges || "",
+            bio: su.bio || u.bio || "",
+            website: su.website || u.website || ""
+          };
+          setSession(Object.assign({}, s, {
+            displayName: su.displayName || s.displayName,
+            role: su.role || s.role,
+            profileComplete: !!su.profileComplete,
+            picture: su.picture || s.picture,
+            brandName: su.brandName || s.brandName,
+            _user: u
+          }));
+        }
+      } catch (_) {}
 
       const set = (name, val) => {
         const el = form.elements.namedItem(name);
         if (el && val != null && String(val).trim() !== "") el.value = val;
       };
-      set("email", s.email || "");
-      set("name", s.displayName || "");
-      const u = s._user || {};
+      const sess = getSession() || s;
+      set("email", sess.email || "");
+      set("name", sess.displayName || "");
       set("phone", u.phone || "");
       set("instagram", u.instagram || "");
       set("city", u.city || "");
       set("gender", u.gender || "");
       if (u.followers) set("followers", u.followers);
-      if (u.charges) {
-        // charges is combined text — leave charge fields for user to re-enter if needed
-      }
       if (u.niche) {
         const skill = form.elements.namedItem("skill");
         if (skill) {
@@ -3691,32 +3743,49 @@ if (pageId === "login") {
           }
         }
       }
+      // Parse charges text back into fields when possible
+      if (u.charges) {
+        const ch = String(u.charges);
+        const mPost = ch.match(/Post\s*₹?\s*(\d+)/i);
+        const mStory = ch.match(/Story\s*₹?\s*(\d+)/i);
+        const mReel = ch.match(/Reel\s*₹?\s*(\d+)/i);
+        const mShout = ch.match(/Shoutout\s*₹?\s*(\d+)/i);
+        if (mPost) set("chargePost", mPost[1]);
+        if (mStory) set("chargeStory", mStory[1]);
+        if (mReel) set("chargeReel", mReel[1]);
+        if (mShout) set("chargeShoutout", mShout[1]);
+      }
 
-      // Picture from Google / session
-      if (s.picture && pic && picWrap) {
-        pic.src = s.picture;
-        pic.alt = s.displayName || "Profile";
+      if (sess.picture && pic && picWrap) {
+        pic.src = sess.picture;
+        pic.alt = sess.displayName || "Profile";
         picWrap.style.display = "block";
       }
 
-      const isCreator = s.role === "creator" || sessionStorage.getItem("cnt_intent") === "creator";
-      const isNew = isCreator && !s.profileComplete;
-      const isEdit = isCreator && s.profileComplete;
+      const isCreator = sess.role === "creator";
+      const isNew = isCreator && !sess.profileComplete;
+      const isEdit = isCreator && sess.profileComplete;
 
       if (isNew) {
         if (title) title.textContent = "Complete your creator profile";
-        if (sub) sub.textContent = "You’re signed in. Finish this form once so brands can find you in the directory.";
+        if (sub) sub.textContent = "You're signed in. Finish this form once so brands can find you in the directory.";
         if (badge) badge.textContent = "Required for new creators";
         if (required) required.style.display = "block";
         if (submitBtn) submitBtn.textContent = "Save & get listed →";
+        form.dataset.editMode = "0";
       } else if (isEdit) {
         if (title) title.textContent = "My profile";
-        if (sub) sub.textContent = "Edit your details — updates the marketplace directory and Google Sheet.";
+        if (sub) sub.textContent = "Edit your details — updates the marketplace directory.";
         if (badge) { badge.textContent = "Edit profile"; badge.style.display = ""; }
         if (required) required.style.display = "none";
         if (submitBtn) submitBtn.textContent = "Save changes →";
+        form.dataset.editMode = "1";
+      } else {
+        form.dataset.editMode = "0";
       }
     }
+
+
 
 
     function prefillCreatorProfile() {
@@ -3771,6 +3840,17 @@ if (pageId === "login") {
       } catch (_) {}
     }
 
+    function showAuthLoading(text) {
+      const el = document.getElementById("authLoadingOverlay");
+      const t = document.getElementById("authLoadingText");
+      if (t) t.textContent = text || "Please wait…";
+      if (el) el.classList.add("show");
+    }
+    function hideAuthLoading() {
+      const el = document.getElementById("authLoadingOverlay");
+      if (el) el.classList.remove("show");
+    }
+
     function showToast(title, msg, variant) {
       const el = document.getElementById("cntToast");
       if (!el) { alert(title + (msg ? " — " + msg : "")); return; }
@@ -3810,7 +3890,9 @@ if (pageId === "login") {
         const picture = payload.picture || "";
         const mode = sessionStorage.getItem("cnt_auth_mode") || "signin";
         const role = sessionStorage.getItem("cnt_intent") || "";
-        finishAuth(email, name, { picture, credential: cred, mode, role, intent: role });
+        showAuthLoading(mode === "signup" ? "Creating your account…" : "Signing in with Google…");
+        finishAuth(email, name, { picture, credential: cred, mode, role, intent: role })
+          .finally(() => hideAuthLoading());
       } catch (e) {
         console.error(e);
         const mode = sessionStorage.getItem("cnt_auth_mode") || "signin";
@@ -3910,14 +3992,14 @@ if (pageId === "login") {
         bio: fd.get("bio")
       };
       const btn = e.target.querySelector('[type="submit"]');
-      if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
+      if (btn) { btn.disabled = true; btn.classList.add("is-loading"); btn.textContent = "Saving…"; }
       try {
         const data = await apiPost(body, 12000);
         if (data && data.ok === false) throw new Error(data.error || "fail");
       } catch (err) {
         console.warn(err);
         showToast("Could not save", "Try again in a moment.", "error");
-        if (btn) { btn.disabled = false; btn.textContent = "Save brand profile"; }
+        if (btn) { btn.disabled = false; btn.classList.remove("is-loading"); btn.textContent = "Save brand profile"; }
         return;
       }
       setSession(Object.assign({}, s, {
@@ -4074,7 +4156,7 @@ if (pageId === "login") {
       const ids = getShortlist();
       const rows = (allInfluencers || []).filter(i => ids.indexOf(String(i.id)) >= 0);
       if (!rows.length) {
-        grid.innerHTML = '<div class="empty-state"><p>No saved creators yet. Open Find influencers and tap Save.</p></div>';
+        grid.innerHTML = '<div class="empty-state"><p>No saved creators yet. Open Find creators and tap Save.</p></div>';
         return;
       }
       grid.innerHTML = rows.map(cardHTML).join("");
@@ -4735,19 +4817,40 @@ if (pageId === "login") {
           charges: chargesText
         };
 
+        const isEdit = joinForm.dataset.editMode === "1" || !!(getSession() && getSession().profileComplete);
+        const defaultBtnLabel = isEdit ? "Save changes →" : "Submit & Get Listed →";
         joinSubmitBtn.disabled = true;
-        joinSubmitBtn.textContent = "Submitting…";
+        joinSubmitBtn.classList.add("is-loading");
+        joinSubmitBtn.textContent = isEdit ? "Saving changes…" : "Submitting…";
         joinError.style.display = "none";
 
         try {
           const data = await apiPost(payload, 15000);
           if (!data || data.ok === false) {
-            throw new Error((data && data.error) || "save_failed");
+            throw new Error((data && (data.error || data.message)) || "save_failed");
           }
-          joinForm.style.display = "none";
-          joinSuccess.style.display = "block";
+          const updated = !!(data.updated || isEdit);
+          if (updated) {
+            // Stay on form with values; show success toast
+            joinForm.style.display = "block";
+            if (joinSuccess) joinSuccess.style.display = "none";
+            showToast("Profile updated", "Your details were saved to the directory.");
+          } else {
+            joinForm.style.display = "none";
+            if (joinSuccess) {
+              joinSuccess.style.display = "block";
+              const h = joinSuccess.querySelector("h3");
+              const p = joinSuccess.querySelector("p");
+              if (h) h.textContent = "You're in!";
+              if (p) p.textContent = "Your profile was saved. Brands can discover you on Connectly.";
+            }
+            showToast("You're listed!", "Brands can now discover your profile on Connectly.");
+          }
           joinError.style.display = "none";
-          showToast("You're listed!", "Brands can now discover your profile on Connectly.");
+          joinSubmitBtn.disabled = false;
+          joinSubmitBtn.classList.remove("is-loading");
+          joinSubmitBtn.textContent = updated ? "Save changes →" : defaultBtnLabel;
+          if (updated) joinForm.dataset.editMode = "1";
           try {
             const s = getSession();
             if (s && s.email) {
@@ -4803,10 +4906,16 @@ if (pageId === "login") {
           setTimeout(() => loadLiveData(true, true), 4000);
         } catch (err) {
           console.error(err);
+          const isEditErr = joinForm.dataset.editMode === "1";
           joinError.style.display = "block";
+          const errP = joinError.querySelector("p");
+          if (errP) errP.textContent = isEditErr
+            ? "Could not update your profile. Check your connection and try again."
+            : "Something went wrong. Please try again.";
           joinSubmitBtn.disabled = false;
-          joinSubmitBtn.textContent = "Submit & Get Listed →";
-          showToast("Could not save", "Check your connection and try again.", "error");
+          joinSubmitBtn.classList.remove("is-loading");
+          joinSubmitBtn.textContent = isEditErr ? "Save changes →" : "Submit & Get Listed →";
+          showToast("Could not save", String(err && err.message ? err.message : "Please try again."), "error");
         }
       });
     }
@@ -5626,6 +5735,10 @@ if (pageId === "login") {
     })();
   </script>
 
+  <div class="auth-loading-overlay" id="authLoadingOverlay" aria-live="polite">
+    <div class="auth-spinner"></div>
+    <p id="authLoadingText">Signing in with Google…</p>
+  </div>
   <!-- Connectly toast -->
   <div class="cnt-toast" id="cntToast" role="status" aria-live="polite">
     <div class="toast-icon">✓</div>
