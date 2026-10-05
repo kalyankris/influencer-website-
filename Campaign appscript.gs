@@ -842,11 +842,72 @@ function authLogin_(body) {
   var name = String((g && g.name) || body.name || body.displayName || '').trim();
   var picture = String((g && g.picture) || body.picture || '').trim();
   var now = Utilities.formatDate(new Date(), 'Asia/Kolkata', 'dd/MM/yyyy HH:mm:ss');
+  // mode: "signin" (default) = existing accounts only
+  // mode: "signup" = create account; requires body.role = creator|brand
+  var mode = String(body.mode || 'signin').toLowerCase();
+  var roleWanted = String(body.role || '').trim().toLowerCase();
+  if (roleWanted && roleWanted !== 'creator' && roleWanted !== 'brand') roleWanted = '';
+
   var found = findUserRow_(email);
-  if (!found) {
+
+  // ----- SIGN IN: reject brand-new or role-less accounts -----
+  if (mode === 'signin') {
+    if (!found) {
+      return { ok: false, error: 'new_user', needSignup: true, message: 'No account found. Please Sign up first.' };
+    }
+    var existingRole = String(found.user.role || '').trim().toLowerCase();
+    if (!existingRole || (existingRole !== 'creator' && existingRole !== 'brand' && existingRole !== 'ops')) {
+      return { ok: false, error: 'new_user', needSignup: true, message: 'Account incomplete. Please Sign up as Creator or Brand.' };
+    }
+    // Update last login + picture
+    var sh = getUsersSheet_();
+    var h = found.headers;
+    var li = headerIndex_(h, ['last login']);
+    if (li >= 0) sh.getRange(found.row, li + 1).setValue(now);
+    var pi = headerIndex_(h, ['picture']);
+    if (pi >= 0 && picture) sh.getRange(found.row, pi + 1).setValue(picture);
+    var ni = headerIndex_(h, ['display name', 'name']);
+    if (ni >= 0 && name && !String(found.values[ni] || '').trim()) sh.getRange(found.row, ni + 1).setValue(name);
+    found = findUserRow_(email);
+    return { ok: true, isNew: false, user: found.user };
+  }
+
+  // ----- SIGN UP: must pick creator or brand -----
+  if (mode === 'signup') {
+    if (!roleWanted) {
+      return { ok: false, error: 'role_required', message: 'Choose Creator or Brand to sign up.' };
+    }
+    if (found) {
+      var er = String(found.user.role || '').trim().toLowerCase();
+      // Already registered — continue (no second sign-in prompt)
+      if (er === 'creator' || er === 'brand' || er === 'ops') {
+        var shUp = getUsersSheet_();
+        var hUp = found.headers;
+        var liUp = headerIndex_(hUp, ['last login']);
+        if (liUp >= 0) shUp.getRange(found.row, liUp + 1).setValue(now);
+        var piUp = headerIndex_(hUp, ['picture']);
+        if (piUp >= 0 && picture) shUp.getRange(found.row, piUp + 1).setValue(picture);
+        found = findUserRow_(email);
+        return { ok: true, isNew: false, alreadyExists: true, user: found.user };
+      }
+      // Row exists but no role yet — assign role
+      var sh2 = getUsersSheet_();
+      var h2 = found.headers;
+      var ri = headerIndex_(h2, ['role']);
+      if (ri >= 0) sh2.getRange(found.row, ri + 1).setValue(roleWanted);
+      var pi2 = headerIndex_(h2, ['picture']);
+      if (pi2 >= 0 && picture) sh2.getRange(found.row, pi2 + 1).setValue(picture);
+      var ni2 = headerIndex_(h2, ['display name', 'name']);
+      if (ni2 >= 0 && name) sh2.getRange(found.row, ni2 + 1).setValue(name);
+      var li2 = headerIndex_(h2, ['last login']);
+      if (li2 >= 0) sh2.getRange(found.row, li2 + 1).setValue(now);
+      found = findUserRow_(email);
+      return { ok: true, isNew: true, user: found.user };
+    }
+    // Brand new row with role
     getUsersSheet_().appendRow([
       email,
-      '', // role chosen later
+      roleWanted,
       name,
       '',
       '',
@@ -864,19 +925,10 @@ function authLogin_(body) {
       now
     ]);
     found = findUserRow_(email);
-  } else {
-    // update last login + picture/name if empty
-    var sh = getUsersSheet_();
-    var h = found.headers;
-    var li = headerIndex_(h, ['last login']);
-    if (li >= 0) sh.getRange(found.row, li + 1).setValue(now);
-    var ni = headerIndex_(h, ['display name', 'name']);
-    if (ni >= 0 && name && !String(found.values[ni] || '').trim()) sh.getRange(found.row, ni + 1).setValue(name);
-    var pi = headerIndex_(h, ['picture']);
-    if (pi >= 0 && picture) sh.getRange(found.row, pi + 1).setValue(picture);
-    found = findUserRow_(email);
+    return { ok: true, isNew: true, user: found.user };
   }
-  return { ok: true, user: found.user };
+
+  return { ok: false, error: 'bad_mode' };
 }
 
 function authProfile_(body) {
@@ -956,12 +1008,14 @@ function syncCreatorToInfluencerSheet_(email, body, prev) {
   var gender = body.gender || prev.gender || '';
   var charges = body.charges || prev.charges || '';
   var now = Utilities.formatDate(new Date(), 'Asia/Kolkata', 'dd/MM/yyyy HH:mm:ss');
-  if (foundRow < 0) {
-    // same shape as join form
-    sh.appendRow([
-      now, '', name, ig, phone, city, followers, niche, '', '',
-      email, gender, charges, '', 'New (login profile)', 'Via Connectly login'
-    ]);
+  var rowVals = [
+    now, '', name, ig, phone, city, followers, niche, '', '',
+    email, gender, charges, '', foundRow > 0 ? 'Updated (login profile)' : 'New (login profile)', 'Via Connectly login'
+  ];
+  if (foundRow > 0) {
+    sh.getRange(foundRow, 1, 1, rowVals.length).setValues([rowVals]);
+  } else {
+    sh.appendRow(rowVals);
   }
 }
 
@@ -1060,7 +1114,7 @@ function doPost(e) {
     var body = raw ? JSON.parse(raw) : {};
     if (rateLimited_('post', MAX_POST_PER_MIN)) return deny_('rate_limited');
     var action = String(body.action || 'join');
-    if (['join','campaign','apply','invite','deal_update','auth_login','auth_profile','shortlist_get','shortlist_set','shortlist_toggle'].indexOf(action) < 0) return deny_('unknown_action');
+    if (['join','campaign','apply','invite','deal_update','auth_login','auth_profile','shortlist_get','shortlist_set','shortlist_toggle','contact'].indexOf(action) < 0) return deny_('unknown_action');
 
     if (action === 'campaign') { appendCampaign_(body); return jsonOut({ok:true,message:'Campaign added'}); }
     if (action === 'apply') { appendApplication_(body); notifyBrandNewApplication_(body); return jsonOut({ok:true,message:'Application added'}); }
@@ -1086,16 +1140,147 @@ function doPost(e) {
     if (action === 'shortlist_toggle') { return jsonOut(shortlistToggle_(body)); }
     if (action === 'shortlist_set') { return jsonOut(shortlistSet_(body)); }
 
-    // join
+    if (action === 'contact') {
+      var to = extractEmail_(body.to) || CONNECTLY_OPS_EMAIL;
+      var fromName = String(body.name || 'Visitor').trim();
+      var fromEmail = extractEmail_(body.email || '');
+      var msg = String(body.message || '').trim();
+      if (!fromEmail || !msg) return jsonOut({ok:false, error:'missing_fields'});
+      var subject = 'Connectly contact from ' + fromName;
+      var plain = 'From: ' + fromName + ' <' + fromEmail + '>\n\n' + msg + '\n\n— Connectly contact form';
+      var html = emailShell_('New contact message',
+        '<p style="color:#cfc8bf;font-size:15px;">From <strong>' + htmlEsc_(fromName) + '</strong> (' + htmlEsc_(fromEmail) + ')</p>' +
+        cardBlock_('Message', '<tr><td colspan="2" style="padding:8px 0;color:#f7f3ea;font-size:14px;line-height:1.55;white-space:pre-wrap;">' + htmlEsc_(msg) + '</td></tr>')
+      );
+      var sent = safeSendEmail_(to, subject, plain, html, fromEmail);
+      return jsonOut({ok:!!sent, message: sent ? 'sent' : 'email_failed'});
+    }
+
+    // join — upsert by email (update columns by header; never wipe Age)
     var sheet = getInfluencerSheet_();
     var now = new Date();
     var timestamp = Utilities.formatDate(now, Session.getScriptTimeZone()||'Asia/Kolkata', 'dd/MM/yyyy HH:mm:ss');
-    sheet.appendRow([
+    var joinEmail = extractEmail_(body.email || '').toLowerCase();
+    var joinData = sheet.getDataRange().getValues();
+    var joinHeaders = joinData.length ? joinData[0] : [];
+    var joinEmailCol = headerIndex_(joinHeaders, ['email', 'email address']);
+    var existingJoinRow = -1;
+    if (joinEmail && joinEmailCol >= 0) {
+      for (var jr = 1; jr < joinData.length; jr++) {
+        if (extractEmail_(joinData[jr][joinEmailCol]).toLowerCase() === joinEmail) {
+          existingJoinRow = jr + 1;
+          break;
+        }
+      }
+    }
+
+    // Field map: header aliases → value
+    var fieldMap = [
+      { names: ['timestamp', 'time stamp', 'date', 'submitted'], val: timestamp },
+      { names: ['age'], val: (body.age != null && String(body.age).trim() !== '') ? String(body.age).trim() : '' },
+      { names: ['name', 'full name', 'creator name'], val: body.name || '' },
+      { names: ['instagram', 'instagram link', 'profile', 'ig'], val: body.instagram || '' },
+      { names: ['phone', 'whatsapp', 'mobile', 'contact number', 'contact'], val: body.phone || '' },
+      { names: ['city', 'location', 'city/location'], val: body.city || '' },
+      { names: ['followers', 'follower count', 'follower'], val: body.followers || '' },
+      { names: ['skill', 'niche', 'category', 'skills'], val: body.skill || '' },
+      { names: ['income'], val: body.income || '' },
+      { names: ['working', 'working status'], val: body.working || '' },
+      { names: ['email', 'email address'], val: body.email || '' },
+      { names: ['gender'], val: body.gender || '' },
+      { names: ['charges', 'rate', 'rate card', 'pricing'], val: body.charges || '' },
+      { names: ['status'], val: existingJoinRow > 0 ? 'Updated (profile)' : 'New (website form)' },
+      { names: ['source', 'via', 'notes'], val: existingJoinRow > 0 ? 'Via Connectly profile edit' : 'Via Connectly website' }
+    ];
+
+    function setColByNames_(rowArr, headers, names, val, forceEmpty) {
+      var idx = headerIndex_(headers, names);
+      if (idx < 0) return false;
+      if (val === '' && !forceEmpty) return true; // don't wipe existing with empty
+      rowArr[idx] = val;
+      return true;
+    }
+
+    if (existingJoinRow > 0) {
+      // Start from existing row so we never blank columns we don't update
+      var rowArr = joinData[existingJoinRow - 1].slice();
+      while (rowArr.length < joinHeaders.length) rowArr.push('');
+      // Always update timestamp
+      setColByNames_(rowArr, joinHeaders, ['timestamp', 'time stamp', 'date', 'submitted'], timestamp, true);
+      // Age: ALWAYS write when provided (this was the bug)
+      var ageVal = (body.age != null && String(body.age).trim() !== '') ? String(body.age).trim() : '';
+      var ageWritten = setColByNames_(rowArr, joinHeaders, ['age'], ageVal, true);
+      if (!ageWritten && ageVal) {
+        // Classic sheet: Age is column B (index 1)
+        if (rowArr.length < 2) while (rowArr.length < 2) rowArr.push('');
+        rowArr[1] = ageVal;
+      }
+      // Other fields — only overwrite when non-empty
+      setColByNames_(rowArr, joinHeaders, ['name', 'full name', 'creator name'], body.name || '', false);
+      setColByNames_(rowArr, joinHeaders, ['instagram', 'instagram link', 'profile', 'ig'], body.instagram || '', false);
+      setColByNames_(rowArr, joinHeaders, ['phone', 'whatsapp', 'mobile', 'contact number'], body.phone || '', false);
+      setColByNames_(rowArr, joinHeaders, ['city', 'location', 'city/location'], body.city || '', false);
+      setColByNames_(rowArr, joinHeaders, ['followers', 'follower count', 'follower'], body.followers || '', false);
+      setColByNames_(rowArr, joinHeaders, ['skill', 'niche', 'category', 'skills'], body.skill || '', false);
+      setColByNames_(rowArr, joinHeaders, ['income'], body.income || '', false);
+      setColByNames_(rowArr, joinHeaders, ['working', 'working status'], body.working || '', false);
+      setColByNames_(rowArr, joinHeaders, ['email', 'email address'], body.email || '', false);
+      setColByNames_(rowArr, joinHeaders, ['gender'], body.gender || '', false);
+      setColByNames_(rowArr, joinHeaders, ['charges', 'rate', 'rate card', 'pricing'], body.charges || '', false);
+      setColByNames_(rowArr, joinHeaders, ['status'], 'Updated (profile)', true);
+      setColByNames_(rowArr, joinHeaders, ['source', 'via'], 'Via Connectly profile edit', true);
+
+      sheet.getRange(existingJoinRow, 1, 1, rowArr.length).setValues([rowArr]);
+      try {
+        authProfile_({
+          email: joinEmail, role: 'creator',
+          displayName: body.name || '', name: body.name || '',
+          instagram: body.instagram || '', phone: body.phone || '',
+          city: body.city || '', niche: body.skill || '',
+          followers: body.followers || '', gender: body.gender || '',
+          charges: body.charges || ''
+        });
+      } catch (eSync) { console.warn(eSync); }
+      return jsonOut({ok:true, message:'Creator updated', updated:true, age: ageVal});
+    }
+
+    // New row — positional classic layout (matches original form columns)
+    var joinRowVals = [
       timestamp, body.age||'', body.name||'', body.instagram||'', body.phone||'',
       body.city||'', body.followers||'', body.skill||'', body.income||'', body.working||'',
-      body.email||'', body.gender||'', body.charges||'', '', 'New (website form)', 'Via Connectly website'
-    ]);
-    return jsonOut({ok:true, message:'Creator added'});
+      body.email||'', body.gender||'', body.charges||'', '',
+      'New (website form)', 'Via Connectly website'
+    ];
+    // If headers exist and look different, prefer header-mapped row
+    if (joinHeaders.length >= 3) {
+      var newArr = [];
+      for (var jc = 0; jc < joinHeaders.length; jc++) newArr.push('');
+      for (var fi = 0; fi < fieldMap.length; fi++) {
+        setColByNames_(newArr, joinHeaders, fieldMap[fi].names, fieldMap[fi].val, true);
+      }
+      // Ensure age at classic col if no Age header
+      var ageColNew = headerIndex_(joinHeaders, ['age']);
+      if (ageColNew < 0 && body.age) {
+        if (newArr.length < 2) while (newArr.length < 2) newArr.push('');
+        newArr[1] = String(body.age);
+      }
+      // If mapping produced mostly empties, fall back to classic layout
+      var nonEmpty = 0;
+      for (var ni = 0; ni < newArr.length; ni++) if (String(newArr[ni]||'').trim()) nonEmpty++;
+      if (nonEmpty >= 3) joinRowVals = newArr;
+    }
+    sheet.appendRow(joinRowVals);
+    try {
+      authProfile_({
+        email: joinEmail, role: 'creator',
+        displayName: body.name || '', name: body.name || '',
+        instagram: body.instagram || '', phone: body.phone || '',
+        city: body.city || '', niche: body.skill || '',
+        followers: body.followers || '', gender: body.gender || '',
+        charges: body.charges || ''
+      });
+    } catch (eSync2) { console.warn(eSync2); }
+    return jsonOut({ok:true, message:'Creator added', updated:false, age: String(body.age||'')});
   } catch(err) {
     return jsonOut({ok:false, error:String(err)});
   }
