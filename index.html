@@ -1761,6 +1761,14 @@
     .menu-sub .nav-btn:hover {
       background: rgba(232,195,154,0.1) !important;
     }
+
+    @media (max-width: 640px) {
+      .how-benefits { grid-template-columns: 1fr !important; }
+    }
+    .deal-actions .btn.is-loading,
+    .deal-actions .btn:disabled {
+      opacity: 0.8; pointer-events: none;
+    }
   </style>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -1989,25 +1997,75 @@
 
   <!-- HOW IT WORKS -->
   <div class="page" id="page-how">
-    <section class="section">
-      <h2 class="section-title">How Connectly Works</h2>
-      <p class="section-sub">Simple steps to find the perfect collaboration</p>
-      <div class="steps">
+    <section class="section" style="max-width:820px;">
+      <h2 class="section-title">How Connectly works</h2>
+      <p class="section-sub">One marketplace for brands and creators in India — from discovery to paid delivery, with a clear deal timeline.</p>
+
+      <div class="how-benefits" style="display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;margin:1.5rem 0 2rem;">
+        <div class="dash-card" style="text-align:left;padding:1.1rem 1.15rem;">
+          <div style="font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:#e8c39a;margin-bottom:0.35rem;">For creators</div>
+          <ul style="margin:0;padding-left:1.1rem;color:var(--text-muted);font-size:0.88rem;line-height:1.55;">
+            <li>Free profile in the directory</li>
+            <li>Apply to open campaigns in one click</li>
+            <li>Receive brand deal offers by email</li>
+            <li>Upload work &amp; get paid via Connectly</li>
+          </ul>
+        </div>
+        <div class="dash-card" style="text-align:left;padding:1.1rem 1.15rem;">
+          <div style="font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:#c4b5fd;margin-bottom:0.35rem;">For brands</div>
+          <ul style="margin:0;padding-left:1.1rem;color:var(--text-muted);font-size:0.88rem;line-height:1.55;">
+            <li>Search creators by niche, city &amp; followers</li>
+            <li>Send deal offers with price &amp; brief</li>
+            <li>Post campaigns for creators to apply</li>
+            <li>Pay once to Connectly — we release to creator</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 style="font-size:1.15rem;margin:0 0 0.85rem;color:#f7f3ea;">End-to-end flow</h3>
+      <div class="steps" style="margin-bottom:2rem;">
         <div class="step">
           <div class="step-num">1</div>
-          <h3>Search Creators</h3>
-          <p>Browse thousands of verified influencers by niche, location and followers.</p>
+          <h3>Sign up once</h3>
+          <p>Google sign-in → choose <strong>Creator</strong> or <strong>Brand</strong> → complete your profile. One account, one role.</p>
         </div>
         <div class="step">
           <div class="step-num">2</div>
-          <h3>Review Profiles</h3>
-          <p>Check Instagram, city, followers and pricing before reaching out.</p>
+          <h3>Discover &amp; match</h3>
+          <p><strong>Brands</strong> browse the creator directory or post a campaign. <strong>Creators</strong> apply to open campaigns or wait for invites.</p>
         </div>
         <div class="step">
           <div class="step-num">3</div>
-          <h3>Connect & Collaborate</h3>
-          <p>Send collaboration requests and manage campaigns in one place.</p>
+          <h3>Deal offer</h3>
+          <p>Brand sends price, deliverable, deadline &amp; brief. Creator sees it in <em>My Deals</em> and can Accept or Decline.</p>
         </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <h3>Create &amp; pay</h3>
+          <p>Creator uploads work. Brand pays Connectly (UPI ref). Connectly confirms payment, then reviews / brand approves.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <h3>Payout</h3>
+          <p>Connectly pays the creator. Creator confirms receipt. Deal closes — everything stays on the timeline.</p>
+        </div>
+      </div>
+
+      <h3 style="font-size:1.15rem;margin:0 0 0.65rem;color:#f7f3ea;">Deal timeline (My Deals)</h3>
+      <p style="color:var(--text-muted);font-size:0.9rem;line-height:1.55;margin:0 0 1rem;">Every action is logged with who did it — brand (violet), creator (orange), Connectly (green).</p>
+      <div class="camp-details" style="margin-bottom:1.75rem;">
+        <div class="camp-detail"><span class="camp-k">Proposed</span><span class="camp-v">Brand sent offer → creator sees “New offer”</span></div>
+        <div class="camp-detail"><span class="camp-k">Accepted</span><span class="camp-v">Creator accepted → work can start</span></div>
+        <div class="camp-detail"><span class="camp-k">Submitted</span><span class="camp-v">Creator uploaded Drive / reel link</span></div>
+        <div class="camp-detail"><span class="camp-k">Payment</span><span class="camp-v">Brand pays Connectly → we confirm → creator is paid</span></div>
+        <div class="camp-detail"><span class="camp-k">Approved</span><span class="camp-v">Brand / ops happy with the work</span></div>
+        <div class="camp-detail"><span class="camp-k">Done</span><span class="camp-v">Creator confirms money received</span></div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:0.65rem;justify-content:center;">
+        <button type="button" class="btn btn-creator" data-page="signup">Get started free</button>
+        <button type="button" class="btn btn-outline" data-page="campaigns">Open campaigns</button>
+        <button type="button" class="btn btn-outline" data-page="contact">Contact us</button>
       </div>
     </section>
   </div>
@@ -5384,26 +5442,41 @@ if (pageId === "login") {
       const btn = document.getElementById("inviteSubmitBtn");
       if (btn) {
         btn.disabled = true;
-        btn.textContent = "Sending…";
+        btn.classList.add("is-loading");
+        btn.textContent = "Sending offer…";
       }
-      const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
-      if (url) {
-        try {
-          await fetch(url, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload)
-          });
-        } catch (err) {
-          console.warn("Invite save failed:", err);
+      showAuthLoading("Sending deal offer to creator…");
+      try {
+        if (typeof apiPost === "function") {
+          const data = await apiPost(payload, 45000, 1);
+          if (data && data.ok === false && data.error && data.error !== "opaque") {
+            throw new Error(data.message || data.error);
+          }
+        } else {
+          const url = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+          if (url) {
+            await fetch(url, {
+              method: "POST",
+              mode: "no-cors",
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
+              body: JSON.stringify(payload)
+            });
+          }
         }
-      }
-      e.target.style.display = "none";
-      document.getElementById("inviteSuccess").style.display = "block";
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = "Send request to creator →";
+        if (btn) btn.textContent = "Offer sent ✓";
+        e.target.style.display = "none";
+        document.getElementById("inviteSuccess").style.display = "block";
+        showToast("Offer sent", "Creator will get an email and see it in My Deals.");
+      } catch (err) {
+        console.warn("Invite save failed:", err);
+        showToast("Could not send", "Try again in a moment.", "error");
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove("is-loading");
+          btn.textContent = "Send deal offer →";
+        }
+      } finally {
+        hideAuthLoading();
       }
     });
 
@@ -5916,6 +5989,9 @@ if (pageId === "login") {
     async function loadMyDeals(opts) {
       opts = opts || {};
       const silent = !!opts.silent;
+      if (!silent) {
+        try { showAuthLoading("Loading your deals…"); } catch (_) {}
+      }
       const s = getSession();
       const emailInput = document.getElementById("dealsEmail");
       let email = (emailInput?.value || "").trim().toLowerCase();
@@ -5985,6 +6061,8 @@ if (pageId === "login") {
         box.style.opacity = "1";
         setDealsStatus("", "Could not load");
         if (!silent) box.innerHTML = '<p class="section-sub" style="text-align:center;color:#fca5a5;">Could not load deals. Check connection and tap Refresh.</p>';
+      } finally {
+        if (!silent) { try { hideAuthLoading(); } catch (_) {} }
       }
     }
 
@@ -6229,22 +6307,79 @@ if (pageId === "login") {
       </div>`;
     }
 
+    function dealActionPhaseLabels(btn) {
+      const st = btn.getAttribute("data-deal-action") || "";
+      const idle = (btn.textContent || "").trim() || "Submit";
+      if (btn.getAttribute("data-platform-paid")) {
+        return { loading: "Sending payment…", done: "Payment sent ✓", loadText: "Recording your payment…", toast: "Payment marked as sent" };
+      }
+      if (btn.getAttribute("data-creator-paid")) {
+        return { loading: "Confirming payout…", done: "Creator paid ✓", loadText: "Confirming creator payout…", toast: "Creator marked as paid" };
+      }
+      if (btn.getAttribute("data-creator-confirm")) {
+        return { loading: "Confirming…", done: "Confirmed ✓", loadText: "Saving your confirmation…", toast: "Payment receipt confirmed" };
+      }
+      if (btn.getAttribute("data-creator-problem")) {
+        return { loading: "Reporting…", done: "Reported", loadText: "Sending report…", toast: "Issue reported to Connectly" };
+      }
+      if (btn.getAttribute("data-reject-pay")) {
+        return { loading: "Updating…", done: "Sent", loadText: "Updating payment status…", toast: "Brand asked to pay again" };
+      }
+      if (btn.getAttribute("data-revision")) {
+        return { loading: "Sending…", done: "Sent", loadText: "Requesting changes…", toast: "Revision requested" };
+      }
+      if (btn.getAttribute("data-needs-url") || st === "Submitted") {
+        return { loading: "Submitting work…", done: "Submitted ✓", loadText: "Uploading your deliverable link…", toast: "Work submitted" };
+      }
+      if (st === "Accepted") {
+        return { loading: "Accepting…", done: "Accepted ✓", loadText: "Accepting offer…", toast: "Offer accepted" };
+      }
+      if (st === "Rejected") {
+        return { loading: "Declining…", done: "Declined", loadText: "Declining offer…", toast: "Offer declined" };
+      }
+      if (st === "Approved") {
+        return { loading: "Approving…", done: "Approved ✓", loadText: "Approving deliverable…", toast: "Work approved" };
+      }
+      if (st === "PlatformReceived") {
+        return { loading: "Confirming…", done: "Confirmed ✓", loadText: "Confirming payment received…", toast: "Payment confirmed by Connectly" };
+      }
+      if (st === "BrandPaidPlatform") {
+        return { loading: "Sending payment…", done: "Payment sent ✓", loadText: "Recording payment…", toast: "Payment sent" };
+      }
+      if (st === "Paid") {
+        return { loading: "Processing…", done: "Done ✓", loadText: "Updating payout…", toast: "Updated" };
+      }
+      return { loading: "Submitting…", done: "Done ✓", loadText: "Updating deal…", toast: "Deal updated", idle: idle };
+    }
+
     async function postDeal(payload) {
-      const base = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
       payload.action = payload.action || "deal_update";
-      payload.token = SITE_TOKEN;
       payload.actorName = (window.__lastDealsEmail || "").split("@")[0] || "User";
+      // Prefer apiPost (retries + JSON) when available
+      if (typeof apiPost === "function") {
+        const data = await apiPost(payload, 45000, 1);
+        if (data && data.ok === false && data.error && data.error !== "opaque") {
+          throw new Error(data.message || data.error || "Update failed");
+        }
+        return data;
+      }
+      const base = (typeof LIVE_DATA_URL === "string" && LIVE_DATA_URL.trim()) || "";
+      payload.token = SITE_TOKEN;
       await fetch(base, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload)
       });
+      return { ok: true, opaque: true };
     }
 
     async function runDealAction(btn) {
+      if (!btn || btn.disabled) return;
       const dealId = btn.getAttribute("data-deal-id");
       const status = btn.getAttribute("data-deal-action");
+      const phases = dealActionPhaseLabels(btn);
+      const idleLabel = (btn.textContent || "").trim();
       const payload = {
         dealId,
         status,
@@ -6276,8 +6411,7 @@ if (pageId === "login") {
       if (btn.getAttribute("data-platform-paid")) {
         const ref = (document.getElementById("payref_" + dealId)?.value || "").trim();
         if (!ref) {
-          alert("Paste the UPI reference number after you pay, then click again.");
-          btn.disabled = false;
+          showToast("UPI reference needed", "Paste the UPI reference after you pay, then try again.", "error");
           return;
         }
         payload.platformPaid = "Yes";
@@ -6292,32 +6426,66 @@ if (pageId === "login") {
       if (btn.getAttribute("data-needs-url")) {
         const inp = document.getElementById("url_" + dealId);
         const url = (inp && inp.value || "").trim();
-        if (!url) { alert("Paste the Drive / reel link first"); return; }
+        if (!url) {
+          showToast("Link required", "Paste the Drive / reel link first.", "error");
+          return;
+        }
         payload.deliverableUrl = url;
         const msg = (document.getElementById("msg_" + dealId)?.value || "").trim();
         if (msg) payload.messageText = msg;
       }
+
       btn.disabled = true;
+      btn.classList.add("is-loading");
+      btn.textContent = phases.loading;
+      showAuthLoading(phases.loadText);
       try {
         await postDeal(payload);
-        setTimeout(() => loadMyDeals({ silent: true }), 900);
+        btn.textContent = phases.done;
+        try { showToast(phases.toast, "Timeline will refresh in a moment."); } catch (_) {}
+        await new Promise(r => setTimeout(r, 450));
+        await loadMyDeals({ silent: true });
       } catch (err) {
-        alert("Update failed");
+        console.warn(err);
+        showToast("Update failed", "Please try again in a moment.", "error");
         btn.disabled = false;
+        btn.classList.remove("is-loading");
+        btn.textContent = idleLabel;
+      } finally {
+        hideAuthLoading();
       }
     }
 
     async function sendDealMessage(btn) {
       const dealId = btn.getAttribute("data-deal-send-msg");
       const text = (document.getElementById("msg_" + dealId)?.value || "").trim();
-      if (!text) { alert("Write a message first"); return; }
+      if (!text) {
+        showToast("Write a note", "Type a short message first.", "error");
+        return;
+      }
+      const idle = (btn.textContent || "").trim() || "Send note";
       btn.disabled = true;
-      await postDeal({
-        dealId,
-        messageText: text,
-        actorRole: btn.getAttribute("data-actor-role") || "user"
-      });
-      setTimeout(() => loadMyDeals({ silent: true }), 800);
+      btn.classList.add("is-loading");
+      btn.textContent = "Sending…";
+      showAuthLoading("Sending your note…");
+      try {
+        await postDeal({
+          dealId,
+          messageText: text,
+          actorRole: btn.getAttribute("data-actor-role") || "user"
+        });
+        btn.textContent = "Sent ✓";
+        showToast("Note sent", "It will appear on the timeline.");
+        await new Promise(r => setTimeout(r, 400));
+        await loadMyDeals({ silent: true });
+      } catch (err) {
+        showToast("Could not send", "Try again.", "error");
+        btn.disabled = false;
+        btn.classList.remove("is-loading");
+        btn.textContent = idle;
+      } finally {
+        hideAuthLoading();
+      }
     }
 
     async function saveDealEdit(btn) {
