@@ -2906,10 +2906,13 @@
       if (/^(none|no|nil|na|n\/a|yes|nonr|nope|null|ok|okay|-|\.|x+|n\/?a|not applicable|nothing)$/i.test(t)) return "Lifestyle";
       if (/all of the above|working professional|anything|everything|timepass|for fun|i don'?t know|idk|whatever/i.test(t)) return "Lifestyle";
       // Soft skills / nonsense / pure job titles that were polluting the niche dropdown
-      if (/^(good (a )?posting|good communication|good speaker|communication|speaker|posting|from medical field)$/i.test(t)) return "Lifestyle";
-      if (/^(dental doctor|dentist|doctor|hotelier)$/i.test(t)) return "Lifestyle";
+      if (/^(good (a )?posting|good communication|good speaker|communication|speaker|posting|from medical field|being myself|all mentioned|^all$|activities|bba|mba|bba mba)$/i.test(t)) return "Lifestyle";
+      if (/^(dental doctor|dentist|doctor|hotelier|brand manager)$/i.test(t)) return "Lifestyle";
       if (/house\s*wife|housewife|homemaker|home maker/i.test(t)) return "Parenting";
-      if (/^(engineer|developer|engineer\?)$/i.test(t)) return "Tech"; // lone job title → Tech content niche
+      if (/^(engineer|developer|engineer\?)$/i.test(t)) return "Tech";
+      if (/^beautician$/i.test(t)) return "Beauty";
+      if (/^(blog|blogging|blogger)$/i.test(t)) return "Lifestyle";
+      if (/^(anchor|anchoring|anchoring and rj|rj)$/i.test(t)) return "Acting";
 
       // Standard labels only — never invent free-text niches for the filter
       const rules = [
@@ -2917,7 +2920,7 @@
         ["Video Editing", /video edit|editing|editor|premiere|capcut|final cut|after effect|transition|\bedit(ing|or)?\b/],
         ["Travel", /trav|tour|trip|explore|wanderlust|holiday|vacation|backpack/],
         ["Fashion", /fashion|style|outfit|model|modell?ing|wardrobe|lookbook|runway|ootd|streetwear/],
-        ["Beauty", /beauty|makeup|make-?up|skincare|skin care|cosmetic|hair|salon|glow|nail|lashes/],
+        ["Beauty", /beauty|makeup|make-?up|skincare|skin care|cosmetic|hair|salon|glow|nail|lashes|beautician/],
         ["Dance", /danc|choreograph|hip.?hop|bharat|kathak|freestyle|bhangra|classical dance/],
         ["Music", /music|singer|singing|\brap\b|\bdj\b|instrument|vocal|song|musician/],
         ["Food", /cook|food|recipe|chef|baking|kitchen|cuisine|mukbang|foodie|restaurant/],
@@ -2925,13 +2928,13 @@
         ["Comedy", /comedy|funny|humour|humor|meme|roast|stand.?up|skit/],
         ["Tech", /tech|gadget|coding|software|\bai\b|app review|mobile review|smartphone|laptop|developer|engineer/],
         ["Education", /educat|tutor|teach|student|study|academic|phd|debat|mentor|coaching|exam/],
-        ["Business", /business|finance|startup|entrepreneur|marketing|branding|invest|stock|money tips/],
+        ["Business", /business|finance|startup|entrepreneur|marketing|branding|invest|stock|money tips|brand manager/],
         ["Art", /paint|drawing|sketch|craft|\bart\b|illustrat|graphic design|calligraphy/],
-        ["Acting", /acting|\bact\b|drama|theatre|theater|cinema|\bfilm\b|actor/],
+        ["Acting", /acting|\bact\b|drama|theatre|theater|cinema|\bfilm\b|actor|anchor|anchoring|\brj\b/],
         ["Photography", /photo|photograph|camera|\bshoot\b|cinemat|photographer/],
         ["Parenting", /parent|mom\b|mother|baby|kid|family|home maker|homemaker|mommy|dad\b|house\s*wife|housewife/],
         ["Gaming", /game|gaming|esport|streamer|gamer|twitch/],
-        ["Lifestyle", /lifestyle|daily vlog|content creat|influencer|\breels?\b|instagram|vlog|youtube|short form|creator|day in (the|my) life/]
+        ["Lifestyle", /lifestyle|daily vlog|content creat|influencer|\breels?\b|instagram|vlog|youtube|short form|creator|day in (the|my) life|blog|blogging|blogger/]
       ];
 
       for (const [label, re] of rules) {
