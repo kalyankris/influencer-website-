@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2501,7 +2502,7 @@
               <option>Beauty</option>
               <option>Dance</option>
               <option>Music</option>
-              <option>Cooking</option>
+              <option>Food</option>
               <option>Fitness</option>
               <option>Travel</option>
               <option>Comedy</option>
@@ -2513,8 +2514,6 @@
               <option>Photography</option>
               <option>Parenting</option>
               <option>Gaming</option>
-              <option>UGC Creators</option>
-              <option>Editing</option>
               <option>UGC</option>
               <option>Video Editing</option>
               <option>Lifestyle</option>
@@ -2788,7 +2787,7 @@
     const FALLBACK_DATA = [
       { name: "Poonam Nirankari", niche: "Fashion", location: "Delhi", followers: 75000, followersLabel: "50K-1L", platform: "Instagram", igLink: "https://instagram.com/poonirankaree", engagement: 2.7, age: "25", gender: "Female", charges: "1500 post, 800 story" },
       { name: "Hymavathi", niche: "Dance", location: "Hyderabad", followers: 500, followersLabel: "100-1K", platform: "Instagram", igLink: "https://instagram.com/Mom_of_my_king_", engagement: 3.9, age: "26", gender: "Female", charges: "500 for everything" },
-      { name: "Suma", niche: "Cooking", location: "Hyderabad", followers: 5000, followersLabel: "1K-10K", platform: "Instagram", igLink: "https://instagram.com/vibin_withfood", engagement: 3.2, age: "28", gender: "Female", charges: "1000 reel" }
+      { name: "Suma", niche: "Food", location: "Hyderabad", followers: 5000, followersLabel: "1K-10K", platform: "Instagram", igLink: "https://instagram.com/vibin_withfood", engagement: 3.2, age: "28", gender: "Female", charges: "1000 reel" }
     ];
 
     let allInfluencers = [];
@@ -2901,73 +2900,110 @@
     function cleanNiche(s) {
       const raw = String(s || "").trim();
       if (!raw) return "Lifestyle";
-      const t = raw.toLowerCase().replace(/\s+/g, " ");
-      if (/^(none|no|nil|na|n\/a|yes|nonr|nope|null|ok|okay|-|\.|x+)$/i.test(t)) return "Lifestyle";
-      if (/all of the above|working professional|anything|everything|timepass|for fun/i.test(t)) return "Lifestyle";
+      const t = raw.toLowerCase().replace(/\s+/g, " ").replace(/[–—]/g, "-");
+      // Noise / empty answers → Lifestyle
+      if (/^(none|no|nil|na|n\/a|yes|nonr|nope|null|ok|okay|-|\.|x+|n\/?a|not applicable|nothing)$/i.test(t)) return "Lifestyle";
+      if (/all of the above|working professional|anything|everything|timepass|for fun|i don'?t know|idk|whatever/i.test(t)) return "Lifestyle";
 
+      // Standard labels used across forms + filters (prefer these exact names)
       const rules = [
-        ["UGC", /\bugc\b|user generated|brand reel|paid collab|collab with brand/],
-        ["Video Editing", /video edit|editing|editor|premiere|capcut|final cut|after effect|transition/],
-        ["Travel", /trav|tour|trip|explore|wanderlust|holiday|vacation/],
-        ["Fashion", /fashion|style|outfit|model|modell?ing|wardrobe|lookbook|runway/],
-        ["Beauty", /beauty|makeup|make-?up|skincare|skin care|cosmetic|hair|salon|glow/],
-        ["Dance", /danc|choreograph|hip.?hop|bharat|kathak|freestyle/],
-        ["Music", /music|singer|singing|\brap\b|dj\b|instrument|vocal|song/],
-        ["Cooking", /cook|food|recipe|chef|baking|kitchen|cuisine|mukbang/],
-        ["Fitness", /fitness|gym|yoga|workout|health|nutrition|sport|athlete/],
-        ["Comedy", /comedy|funny|humour|humor|meme|roast|stand.?up/],
-        ["Tech", /tech|gadget|coding|software|\bai\b|app review|mobile review/],
-        ["Education", /educat|tutor|teach|student|study|academic|phd|debat|mentor/],
-        ["Business", /business|finance|startup|entrepreneur|marketing|branding/],
-        ["Art", /paint|drawing|sketch|craft|\bart\b|illustrat|graphic design/],
-        ["Acting", /acting|\bact\b|drama|theatre|theater|cinema|\bfilm\b/],
-        ["Photography", /photo|photograph|camera|\bshoot\b|cinemat/],
-        ["Parenting", /parent|mom\b|mother|baby|kid|family|home maker|homemaker/],
-        ["Gaming", /game|gaming|esport|streamer/],
-        ["Lifestyle", /lifestyle|daily vlog|content creat|influencer|\breels?\b|instagram|vlog|youtube|short form|creator/]
+        ["UGC", /\bugc\b|user[- ]?generated|brand reel|paid collab|collab with brand|ugc creator/],
+        ["Video Editing", /video edit|editing|editor|premiere|capcut|final cut|after effect|transition|\bedit(ing|or)?\b/],
+        ["Travel", /trav|tour|trip|explore|wanderlust|holiday|vacation|backpack/],
+        ["Fashion", /fashion|style|outfit|model|modell?ing|wardrobe|lookbook|runway|ootd|streetwear/],
+        ["Beauty", /beauty|makeup|make-?up|skincare|skin care|cosmetic|hair|salon|glow|nail|lashes/],
+        ["Dance", /danc|choreograph|hip.?hop|bharat|kathak|freestyle|bhangra|classical dance/],
+        ["Music", /music|singer|singing|\brap\b|\bdj\b|instrument|vocal|song|musician/],
+        ["Food", /cook|food|recipe|chef|baking|kitchen|cuisine|mukbang|foodie|restaurant/],
+        ["Fitness", /fitness|gym|yoga|workout|health|nutrition|sport|athlete|crossfit|bodybuild/],
+        ["Comedy", /comedy|funny|humour|humor|meme|roast|stand.?up|skit/],
+        ["Tech", /tech|gadget|coding|software|\bai\b|app review|mobile review|smartphone|laptop/],
+        ["Education", /educat|tutor|teach|student|study|academic|phd|debat|mentor|coaching|exam/],
+        ["Business", /business|finance|startup|entrepreneur|marketing|branding|invest|stock|money tips/],
+        ["Art", /paint|drawing|sketch|craft|\bart\b|illustrat|graphic design|calligraphy/],
+        ["Acting", /acting|\bact\b|drama|theatre|theater|cinema|\bfilm\b|actor/],
+        ["Photography", /photo|photograph|camera|\bshoot\b|cinemat|photographer/],
+        ["Parenting", /parent|mom\b|mother|baby|kid|family|home maker|homemaker|mommy|dad\b/],
+        ["Gaming", /game|gaming|esport|streamer|gamer|twitch/],
+        ["Lifestyle", /lifestyle|daily vlog|content creat|influencer|\breels?\b|instagram|vlog|youtube|short form|creator|day in (the|my) life/]
       ];
 
       for (const [label, re] of rules) {
         if (re.test(t)) return label;
       }
-      if (t.length > 22 || t.split(" ").length > 3) return "Lifestyle";
+      // Too long / multi-word free text → Lifestyle instead of garbage
+      if (t.length > 22 || t.split(/\s+/).length > 3) return "Lifestyle";
       const first = raw.split(/[,&/|]/)[0].trim();
       if (!first || first.length > 22) return "Lifestyle";
+      // Title-case single clean word
       return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
     }
 
     function cleanCity(s) {
       if (!s) return "India";
       let raw = String(s).replace(/\s+/g, " ").trim();
-      // Drop pure noise (charges, numbers-only, symbols)
-      if (!raw || /^(none|no|nil|na|yes|\*|-+)$/i.test(raw)) return "India";
+      // Drop pure noise (charges, numbers-only, symbols, nonsense answers)
+      if (!raw || /^(none|no|nil|na|n\/a|yes|\*|-+|\.|x+|ok|okay|india only|pan india|pan-india)$/i.test(raw)) return "India";
       if (/^\d/.test(raw) && /(?:post|story|reel|shoutout|rs|₹)/i.test(raw)) return "India";
+      if (/(?:post|story|reel|charge|₹|rs\.?|followers?|k\+|lakh)/i.test(raw) && !/[a-z]{4,}/i.test(raw.replace(/\d/g, ""))) return "India";
       if (raw.length > 60) raw = raw.slice(0, 60);
 
+      // Common Indian city misspellings + aliases → canonical name
       const aliases = {
+        // Bangalore
         "banglore": "Bangalore", "bengaluru": "Bangalore", "bangalore": "Bangalore",
+        "bangaluru": "Bangalore", "bangluru": "Bangalore", "bangalor": "Bangalore",
+        "benagluru": "Bangalore", "bengalooru": "Bangalore",
+        // Delhi / NCR
         "new delhi": "New Delhi", "delhi": "Delhi", "delhi1": "Delhi", "delh": "Delhi",
+        "newdelhi": "New Delhi", "dilli": "Delhi", "ncr": "Delhi NCR",
+        // Hyderabad
         "hyderabad": "Hyderabad", "hyd": "Hyderabad", "hi tech city": "Hyderabad",
         "hitech city": "Hyderabad", "madhapur": "Hyderabad", "secunderabad": "Hyderabad",
-        "mumbai": "Mumbai", "bombay": "Mumbai",
-        "pune": "Pune", "noida": "Noida", "gurgaon": "Gurugram", "gurugram": "Gurugram",
-        "kolkata": "Kolkata", "calcutta": "Kolkata", "chennai": "Chennai", "madras": "Chennai",
-        "ahmedabad": "Ahmedabad", "lucknow": "Lucknow", "jaipur": "Jaipur",
+        "hydrabad": "Hyderabad", "hyderbad": "Hyderabad", "hydrabd": "Hyderabad",
+        "secbad": "Hyderabad", "cyberabad": "Hyderabad",
+        // Mumbai
+        "mumbai": "Mumbai", "bombay": "Mumbai", "bomaby": "Mumbai", "mumbay": "Mumbai",
+        // Pune / Noida / Gurgaon
+        "pune": "Pune", "poona": "Pune", "noida": "Noida",
+        "gurgaon": "Gurugram", "gurugram": "Gurugram", "gurgaon ncr": "Gurugram",
+        // East / South metros
+        "kolkata": "Kolkata", "calcutta": "Kolkata", "kolkatta": "Kolkata",
+        "chennai": "Chennai", "madras": "Chennai", "chenai": "Chennai",
+        "ahmedabad": "Ahmedabad", "amdavad": "Ahmedabad", "ahmadabad": "Ahmedabad",
+        "lucknow": "Lucknow", "lakhnau": "Lucknow", "jaipur": "Jaipur", "jaypur": "Jaipur",
         "chandigarh": "Chandigarh", "mohali": "Mohali", "indore": "Indore",
         "bhopal": "Bhopal", "patna": "Patna", "surat": "Surat", "nagpur": "Nagpur",
-        "mysore": "Mysore", "mysuru": "Mysore", "mangalore": "Mangalore",
-        "vijayawada": "Vijayawada", "visakhapatnam": "Visakhapatnam", "vizag": "Visakhapatnam",
-        "coimbatore": "Coimbatore", "kochi": "Kochi", "trivandrum": "Thiruvananthapuram",
+        "mysore": "Mysore", "mysuru": "Mysore", "mangalore": "Mangalore", "mangaluru": "Mangalore",
+        "vijayawada": "Vijayawada", "vizag": "Visakhapatnam", "visakhapatnam": "Visakhapatnam",
+        "vishakhapatnam": "Visakhapatnam", "visakapatnam": "Visakhapatnam",
+        "coimbatore": "Coimbatore", "kovai": "Coimbatore", "kochi": "Kochi", "cochin": "Kochi",
+        "trivandrum": "Thiruvananthapuram", "thiruvananthapuram": "Thiruvananthapuram",
+        "tvm": "Thiruvananthapuram",
+        // North / Punjab / UP
         "jalandhar": "Jalandhar", "ludhiana": "Ludhiana", "amritsar": "Amritsar",
-        "varanasi": "Varanasi", "kanpur": "Kanpur", "agra": "Agra", "meerut": "Meerut",
-        "moradabad": "Moradabad", "mathura": "Mathura", "bareilly": "Bareilly",
+        "varanasi": "Varanasi", "banaras": "Varanasi", "kanpur": "Kanpur",
+        "agra": "Agra", "meerut": "Meerut", "moradabad": "Moradabad",
+        "mathura": "Mathura", "bareilly": "Bareilly",
+        // Gujarat / others
         "rajkot": "Rajkot", "baroda": "Vadodara", "vadodara": "Vadodara",
         "guwahati": "Guwahati", "agartala": "Agartala", "hamirpur": "Hamirpur",
-        "amaravti": "Amravati", "amravati": "Amravati", "anand": "Anand",
-        "armoor": "Armoor", "nandyal": "Nandyal", "nabadwip": "Nabadwip"
+        "amaravti": "Amravati", "amravati": "Amravati", "amaravati": "Amravati",
+        "anand": "Anand", "armoor": "Armoor", "nandyal": "Nandyal", "nabadwip": "Nabadwip",
+        // Extra common
+        "raipur": "Raipur", "ranchi": "Ranchi", "dehradun": "Dehradun", "dehra dun": "Dehradun",
+        "shimla": "Shimla", "goa": "Goa", "panjim": "Goa", "panaji": "Goa",
+        "srinagar": "Srinagar", "jammu": "Jammu", "udaipur": "Udaipur",
+        "jodhpur": "Jodhpur", "bhubaneswar": "Bhubaneswar", "bhubaneshwar": "Bhubaneswar",
+        "cuttack": "Cuttack", "gujrat": "Gujarat", "gujarat": "Gujarat",
+        "telangana": "Telangana", "andhra": "Andhra Pradesh", "andhra pradesh": "Andhra Pradesh",
+        "tamil nadu": "Tamil Nadu", "karnataka": "Karnataka", "maharashtra": "Maharashtra",
+        "west bengal": "West Bengal", "punjab": "Punjab", "haryana": "Haryana",
+        "kerala": "Kerala", "rajasthan": "Rajasthan", "uttar pradesh": "Uttar Pradesh",
+        "up": "Uttar Pradesh", "mp": "Madhya Pradesh", "madhya pradesh": "Madhya Pradesh"
       };
 
-      // Known city names to search inside free-text answers
+      // Known city names to search inside free-text answers (longest first)
       const known = Object.keys(aliases).sort((a, b) => b.length - a.length);
       const low = raw.toLowerCase();
 
@@ -2975,7 +3011,7 @@
       if (aliases[low]) return aliases[low];
 
       // "I am from X" / "mostly X" / "live in X" patterns
-      const fromMatch = low.match(/(?:from|mostly|live(?:\s+in)?|based\s+in|staying\s+in)\s+([a-z\s]{3,25})/i);
+      const fromMatch = low.match(/(?:from|mostly|live(?:\s+in)?|based\s+in|staying\s+in|belong(?:s)?\s+to)\s+([a-z\s]{3,30})/i);
       if (fromMatch) {
         const part = fromMatch[1].replace(/[^\w\s]/g, " ").trim();
         for (const k of known) {
@@ -2994,9 +3030,9 @@
 
       // First comma-separated segment, title-case if it looks like a place name
       let c = raw.split(",")[0].trim();
-      c = c.replace(/^(i am from|from|i live in|live in|based in)\s+/i, "").trim();
+      c = c.replace(/^(i am from|from|i live in|live in|based in|staying in)\s+/i, "").trim();
       if (c.length < 2 || c.length > 28) return "India";
-      if (/\d{3,}/.test(c) || /(?:post|story|reel|charge|₹|rs\.?)/i.test(c)) return "India";
+      if (/\d{3,}/.test(c) || /(?:post|story|reel|charge|₹|rs\.?|followers?)/i.test(c)) return "India";
       // Title case
       return c.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
     }
