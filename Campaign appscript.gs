@@ -22,7 +22,7 @@ var CONNECTLY_OPS_EMAIL = 'kalyankris92@gmail.com';
 var DEFAULT_SITE_TOKEN = 'FAKESECRET_u4v5w6x7y8z9a0b1c2d3';
 var MAX_POST_BYTES = 20000;
 var MAX_GET_PER_MIN = 120;
-var MAX_POST_PER_MIN = 30;
+var MAX_POST_PER_MIN = 60;
 
 function getCampaignSs_() { return SpreadsheetApp.openById(CAMPAIGN_SHEET_ID); }
 function getCampaignSheet_() {
@@ -226,11 +226,21 @@ function brandContactBlock_(obj) {
 }
 function headerIndex_(headers, matchers) {
   var list = Array.isArray(matchers) ? matchers : [matchers];
-  for (var n=0; n<list.length; n++) {
-    var want = String(list[n]||'').toLowerCase();
-    for (var i=0; i<headers.length; i++) {
-      var h = String(headers[i]||'').toLowerCase();
-      if (h===want || (want && h.indexOf(want)>=0)) return i;
+  // 1) Exact match only (prevents "name" matching "Brand Name")
+  for (var n = 0; n < list.length; n++) {
+    var want = String(list[n] || '').toLowerCase().trim();
+    if (!want) continue;
+    for (var i = 0; i < headers.length; i++) {
+      if (String(headers[i] || '').toLowerCase().trim() === want) return i;
+    }
+  }
+  // 2) Contains match only for longer keys (4+ chars)
+  for (var n2 = 0; n2 < list.length; n2++) {
+    var want2 = String(list[n2] || '').toLowerCase().trim();
+    if (want2.length < 4) continue;
+    for (var i2 = 0; i2 < headers.length; i2++) {
+      var h2 = String(headers[i2] || '').toLowerCase().trim();
+      if (h2.indexOf(want2) >= 0) return i2;
     }
   }
   return -1;
@@ -783,6 +793,7 @@ function userFromRow_(headers, row) {
     gender: String(g(['gender']) || ''),
     followers: String(g(['followers']) || ''),
     charges: String(g(['charges']) || ''),
+    age: String(g(['age']) || '').trim(),
     profileComplete: String(g(['profile complete']) || '') === 'Yes',
     picture: String(g(['picture']) || ''),
     created: String(g(['created']) || ''),
@@ -937,28 +948,57 @@ function authProfile_(body) {
   email = email.toLowerCase();
   var found = findUserRow_(email);
   if (!found) {
-    authLogin_(body);
-    found = findUserRow_(email);
+    // Recover: create row when role is provided (brand/creator profile save after signup race)
+    var roleBoot = String(body.role || '').trim().toLowerCase();
+    if (roleBoot === 'brand' || roleBoot === 'creator') {
+      var nowBoot = Utilities.formatDate(new Date(), 'Asia/Kolkata', 'dd/MM/yyyy HH:mm:ss');
+      getUsersSheet_().appendRow([
+        email, roleBoot, String(body.displayName || body.name || '').trim(),
+        String(body.brandName || ''), String(body.website || ''), String(body.instagram || ''),
+        String(body.phone || ''), String(body.city || ''), String(body.niche || ''),
+        String(body.bio || ''), '', '', '',
+        'No', String(body.picture || ''), nowBoot, nowBoot
+      ]);
+      found = findUserRow_(email);
+    }
+    if (!found) {
+      return { ok: false, error: 'user_not_found', message: 'Account not found. Please sign up first.' };
+    }
   }
   var sh = getUsersSheet_();
   var h = found.headers;
   function set(names, val) {
     var i = headerIndex_(h, names);
-    if (i >= 0 && val != null) sh.getRange(found.row, i + 1).setValue(val);
+    if (i < 0) return;
+    if (val == null) return;
+    sh.getRange(found.row, i + 1).setValue(String(val));
   }
   if (body.role) set(['role'], String(body.role).toLowerCase());
-  if (body.displayName != null || body.name != null) set(['display name', 'name'], body.displayName || body.name || '');
+  if (body.displayName != null || body.name != null) set(['display name'], body.displayName || body.name || '');
   if (body.brandName != null) set(['brand name'], body.brandName);
   if (body.website != null) set(['website'], body.website);
   if (body.instagram != null) set(['instagram'], body.instagram);
   if (body.phone != null) set(['phone'], body.phone);
-  if (body.city != null) set(['city', 'location'], body.city);
+  if (body.city != null) set(['city'], body.city);
   if (body.niche != null) set(['niche'], body.niche);
   if (body.bio != null) set(['bio'], body.bio);
   if (body.gender != null) set(['gender'], body.gender);
   if (body.followers != null) set(['followers'], body.followers);
   if (body.charges != null) set(['charges'], body.charges);
+  if (body.age != null && String(body.age).trim() !== '') set(['age'], String(body.age).trim());
   if (body.picture != null) set(['picture'], body.picture);
+
+  // Ensure Age column exists on Users sheet if missing (permanent age support)
+  if (body.age != null && String(body.age).trim() !== '') {
+    var ageIdx = headerIndex_(h, ['age']);
+    if (ageIdx < 0) {
+      var lastCol = h.length + 1;
+      sh.getRange(1, lastCol).setValue('Age');
+      sh.getRange(found.row, lastCol).setValue(String(body.age).trim());
+      // refresh headers for subsequent sets in this call
+      h = sh.getRange(1, 1, 1, lastCol).getValues()[0];
+    }
+  }
 
   // Mark complete
   var role = String(body.role || found.user.role || '').toLowerCase();
@@ -1112,9 +1152,9 @@ function doPost(e) {
     var raw = (e && e.postData && e.postData.contents) ? String(e.postData.contents) : '';
     if (raw.length > MAX_POST_BYTES) return deny_('payload_too_large');
     var body = raw ? JSON.parse(raw) : {};
-    if (rateLimited_('post', MAX_POST_PER_MIN)) return deny_('rate_limited');
+    if (rateLimited_('post', MAX_POST_PER_MIN)) return jsonOut({ok:false, error:'rate_limited', message:'Too many requests. Wait a few seconds and try again.'});
     var action = String(body.action || 'join');
-    if (['join','campaign','apply','invite','deal_update','auth_login','auth_profile','shortlist_get','shortlist_set','shortlist_toggle','contact'].indexOf(action) < 0) return deny_('unknown_action');
+    if (['join','campaign','apply','invite','deal_update','auth_login','auth_profile','contact'].indexOf(action) < 0) return deny_('unknown_action');
 
     if (action === 'campaign') { appendCampaign_(body); return jsonOut({ok:true,message:'Campaign added'}); }
     if (action === 'apply') { appendApplication_(body); notifyBrandNewApplication_(body); return jsonOut({ok:true,message:'Application added'}); }
@@ -1134,11 +1174,7 @@ function doPost(e) {
 
     if (action === 'auth_login') { return jsonOut(authLogin_(body)); }
     if (action === 'auth_profile') { return jsonOut(authProfile_(body)); }
-    if (action === 'shortlist_get') {
-      return jsonOut({ ok: true, items: shortlistGet_(body.email || '') });
-    }
-    if (action === 'shortlist_toggle') { return jsonOut(shortlistToggle_(body)); }
-    if (action === 'shortlist_set') { return jsonOut(shortlistSet_(body)); }
+    // shortlist feature removed
 
     if (action === 'contact') {
       var to = extractEmail_(body.to) || CONNECTLY_OPS_EMAIL;
@@ -1209,7 +1245,7 @@ function doPost(e) {
       setColByNames_(rowArr, joinHeaders, ['timestamp', 'time stamp', 'date', 'submitted'], timestamp, true);
       // Age: ALWAYS write when provided (this was the bug)
       var ageVal = (body.age != null && String(body.age).trim() !== '') ? String(body.age).trim() : '';
-      var ageWritten = setColByNames_(rowArr, joinHeaders, ['age'], ageVal, true);
+      var ageWritten = setColByNames_(rowArr, joinHeaders, ['age', 'age (years)', 'your age'], ageVal, true);
       if (!ageWritten && ageVal) {
         // Classic sheet: Age is column B (index 1)
         if (rowArr.length < 2) while (rowArr.length < 2) rowArr.push('');
@@ -1238,7 +1274,7 @@ function doPost(e) {
           instagram: body.instagram || '', phone: body.phone || '',
           city: body.city || '', niche: body.skill || '',
           followers: body.followers || '', gender: body.gender || '',
-          charges: body.charges || ''
+          charges: body.charges || '', age: body.age || ageVal || ''
         });
       } catch (eSync) { console.warn(eSync); }
       return jsonOut({ok:true, message:'Creator updated', updated:true, age: ageVal});
@@ -1259,7 +1295,7 @@ function doPost(e) {
         setColByNames_(newArr, joinHeaders, fieldMap[fi].names, fieldMap[fi].val, true);
       }
       // Ensure age at classic col if no Age header
-      var ageColNew = headerIndex_(joinHeaders, ['age']);
+      var ageColNew = headerIndex_(joinHeaders, ['age', 'age (years)', 'your age']);
       if (ageColNew < 0 && body.age) {
         if (newArr.length < 2) while (newArr.length < 2) newArr.push('');
         newArr[1] = String(body.age);
@@ -1277,7 +1313,7 @@ function doPost(e) {
         instagram: body.instagram || '', phone: body.phone || '',
         city: body.city || '', niche: body.skill || '',
         followers: body.followers || '', gender: body.gender || '',
-        charges: body.charges || ''
+        charges: body.charges || '', age: body.age || ''
       });
     } catch (eSync2) { console.warn(eSync2); }
     return jsonOut({ok:true, message:'Creator added', updated:false, age: String(body.age||'')});
