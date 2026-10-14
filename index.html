@@ -2900,12 +2900,18 @@
     function cleanNiche(s) {
       const raw = String(s || "").trim();
       if (!raw) return "Lifestyle";
-      const t = raw.toLowerCase().replace(/\s+/g, " ").replace(/[–—]/g, "-");
-      // Noise / empty answers → Lifestyle
+      const t = raw.toLowerCase().replace(/\s+/g, " ").replace(/[–—]/g, "-").replace(/\?+/g, "");
+
+      // Noise / empty / soft-skill answers → Lifestyle (never show in filters)
       if (/^(none|no|nil|na|n\/a|yes|nonr|nope|null|ok|okay|-|\.|x+|n\/?a|not applicable|nothing)$/i.test(t)) return "Lifestyle";
       if (/all of the above|working professional|anything|everything|timepass|for fun|i don'?t know|idk|whatever/i.test(t)) return "Lifestyle";
+      // Soft skills / nonsense / pure job titles that were polluting the niche dropdown
+      if (/^(good (a )?posting|good communication|good speaker|communication|speaker|posting|from medical field)$/i.test(t)) return "Lifestyle";
+      if (/^(dental doctor|dentist|doctor|hotelier)$/i.test(t)) return "Lifestyle";
+      if (/house\s*wife|housewife|homemaker|home maker/i.test(t)) return "Parenting";
+      if (/^(engineer|developer|engineer\?)$/i.test(t)) return "Tech"; // lone job title → Tech content niche
 
-      // Standard labels used across forms + filters (prefer these exact names)
+      // Standard labels only — never invent free-text niches for the filter
       const rules = [
         ["UGC", /\bugc\b|user[- ]?generated|brand reel|paid collab|collab with brand|ugc creator/],
         ["Video Editing", /video edit|editing|editor|premiere|capcut|final cut|after effect|transition|\bedit(ing|or)?\b/],
@@ -2917,13 +2923,13 @@
         ["Food", /cook|food|recipe|chef|baking|kitchen|cuisine|mukbang|foodie|restaurant/],
         ["Fitness", /fitness|gym|yoga|workout|health|nutrition|sport|athlete|crossfit|bodybuild/],
         ["Comedy", /comedy|funny|humour|humor|meme|roast|stand.?up|skit/],
-        ["Tech", /tech|gadget|coding|software|\bai\b|app review|mobile review|smartphone|laptop/],
+        ["Tech", /tech|gadget|coding|software|\bai\b|app review|mobile review|smartphone|laptop|developer|engineer/],
         ["Education", /educat|tutor|teach|student|study|academic|phd|debat|mentor|coaching|exam/],
         ["Business", /business|finance|startup|entrepreneur|marketing|branding|invest|stock|money tips/],
         ["Art", /paint|drawing|sketch|craft|\bart\b|illustrat|graphic design|calligraphy/],
         ["Acting", /acting|\bact\b|drama|theatre|theater|cinema|\bfilm\b|actor/],
         ["Photography", /photo|photograph|camera|\bshoot\b|cinemat|photographer/],
-        ["Parenting", /parent|mom\b|mother|baby|kid|family|home maker|homemaker|mommy|dad\b/],
+        ["Parenting", /parent|mom\b|mother|baby|kid|family|home maker|homemaker|mommy|dad\b|house\s*wife|housewife/],
         ["Gaming", /game|gaming|esport|streamer|gamer|twitch/],
         ["Lifestyle", /lifestyle|daily vlog|content creat|influencer|\breels?\b|instagram|vlog|youtube|short form|creator|day in (the|my) life/]
       ];
@@ -2931,12 +2937,9 @@
       for (const [label, re] of rules) {
         if (re.test(t)) return label;
       }
-      // Too long / multi-word free text → Lifestyle instead of garbage
-      if (t.length > 22 || t.split(/\s+/).length > 3) return "Lifestyle";
-      const first = raw.split(/[,&/|]/)[0].trim();
-      if (!first || first.length > 22) return "Lifestyle";
-      // Title-case single clean word
-      return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
+      // Anything that doesn't match a known content niche → Lifestyle
+      // (stops "Dental doctor", "Good speaker", "Engineer?" etc. from appearing in filters)
+      return "Lifestyle";
     }
 
     function cleanCity(s) {
@@ -2957,6 +2960,7 @@
         // Delhi / NCR
         "new delhi": "New Delhi", "delhi": "Delhi", "delhi1": "Delhi", "delh": "Delhi",
         "newdelhi": "New Delhi", "dilli": "Delhi", "ncr": "Delhi NCR",
+        "dwhi": "Delhi", "delhii": "Delhi", "dehli": "Delhi", "dlh": "Delhi",
         // Hyderabad
         "hyderabad": "Hyderabad", "hyd": "Hyderabad", "hi tech city": "Hyderabad",
         "hitech city": "Hyderabad", "madhapur": "Hyderabad", "secunderabad": "Hyderabad",
@@ -2992,7 +2996,11 @@
         "anand": "Anand", "armoor": "Armoor", "nandyal": "Nandyal", "nabadwip": "Nabadwip",
         // Extra common
         "raipur": "Raipur", "ranchi": "Ranchi", "dehradun": "Dehradun", "dehra dun": "Dehradun",
+        "dehradoon": "Dehradun", "dehra doon": "Dehradun", "dehrdun": "Dehradun",
         "shimla": "Shimla", "goa": "Goa", "panjim": "Goa", "panaji": "Goa",
+        "bareilly": "Bareilly", "bhilwara": "Bhilwara", "darjeeling": "Darjeeling",
+        "dibrugarh": "Dibrugarh", "dimapur": "Dimapur", "dehri on sone": "Dehri On Sone",
+        "dehri-on-sone": "Dehri On Sone", "bihar": "Bihar",
         "srinagar": "Srinagar", "jammu": "Jammu", "udaipur": "Udaipur",
         "jodhpur": "Jodhpur", "bhubaneswar": "Bhubaneswar", "bhubaneshwar": "Bhubaneswar",
         "cuttack": "Cuttack", "gujrat": "Gujarat", "gujarat": "Gujarat",
@@ -3028,13 +3036,9 @@
         }
       }
 
-      // First comma-separated segment, title-case if it looks like a place name
-      let c = raw.split(",")[0].trim();
-      c = c.replace(/^(i am from|from|i live in|live in|based in|staying in)\s+/i, "").trim();
-      if (c.length < 2 || c.length > 28) return "India";
-      if (/\d{3,}/.test(c) || /(?:post|story|reel|charge|₹|rs\.?|followers?)/i.test(c)) return "India";
-      // Title case
-      return c.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+      // Unknown free-text → India (stops typos like "Dwhi" from flooding the location filter)
+      // Real cities must be in aliases above; add more aliases as needed.
+      return "India";
     }
 
     function esc(str) {
@@ -3223,8 +3227,17 @@
     // FILTERS
     // ============================================================
     function populateFilterOptions() {
-      const niches = [...new Set(allInfluencers.map(i => cleanNiche(i.niche || "")).filter(Boolean))].sort();
-      const locations = [...new Set(allInfluencers.map(i => i.location).filter(Boolean))].sort();
+      // Always re-clean so cached/old rows don't leak typos into dropdowns
+      const niches = [...new Set(allInfluencers.map(i => {
+        i.niche = cleanNiche(i.niche || "");
+        return i.niche;
+      }).filter(Boolean))].sort();
+      const locations = [...new Set(allInfluencers.map(i => {
+        i.location = cleanCity(i.location || "");
+        return i.location;
+      }).filter(loc => loc && loc !== "India"))].sort();
+      // Keep "India" at end if anyone has it
+      if (allInfluencers.some(i => i.location === "India")) locations.push("India");
 
       const nicheSelect = document.getElementById("filterNiche");
       if (nicheSelect) {
